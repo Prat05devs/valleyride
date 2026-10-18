@@ -1,0 +1,1726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valley Ride Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --surface-2:#f0eee8; --surface-3:#e7e4db;
+  --text:#1b1f1d; --muted:#5d6661; --border:#dedad0;
+  --brand:#1f6b52; --brand-soft:#e3f0ea; --brand-ink:#ffffff;
+  --accent:#c56f1a; --accent-soft:#fbeedd;
+  --info:#2b5f9e; --info-soft:#e4edf8;
+  --danger:#b4372f; --danger-soft:#f8e3e1;
+  --warn:#8a6100; --warn-soft:#fbf1d3;
+  --code-bg:#1d2420; --code-text:#e6ece8;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.05);
+  --radius:12px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1412; --surface:#161c19; --surface-2:#1d2420; --surface-3:#252e29;
+    --text:#e8ece9; --muted:#9aa59f; --border:#2b342f;
+    --brand:#4fb58e; --brand-soft:#173126; --brand-ink:#07130e;
+    --accent:#f0a24d; --accent-soft:#3a2810;
+    --info:#7fb0ea; --info-soft:#15263b;
+    --danger:#ef8a82; --danger-soft:#3a1714;
+    --warn:#e8c25a; --warn-soft:#34290c;
+    --code-bg:#0b0f0d; --code-text:#dfe7e2;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1412; --surface:#161c19; --surface-2:#1d2420; --surface-3:#252e29;
+  --text:#e8ece9; --muted:#9aa59f; --border:#2b342f;
+  --brand:#4fb58e; --brand-soft:#173126; --brand-ink:#07130e;
+  --accent:#f0a24d; --accent-soft:#3a2810;
+  --info:#7fb0ea; --info-soft:#15263b;
+  --danger:#ef8a82; --danger-soft:#3a1714;
+  --warn:#e8c25a; --warn-soft:#34290c;
+  --code-bg:#0b0f0d; --code-text:#dfe7e2;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--brand)}
+h1,h2,h3,h4{line-height:1.25;margin:0 0 .5em}
+h2{font-size:1.5rem;letter-spacing:-.01em}
+h3{font-size:1.1rem;margin-top:1.6em}
+h4{font-size:.95rem}
+p{margin:0 0 1em}
+code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace}
+:not(pre)>code{background:var(--surface-2);border:1px solid var(--border);padding:.05em .35em;border-radius:5px;font-size:.86em}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.top{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.top-row{display:flex;align-items:center;gap:12px;padding:12px 0}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem}
+.logo svg{flex:none}
+.logo small{display:block;font-weight:500;color:var(--muted);font-size:.75rem}
+.spacer{flex:1}
+.icon-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit;font-size:.85rem}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:0}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:inherit;font-weight:500;font-size:.9rem;padding:10px 12px;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand)}
+.tab .n{font-size:.75rem;opacity:.7;margin-right:4px}
+main section{padding:28px 0 64px}
+.lede{color:var(--muted);max-width:760px;font-size:1rem}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);font-weight:600;margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.pill{display:inline-block;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border);white-space:nowrap}
+.pill.green{background:var(--brand-soft);color:var(--brand);border-color:transparent}
+.pill.orange{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.pill.blue{background:var(--info-soft);color:var(--info);border-color:transparent}
+.pill.red{background:var(--danger-soft);color:var(--danger);border-color:transparent}
+.pill.yellow{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 14px;border-radius:0 8px 8px 0;font-size:.9rem;margin:14px 0}
+.note.info{border-color:var(--info);background:var(--info-soft)}
+.note b{color:var(--text)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;background:var(--surface-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+ul.clean{list-style:none;padding:0;margin:0}
+ul.ticks{padding-left:1.1em;margin:0}
+ul.ticks li{margin:.25em 0}
+
+/* diagrams */
+.diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;overflow-x:auto}
+.diagram svg{display:block;min-width:820px;width:100%;height:auto}
+.dg text{fill:var(--text);font-family:Inter,system-ui,sans-serif}
+.dg .t{font-size:13px;font-weight:600}
+.dg .s{font-size:10.5px;fill:var(--muted)}
+.dg .lane{font-size:10px;font-weight:700;letter-spacing:.12em;fill:var(--muted)}
+.dg rect.b{fill:var(--surface-2);stroke:var(--border);stroke-width:1.2}
+.dg rect.client{fill:var(--info-soft);stroke:var(--info)}
+.dg rect.edge{fill:var(--surface-3);stroke:var(--border)}
+.dg rect.app{fill:var(--brand-soft);stroke:var(--brand)}
+.dg rect.mod{fill:var(--surface);stroke:var(--brand);stroke-opacity:.5}
+.dg rect.data{fill:var(--accent-soft);stroke:var(--accent)}
+.dg rect.ext{fill:var(--surface-2);stroke:var(--muted);stroke-dasharray:5 4}
+.dg rect.box{fill:none;stroke:var(--brand);stroke-dasharray:6 5;stroke-opacity:.6}
+.dg line,.dg path.arrow{stroke:var(--muted);stroke-width:1.4;fill:none}
+.dg .dash{stroke-dasharray:4 4}
+.dg marker path{fill:var(--muted)}
+
+/* layers */
+.layers{display:grid;gap:8px}
+.layer{display:grid;grid-template-columns:190px 1fr;gap:12px;align-items:start;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface)}
+.layer .ln{font-weight:600}
+.layer .ln small{display:block;color:var(--muted);font-weight:500;font-size:.75rem}
+.layer .chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.8rem;padding:3px 9px;border-radius:7px;background:var(--surface-2);border:1px solid var(--border)}
+.layer.l1{border-left:4px solid var(--info)}
+.layer.l2{border-left:4px solid var(--muted)}
+.layer.l3{border-left:4px solid var(--brand)}
+.layer.l4{border-left:4px solid var(--brand)}
+.layer.l5{border-left:4px solid var(--accent)}
+@media (max-width:640px){.layer{grid-template-columns:1fr}}
+.flow{counter-reset:step;display:grid;gap:8px}
+.flow li{list-style:none;position:relative;padding:10px 12px 10px 46px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:.9rem}
+.flow li::before{counter-increment:step;content:counter(step);position:absolute;left:12px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--brand);color:var(--brand-ink);font-size:.75rem;font-weight:700;display:grid;place-items:center}
+.flow{padding:0;margin:0}
+.states{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.states .arr{color:var(--muted)}
+
+/* code */
+.codeblock{border-radius:10px;overflow:hidden;border:1px solid var(--border);margin:10px 0 18px}
+.codeblock .fname{background:var(--surface-2);padding:7px 12px;font-family:"JetBrains Mono",monospace;font-size:.78rem;color:var(--muted);border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.codeblock pre{margin:0;padding:14px 16px;background:var(--code-bg);color:var(--code-text);font-size:.8rem;line-height:1.55;overflow-x:auto;tab-size:2}
+.tree{background:var(--code-bg);color:var(--code-text);border-radius:10px;padding:16px;font-size:.8rem;line-height:1.55;overflow-x:auto;margin:0}
+
+/* ERD cards */
+.erd{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.tbl{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:.8rem}
+.tbl h4{margin:0;padding:8px 12px;background:var(--brand-soft);color:var(--brand);font-family:"JetBrains Mono",monospace;font-size:.82rem;display:flex;justify-content:space-between;gap:6px}
+.tbl h4 span{color:var(--muted);font-family:Inter,sans-serif;font-weight:500;font-size:.72rem}
+.tbl ul{list-style:none;margin:0;padding:6px 0}
+.tbl li{display:flex;justify-content:space-between;gap:8px;padding:2px 12px;font-family:"JetBrains Mono",monospace}
+.tbl li .ty{color:var(--muted);font-size:.74rem;text-align:right}
+.tbl li.pk .c{color:var(--accent);font-weight:600}
+.tbl li.fk .c{color:var(--info)}
+.method{font-family:"JetBrains Mono",monospace;font-weight:600;font-size:.75rem}
+.m-GET{color:var(--info)} .m-POST{color:var(--brand)} .m-PATCH{color:var(--accent)} .m-DELETE{color:var(--danger)} .m-PUT{color:var(--accent)}
+
+/* ===== Prototype ===== */
+.proto-frame{border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.proto-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface-2);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.proto-bar .url{flex:1;min-width:160px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:.78rem;color:var(--muted);font-family:"JetBrains Mono",monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptabs{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.ptab{background:none;border:1px solid transparent;border-radius:8px;padding:6px 12px;font:inherit;font-size:.86rem;color:var(--muted);cursor:pointer;white-space:nowrap}
+.ptab[aria-selected="true"]{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.pview{padding:18px}
+.hero{border-radius:14px;padding:28px 22px;color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,rgba(10,30,24,.15),rgba(10,30,24,.75)),
+  linear-gradient(180deg,#9cc4d9 0%,#d7c8a8 55%,#2f5a47 56%,#1f4033 100%)}
+.hero svg.mtn{position:absolute;inset:auto 0 0 0;width:100%;height:65%;opacity:.95}
+.hero > *{position:relative}
+.hero h3{font-size:1.6rem;margin:0 0 4px;color:#fff}
+.hero p{color:rgba(255,255,255,.88);margin:0 0 18px;max-width:520px}
+.book-panel{background:var(--surface);color:var(--text);border-radius:12px;padding:14px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));align-items:end;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+label.f{display:grid;gap:4px;font-size:.75rem;font-weight:600;color:var(--muted)}
+input,select{font:inherit;font-size:.9rem;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-color:var(--brand)}
+.btn{font:inherit;font-weight:600;font-size:.9rem;border-radius:9px;padding:9px 16px;border:1px solid var(--brand);background:var(--brand);color:var(--brand-ink);cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--brand)}
+.btn.sm{padding:5px 10px;font-size:.8rem}
+.btn.danger{background:transparent;color:var(--danger);border-color:var(--danger)}
+.msg{font-size:.85rem;margin-top:10px;min-height:1.2em}
+.msg.err{color:var(--danger)}
+.fleet{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));margin-top:16px}
+.vcard{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+.vimg{height:110px;display:grid;place-items:center;background:var(--surface-2)}
+.vimg svg{height:78px;width:auto}
+.vbody{padding:12px 14px;display:grid;gap:6px;flex:1}
+.vbody h4{margin:0;font-size:1rem}
+.vmeta{font-size:.78rem;color:var(--muted)}
+.price{font-size:1.25rem;font-weight:700}
+.price small{font-size:.75rem;font-weight:500;color:var(--muted)}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:.84rem;padding:3px 0}
+.kv.total{border-top:1px solid var(--border);margin-top:4px;padding-top:8px;font-weight:700}
+.kv .k{color:var(--muted)}
+.avail{font-size:.78rem;font-weight:600}
+.avail.ok{color:var(--brand)} .avail.low{color:var(--accent)} .avail.none{color:var(--danger)}
+.routes{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin-top:10px}
+.route{border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface-2);font-size:.85rem}
+.route b{display:block;font-size:.95rem}
+dialog{border:1px solid var(--border);border-radius:14px;padding:0;background:var(--surface);color:var(--text);width:min(560px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.dlg-b{padding:16px 18px;display:grid;gap:12px;max-height:70vh;overflow:auto}
+.dlg-f{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.f2{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:.82rem;color:var(--muted)}
+.check input{width:auto;margin-top:3px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.88rem;transition:transform .25s;z-index:50;max-width:calc(100vw - 32px)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.kpi{background:var(--surface-2);border-radius:10px;padding:12px 14px}
+.kpi .v{font-size:1.4rem;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:.75rem;color:var(--muted);font-weight:500}
+.timeline{display:grid;font-size:.72rem;min-width:760px}
+.timeline .h{font-weight:600;color:var(--muted);padding:4px 2px;text-align:center;border-bottom:1px solid var(--border)}
+.timeline .rl{padding:3px 8px 3px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid var(--border)}
+.timeline .c{border-bottom:1px solid var(--border);border-left:1px solid var(--border);height:24px;position:relative}
+.timeline .c.busy::after{content:"";position:absolute;inset:4px 1px;border-radius:4px;background:var(--brand);opacity:.75}
+.timeline .c.mine::after{background:var(--accent);opacity:.9}
+.timeline .c.maint{background:repeating-linear-gradient(45deg,var(--danger-soft) 0 5px,transparent 5px 10px)}
+.timeline .c.today{background-color:var(--info-soft)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin:8px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.bar{height:10px;border-radius:5px;background:var(--brand)}
+.bar-row{display:grid;grid-template-columns:120px 1fr 90px;gap:10px;align-items:center;font-size:.84rem;margin:6px 0}
+.bkcard{border:1px solid var(--border);border-radius:12px;padding:14px;display:grid;gap:6px;background:var(--surface)}
+.bkcard .top{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.calc-out{background:var(--brand);color:var(--brand-ink);border-radius:12px;padding:18px}
+.calc-out .big{font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums}
+.calc-out .kv .k{color:inherit;opacity:.8}
+.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:12px}
+.sectitle{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 10px}
+.sectitle h4{margin:0}
+footer{color:var(--muted);font-size:.8rem;padding:24px 0 40px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="logo">
+        <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="var(--brand)"/><path d="M5 25 L13 13 L18 19 L22 14 L29 25 Z" fill="var(--brand-ink)"/><circle cx="24" cy="9" r="2.5" fill="var(--accent)"/></svg>
+        <div>Valley Ride<small>Platform architecture · v1.0 · Oct 2026</small></div>
+      </div>
+      <div class="spacer"></div>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle colour theme">◐ Theme</button>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" data-tab="overview" role="tab"><span class="n">01</span>Overview</button>
+      <button class="tab" data-tab="system" role="tab"><span class="n">02</span>System architecture</button>
+      <button class="tab" data-tab="code" role="tab"><span class="n">03</span>Code architecture</button>
+      <button class="tab" data-tab="data" role="tab"><span class="n">04</span>Data model</button>
+      <button class="tab" data-tab="api" role="tab"><span class="n">05</span>API</button>
+      <button class="tab" data-tab="folders" role="tab"><span class="n">06</span>Folder structure</button>
+      <button class="tab" data-tab="infra" role="tab"><span class="n">07</span>Infra &amp; roadmap</button>
+      <button class="tab" data-tab="prototype" role="tab"><span class="n">08</span>Working prototype</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ================= 01 OVERVIEW ================= -->
+<section id="overview">
+  <div class="eyebrow">Valley Ride · Dehradun · Mussoorie · Rishikesh</div>
+  <h2>A two-wheeler rental platform for Uttarakhand</h2>
+  <p class="lede">One booking engine runs the customer website, the admin back office, the investor portal and (in Phase 3) the iOS and Android apps. Inventory, pricing, payments and bookings all live in one PostgreSQL database, behind one Express API.</p>
+
+  <div class="grid g4" style="margin:20px 0">
+    <div class="card"><div class="eyebrow">Frontend</div><b>Next.js</b><br><span class="vmeta">App Router, TypeScript, Tailwind + shadcn/ui, TanStack Query</span></div>
+    <div class="card"><div class="eyebrow">Backend</div><b>Node.js + Express</b><br><span class="vmeta">REST /api/v1, Zod validation, JWT + RBAC, BullMQ workers</span></div>
+    <div class="card"><div class="eyebrow">ORM</div><b>Sequelize v6</b><br><span class="vmeta">Models, CLI migrations and seeders, managed transactions</span></div>
+    <div class="card"><div class="eyebrow">Database</div><b>PostgreSQL 16</b><br><span class="vmeta">Exclusion constraints prevent double bookings; Redis for cache and queues</span></div>
+  </div>
+
+  <h3>Fleet at launch: 30 vehicles</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Model</th><th>Positioning</th><th class="num">Units</th><th class="num">Test price / day</th><th class="num">Deposit</th><th class="num">Km / day</th></tr></thead>
+    <tbody id="fleetTable"></tbody>
+  </table></div>
+  <p class="vmeta" style="margin-top:8px">These prices are starting points to test, based on local listings (Activa about ₹600–700, Hunter about ₹1,200, Himalayan about ₹2,200 a day). They live in the <code>vehicle_models</code> and <code>pricing_rules</code> tables, so they can be changed without a deploy.</p>
+
+  <h3>Six product surfaces, one backend</h3>
+  <div class="grid g3">
+    <div class="card"><span class="pill blue">Public</span><h4 style="margin-top:8px">Home &amp; fleet</h4><p class="vmeta">Hero section, “Find your ride” panel, fleet categories, routes, starting prices. Server-rendered (SSR/ISR) for SEO.</p></div>
+    <div class="card"><span class="pill blue">Public</span><h4 style="margin-top:8px">Live booking engine</h4><p class="vmeta">Pickup and return location, date and time, real availability, duration, deposit, included km and final price.</p></div>
+    <div class="card"><span class="pill blue">Public</span><h4 style="margin-top:8px">Ride discovery</h4><p class="vmeta">Mussoorie, Rishikesh, Sahastradhara and Maldevta guides, itineraries and safety advice, written in the CMS.</p></div>
+    <div class="card"><span class="pill green">Customer</span><h4 style="margin-top:8px">Digital handover</h4><p class="vmeta">Licence and ID checks, e-signed agreement, receipt, pre-ride photos, damage checklist, emergency contact.</p></div>
+    <div class="card"><span class="pill green">Customer</span><h4 style="margin-top:8px">Customer dashboard</h4><p class="vmeta">Bookings, extensions, cancellations, deposit status, invoices, support and reviews.</p></div>
+    <div class="card"><span class="pill orange">Investor</span><h4 style="margin-top:8px">Valley Ride Capital</h4><p class="vmeta">Calculator, repayment schedule, risk disclosures, agreements and repayment tracking.</p></div>
+  </div>
+
+  <div class="note"><b>Investor portal safeguard.</b> A fixed 21% annual return is a financial obligation, not a marketing line. Before the portal accepts any money, an Indian lawyer and a chartered accountant should confirm the legal structure, the deposit and securities rules, the tax treatment and the disclosures. The architecture keeps the portal read-only (calculator plus statements) until that sign-off, and no wording says “guaranteed”.</div>
+  <div class="note info"><b>Compliance before launch.</b> Check the Rent-a-Motorcycle Scheme licence, vehicle permits, commercial insurance and tax requirements with the Uttarakhand transport authority. Personal data, including KYC documents, falls under India's DPDP Act, 2023, so all storage is in the Mumbai region (ap-south-1) and Aadhaar numbers are never stored in full.</div>
+</section>
+
+<!-- ================= 02 SYSTEM ================= -->
+<section id="system" hidden>
+  <div class="eyebrow">Architecture layout</div>
+  <h2>System architecture</h2>
+  <p class="lede">The API is a modular monolith: one Express deployable with clear domain modules, plus a background worker that runs from the same codebase. A 30-vehicle business doesn't need microservices. If any module ever outgrows the monolith, its boundary is already clean enough to split it out.</p>
+
+  <div class="diagram">
+  <svg class="dg" viewBox="0 0 1060 660" role="img" aria-label="System architecture diagram">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+
+    <text class="lane" x="40" y="26">CLIENTS</text>
+    <rect class="b client" x="40" y="36" width="230" height="58" rx="10"/><text class="t" x="155" y="60" text-anchor="middle">Customer Web</text><text class="s" x="155" y="78" text-anchor="middle">Next.js · mobile-first · PWA</text>
+    <rect class="b client" x="290" y="36" width="230" height="58" rx="10"/><text class="t" x="405" y="60" text-anchor="middle">iOS / Android App</text><text class="s" x="405" y="78" text-anchor="middle">React Native (Expo) · Phase 3</text>
+    <rect class="b client" x="540" y="36" width="230" height="58" rx="10"/><text class="t" x="655" y="60" text-anchor="middle">Admin Console</text><text class="s" x="655" y="78" text-anchor="middle">Next.js /admin · staff &amp; owner</text>
+    <rect class="b client" x="790" y="36" width="230" height="58" rx="10"/><text class="t" x="905" y="60" text-anchor="middle">Investor Portal</text><text class="s" x="905" y="78" text-anchor="middle">Next.js /invest · Phase 4</text>
+
+    <line x1="155" y1="94" x2="155" y2="128" marker-end="url(#ah)"/>
+    <line x1="405" y1="94" x2="405" y2="128" marker-end="url(#ah)"/>
+    <line x1="655" y1="94" x2="655" y2="128" marker-end="url(#ah)"/>
+    <line x1="905" y1="94" x2="905" y2="128" marker-end="url(#ah)"/>
+
+    <text class="lane" x="40" y="124">EDGE</text>
+    <rect class="b edge" x="40" y="130" width="980" height="44" rx="10"/>
+    <text class="t" x="530" y="150" text-anchor="middle">Cloudflare (DNS · CDN · WAF · bot protection)  →  Nginx reverse proxy</text>
+    <text class="s" x="530" y="166" text-anchor="middle">valleyride.in → Next.js   ·   api.valleyride.in → Express   ·   TLS, gzip, rate limits</text>
+
+    <line x1="230" y1="174" x2="230" y2="212" marker-end="url(#ah)"/>
+    <line x1="760" y1="174" x2="760" y2="212" marker-end="url(#ah)"/>
+
+    <text class="lane" x="40" y="208">APPLICATION</text>
+    <rect class="b app" x="40" y="214" width="380" height="70" rx="10"/>
+    <text class="t" x="230" y="240" text-anchor="middle">Next.js App Server</text>
+    <text class="s" x="230" y="258" text-anchor="middle">Server Components · SSR/ISR for SEO pages</text>
+    <text class="s" x="230" y="273" text-anchor="middle">middleware.ts route guards · calls API with cookie</text>
+    <rect class="b app" x="500" y="214" width="520" height="70" rx="10"/>
+    <text class="t" x="760" y="240" text-anchor="middle">Express API  ·  /api/v1</text>
+    <text class="s" x="760" y="258" text-anchor="middle">helmet · cors · rate-limit · requestId · pino logs</text>
+    <text class="s" x="760" y="273" text-anchor="middle">JWT (httpOnly cookie / Bearer for mobile) · RBAC · Zod · OpenAPI docs</text>
+    <line x1="420" y1="249" x2="496" y2="249" marker-end="url(#ah)"/>
+    <text class="s" x="458" y="242" text-anchor="middle">REST</text>
+
+    <line x1="760" y1="284" x2="760" y2="314" marker-end="url(#ah)"/>
+
+    <rect class="box" x="30" y="316" width="1000" height="140" rx="12"/>
+    <text class="lane" x="44" y="334">DOMAIN MODULES (inside Express: routes → controller → service → model)</text>
+    <g>
+      <rect class="b mod" x="44" y="344" width="182" height="46" rx="8"/><text class="t" x="135" y="364" text-anchor="middle">Auth &amp; Users</text><text class="s" x="135" y="380" text-anchor="middle">OTP login · roles</text>
+      <rect class="b mod" x="240" y="344" width="182" height="46" rx="8"/><text class="t" x="331" y="364" text-anchor="middle">Fleet &amp; Inventory</text><text class="s" x="331" y="380" text-anchor="middle">models · vehicles · docs</text>
+      <rect class="b mod" x="436" y="344" width="182" height="46" rx="8"/><text class="t" x="527" y="364" text-anchor="middle">Booking Engine</text><text class="s" x="527" y="380" text-anchor="middle">availability · holds · state</text>
+      <rect class="b mod" x="632" y="344" width="182" height="46" rx="8"/><text class="t" x="723" y="364" text-anchor="middle">Pricing &amp; Coupons</text><text class="s" x="723" y="380" text-anchor="middle">tiers · season · GST</text>
+      <rect class="b mod" x="828" y="344" width="182" height="46" rx="8"/><text class="t" x="919" y="364" text-anchor="middle">Payments</text><text class="s" x="919" y="380" text-anchor="middle">Razorpay · refunds</text>
+      <rect class="b mod" x="44" y="400" width="182" height="46" rx="8"/><text class="t" x="135" y="420" text-anchor="middle">KYC &amp; Handover</text><text class="s" x="135" y="436" text-anchor="middle">DL · photos · e-sign</text>
+      <rect class="b mod" x="240" y="400" width="182" height="46" rx="8"/><text class="t" x="331" y="420" text-anchor="middle">Investor Ledger</text><text class="s" x="331" y="436" text-anchor="middle">schedule · statements</text>
+      <rect class="b mod" x="436" y="400" width="182" height="46" rx="8"/><text class="t" x="527" y="420" text-anchor="middle">Admin &amp; Reports</text><text class="s" x="527" y="436" text-anchor="middle">utilisation · P&amp;L</text>
+      <rect class="b mod" x="632" y="400" width="182" height="46" rx="8"/><text class="t" x="723" y="420" text-anchor="middle">Notifications</text><text class="s" x="723" y="436" text-anchor="middle">WhatsApp · SMS · email</text>
+      <rect class="b mod" x="828" y="400" width="182" height="46" rx="8"/><text class="t" x="919" y="420" text-anchor="middle">Content &amp; Marketing</text><text class="s" x="919" y="436" text-anchor="middle">routes · partners · referrals</text>
+    </g>
+
+    <line x1="190" y1="456" x2="190" y2="494" marker-end="url(#ah)"/>
+    <line x1="460" y1="456" x2="460" y2="494" marker-end="url(#ah)"/>
+    <line x1="910" y1="456" x2="910" y2="494" marker-end="url(#ah)"/>
+
+    <text class="lane" x="40" y="490">DATA &amp; ASYNC</text>
+    <rect class="b data" x="40" y="496" width="300" height="62" rx="10"/><text class="t" x="190" y="520" text-anchor="middle">PostgreSQL 16  (via Sequelize)</text><text class="s" x="190" y="538" text-anchor="middle">source of truth · btree_gist exclusion · PITR backups</text>
+    <rect class="b data" x="360" y="496" width="200" height="62" rx="10"/><text class="t" x="460" y="520" text-anchor="middle">Redis</text><text class="s" x="460" y="538" text-anchor="middle">cache · rate-limit · BullMQ</text>
+    <rect class="b data" x="580" y="496" width="200" height="62" rx="10"/><text class="t" x="680" y="520" text-anchor="middle">Worker process</text><text class="s" x="680" y="538" text-anchor="middle">hold expiry · reminders · PDFs</text>
+    <rect class="b data" x="800" y="496" width="220" height="62" rx="10"/><text class="t" x="910" y="520" text-anchor="middle">Object storage (S3)</text><text class="s" x="910" y="538" text-anchor="middle">KYC docs · photos · invoices</text>
+    <line x1="560" y1="527" x2="577" y2="527" marker-end="url(#ah)" marker-start="url(#ah)"/>
+
+    <text class="lane" x="40" y="590">EXTERNAL SERVICES</text>
+    <rect class="b ext" x="40" y="598" width="980" height="46" rx="10"/>
+    <text class="t" x="530" y="619" text-anchor="middle">Razorpay (UPI · cards · refunds · webhooks)  ·  WhatsApp Business API  ·  MSG91 OTP/SMS  ·  AWS SES</text>
+    <text class="s" x="530" y="635" text-anchor="middle">Google Maps (locations, routes)  ·  KYC / DL verification API  ·  e-sign provider (Phase 2)  ·  Sentry · uptime monitor</text>
+    <path class="arrow dash" d="M1030 386 H1046 V620 H1022" marker-end="url(#ah)"/>
+  </svg>
+  </div>
+
+  <h3>Why this shape</h3>
+  <div class="grid g2">
+    <div class="card"><h4>Next.js renders, Express decides</h4><p class="vmeta">Next.js handles SEO pages, layouts and UI only. Every business rule (price, availability, refunds, investor maths) runs in Express. The mobile app and the website then always show the same numbers.</p></div>
+    <div class="card"><h4>PostgreSQL blocks double bookings</h4><p class="vmeta">An <code>EXCLUDE USING gist</code> constraint on <code>(vehicle_id, booking period)</code> rejects overlapping active bookings at the database level, even if two requests arrive in the same millisecond.</p></div>
+    <div class="card"><h4>Work that can wait goes to a queue</h4><p class="vmeta">Releasing unpaid holds after 15 minutes, WhatsApp confirmations, return reminders, invoice PDFs and repayment-due alerts run in a BullMQ worker, so API responses stay fast.</p></div>
+    <div class="card"><h4>One shared package</h4><p class="vmeta"><code>packages/shared</code> holds the Zod schemas, enums and pricing formula. The web app, API and mobile app import the same code, so validation never drifts apart.</p></div>
+  </div>
+
+  <h3>Booking sequence (happy path)</h3>
+  <ol class="flow">
+    <li>The customer picks a location and dates. Next.js calls <code>GET /availability</code>, and the API returns models with free-unit counts and a priced quote.</li>
+    <li>The customer taps <b>Book</b>. <code>POST /bookings</code> opens a DB transaction, locks one free vehicle with <code>FOR UPDATE SKIP LOCKED</code>, and inserts the booking as <span class="pill yellow">PENDING_PAYMENT</span> with a 15-minute hold.</li>
+    <li>The API creates a Razorpay order (rental + deposit) with an idempotency key and returns the <code>order_id</code> to the client.</li>
+    <li>The customer pays through Razorpay Checkout (UPI or card). Razorpay sends a <code>payment.captured</code> webhook, which the API verifies with an HMAC signature.</li>
+    <li>The booking moves to <span class="pill green">CONFIRMED</span>, a payment row is written, and the worker sends the WhatsApp confirmation and invoice PDF.</li>
+    <li>At pickup, staff run the digital handover (licence check, photos, odometer, e-signed agreement), and the booking becomes <span class="pill blue">ONGOING</span>.</li>
+    <li>At return: inspection, extra-km and late fees, then <span class="pill">COMPLETED</span> and the deposit refund through the Razorpay refund API.</li>
+  </ol>
+</section>
+
+<!-- ================= 03 CODE ARCH ================= -->
+<section id="code" hidden>
+  <div class="eyebrow">Code-level architecture</div>
+  <h2>Layers, rules and key modules</h2>
+  <p class="lede">Each request passes through the same layers. Each layer has one job and only talks to the layer below it. This keeps the code testable and lets a new developer find any rule in under a minute.</p>
+
+  <div class="layers">
+    <div class="layer l1"><div class="ln">Presentation<small>apps/web (Next.js)</small></div><div class="chips"><span class="chip">app/ routes (Server Components)</span><span class="chip">Client Components for forms</span><span class="chip">react-hook-form + Zod</span><span class="chip">TanStack Query</span><span class="chip">lib/api-client.ts</span></div></div>
+    <div class="layer l2"><div class="ln">HTTP edge<small>Express app + middleware</small></div><div class="chips"><span class="chip">helmet</span><span class="chip">cors (allow-list)</span><span class="chip">express-rate-limit (Redis)</span><span class="chip">requestId</span><span class="chip">authenticate</span><span class="chip">authorize(role)</span><span class="chip">validate(schema)</span></div></div>
+    <div class="layer l3"><div class="ln">Controller<small>*.controller.ts</small></div><div class="chips"><span class="chip">reads req, calls service, shapes res</span><span class="chip">no SQL, no business rules</span></div></div>
+    <div class="layer l4"><div class="ln">Service<small>*.service.ts</small></div><div class="chips"><span class="chip">business rules</span><span class="chip">owns transactions</span><span class="chip">calls other services</span><span class="chip">emits queue jobs</span><span class="chip">throws AppError</span></div></div>
+    <div class="layer l5"><div class="ln">Data<small>Sequelize models → PostgreSQL</small></div><div class="chips"><span class="chip">models/ + associations</span><span class="chip">migrations/ (only way to change schema)</span><span class="chip">seeders/</span><span class="chip">raw SQL only for range locks</span></div></div>
+  </div>
+
+  <h3>Engineering rules</h3>
+  <div class="grid g2">
+    <div class="card"><ul class="ticks">
+      <li><b>Money is stored as integer paise</b> (<code>BIGINT</code>). No floats in the database. ₹649 is stored as <code>64900</code>.</li>
+      <li><b>Times are <code>timestamptz</code> in UTC</b> and shown in <code>Asia/Kolkata</code> in the UI.</li>
+      <li><b>Every write that moves money</b> takes an <code>Idempotency-Key</code> header and is logged in <code>audit_logs</code>.</li>
+      <li><b>Schema changes only through migrations</b>. Never run <code>sequelize.sync()</code> in production.</li>
+    </ul></div>
+    <div class="card"><ul class="ticks">
+      <li><b>Controllers never import models.</b> Services never read <code>req</code> or <code>res</code>.</li>
+      <li><b>One error type</b> (<code>AppError(status, code, message)</code>) and one error middleware that returns <code>{ error: { code, message } }</code>.</li>
+      <li><b>KYC files are private in S3</b>, uploaded via pre-signed URLs and read through 5-minute signed links. Only the last 4 digits of Aadhaar are kept.</li>
+      <li><b>Webhooks are verified</b> with an HMAC signature and processed once, keyed by event id.</li>
+    </ul></div>
+  </div>
+
+  <h3>Booking state machine</h3>
+  <div class="card">
+    <div class="states">
+      <span class="pill yellow">PENDING_PAYMENT</span><span class="arr">→</span>
+      <span class="pill green">CONFIRMED</span><span class="arr">→</span>
+      <span class="pill blue">ONGOING</span><span class="arr">→</span>
+      <span class="pill">COMPLETED</span><span class="arr">→</span>
+      <span class="pill green">DEPOSIT_SETTLED</span>
+    </div>
+    <p class="vmeta" style="margin:10px 0 0">Side exits: <span class="pill red">EXPIRED</span> (hold not paid within 15 min) · <span class="pill red">CANCELLED</span> (by customer or admin, refund by policy) · <span class="pill yellow">EXTENDED</span> (new end time, re-checked against the exclusion constraint). Transitions are defined in <code>booking.state.ts</code>; any transition not listed there throws <code>409 INVALID_TRANSITION</code>.</p>
+  </div>
+
+  <h3>Key code</h3>
+  <p class="vmeta">These are trimmed, compile-ready skeletons showing the patterns to follow. The full modules follow the same shape.</p>
+
+  <div class="codeblock"><div class="fname">apps/api/src/db/migrations/20261020-create-bookings.js</div><pre data-src="s-migration"></pre></div>
+  <div class="codeblock"><div class="fname">apps/api/src/db/models/booking.model.ts</div><pre data-src="s-model"></pre></div>
+  <div class="codeblock"><div class="fname">apps/api/src/modules/booking/booking.service.ts</div><pre data-src="s-service"></pre></div>
+  <div class="codeblock"><div class="fname">apps/api/src/modules/booking/booking.routes.ts  +  booking.controller.ts</div><pre data-src="s-routes"></pre></div>
+  <div class="codeblock"><div class="fname">packages/shared/src/pricing.ts  (used by API, web and mobile)</div><pre data-src="s-pricing"></pre></div>
+  <div class="codeblock"><div class="fname">apps/api/src/modules/investor/amortization.ts</div><pre data-src="s-amort"></pre></div>
+  <div class="codeblock"><div class="fname">apps/api/src/middleware/errorHandler.ts  +  app.ts</div><pre data-src="s-app"></pre></div>
+  <div class="codeblock"><div class="fname">apps/web/app/(public)/fleet/page.tsx</div><pre data-src="s-next"></pre></div>
+</section>
+
+<!-- ================= 04 DATA ================= -->
+<section id="data" hidden>
+  <div class="eyebrow">PostgreSQL schema</div>
+  <h2>Data model</h2>
+  <p class="lede">There are 17 tables in 5 groups. Primary keys are UUIDs, money columns end in <code>_paise</code>, and every table has <code>created_at</code> and <code>updated_at</code> (omitted below). <span style="color:var(--accent)">Orange</span> marks a primary key and <span style="color:var(--info)">blue</span> a foreign key.</p>
+  <div id="erd"></div>
+
+  <h3>Relationships</h3>
+  <div class="card"><ul class="ticks mono" style="font-size:.82rem">
+    <li>vehicle_models 1 ── * vehicles 1 ── * bookings</li>
+    <li>users 1 ── * bookings 1 ── * payments · handovers (pickup, return)</li>
+    <li>users 1 ── * customer_documents (DL, ID)</li>
+    <li>vehicles 1 ── * maintenance_records · vehicle_documents (RC, insurance, permit, PUC)</li>
+    <li>users 1 ── 1 investors 1 ── * investments 1 ── * repayment_schedules</li>
+    <li>locations 1 ── * vehicles (home) · bookings (pickup / return)</li>
+  </ul></div>
+
+  <h3>Key indexes and constraints</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Table</th><th>Index / constraint</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">bookings</td><td class="mono">EXCLUDE gist (vehicle_id =, tstzrange(start_at,end_at) &amp;&amp;) WHERE active</td><td>A vehicle can never be double-booked</td></tr>
+      <tr><td class="mono">bookings</td><td class="mono">(status, hold_expires_at)</td><td>Hold-expiry worker scan</td></tr>
+      <tr><td class="mono">bookings</td><td class="mono">UNIQUE(code)</td><td>Short human code, e.g. VR-24K9Q</td></tr>
+      <tr><td class="mono">vehicles</td><td class="mono">UNIQUE(registration_no)</td><td>One record per physical vehicle</td></tr>
+      <tr><td class="mono">payments</td><td class="mono">UNIQUE(provider_payment_id), UNIQUE(idempotency_key)</td><td>Webhooks and retries are safe to repeat</td></tr>
+      <tr><td class="mono">vehicle_documents</td><td class="mono">(expires_on)</td><td>Daily alert for insurance, permit and PUC renewals</td></tr>
+      <tr><td class="mono">repayment_schedules</td><td class="mono">UNIQUE(investment_id, installment_no), (due_date, status)</td><td>Due-date reminders and investor statements</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================= 05 API ================= -->
+<section id="api" hidden>
+  <div class="eyebrow">REST · JSON · /api/v1</div>
+  <h2>API surface</h2>
+  <p class="lede">The API is documented with OpenAPI, generated from the Zod schemas, and served at <code>/api/docs</code>. Auth is <code>public</code>, <code>customer</code>, <code>staff</code>, <code>admin</code> or <code>investor</code>, enforced by <code>authorize()</code>.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Method</th><th>Path</th><th>Auth</th><th>Purpose</th></tr></thead>
+    <tbody id="apiTable"></tbody>
+  </table></div>
+  <h3>Response conventions</h3>
+  <div class="grid g2">
+    <div class="codeblock" style="margin:0"><div class="fname">200 / 201</div><pre data-src="s-resp-ok"></pre></div>
+    <div class="codeblock" style="margin:0"><div class="fname">4xx / 5xx</div><pre data-src="s-resp-err"></pre></div>
+  </div>
+</section>
+
+<!-- ================= 06 FOLDERS ================= -->
+<section id="folders" hidden>
+  <div class="eyebrow">Monorepo</div>
+  <h2>Folder structure</h2>
+  <p class="lede">One Git repo with pnpm workspaces and Turborepo. <code>apps/web</code> is Next.js, <code>apps/api</code> is Express + Sequelize, <code>apps/mobile</code> arrives in Phase 3, and <code>packages/shared</code> is imported by all of them.</p>
+  <div class="grid g2" style="align-items:start">
+    <div><h4>Root &amp; frontend</h4><pre class="tree" data-src="t-root"></pre></div>
+    <div><h4>Backend (Express + Sequelize)</h4><pre class="tree" data-src="t-api"></pre></div>
+  </div>
+  <h3>Module anatomy (same for every domain)</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>File</th><th>Responsibility</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">booking.routes.ts</td><td>URL → middleware chain → controller method</td></tr>
+      <tr><td class="mono">booking.controller.ts</td><td>Parse the validated input, call the service, send the response</td></tr>
+      <tr><td class="mono">booking.service.ts</td><td>Business rules and transactions; the only file that writes bookings</td></tr>
+      <tr><td class="mono">booking.schema.ts</td><td>Zod schemas, re-exported from <code>packages/shared</code></td></tr>
+      <tr><td class="mono">booking.state.ts</td><td>Allowed status transitions</td></tr>
+      <tr><td class="mono">booking.jobs.ts</td><td>Queue producers (hold expiry, reminders)</td></tr>
+      <tr><td class="mono">__tests__/</td><td>Vitest unit tests for the service and Supertest integration tests against a test Postgres</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Environment variables</h3>
+  <div class="codeblock"><div class="fname">apps/api/.env.example</div><pre data-src="s-env"></pre></div>
+</section>
+
+<!-- ================= 07 INFRA ================= -->
+<section id="infra" hidden>
+  <div class="eyebrow">Deployment</div>
+  <h2>Infrastructure &amp; roadmap</h2>
+  <div class="grid g2">
+    <div class="card">
+      <h4>Environments</h4>
+      <ul class="ticks">
+        <li><b>Local:</b> <code>docker compose up</code> starts Postgres 16, Redis and Mailpit; <code>pnpm dev</code> runs web, api and worker with hot reload.</li>
+        <li><b>Staging:</b> deployed automatically on merge to <code>main</code>, with seeded demo data and Razorpay test keys.</li>
+        <li><b>Production:</b> deployed from a tagged release after migrations run.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Recommended hosting (India region)</h4>
+      <ul class="ticks">
+        <li><b>Web:</b> Vercel (Mumbai edge) or the same VM as the API</li>
+        <li><b>API + worker:</b> Docker on AWS EC2 / Lightsail in ap-south-1, behind Nginx</li>
+        <li><b>Postgres:</b> AWS RDS for PostgreSQL 16 in ap-south-1, daily snapshots + point-in-time recovery</li>
+        <li><b>Redis:</b> ElastiCache or a Redis container · <b>Files:</b> S3 ap-south-1 (private)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>CI/CD (GitHub Actions)</h4>
+      <ul class="ticks">
+        <li>On PR: lint, typecheck, Vitest, API integration tests on a Postgres service container</li>
+        <li>On main: build Docker images, push to GHCR or ECR, run <code>sequelize db:migrate</code>, roll out</li>
+        <li>Tracks migrations with the default <code>SequelizeMeta</code> table</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Observability &amp; security</h4>
+      <ul class="ticks">
+        <li>Sentry (web + api), pino JSON logs, uptime checks on <code>/health</code></li>
+        <li>OTP login, 15-minute access JWT + rotating refresh token in an httpOnly cookie</li>
+        <li>RBAC on every admin route; <code>audit_logs</code> for fleet, money and KYC actions</li>
+        <li>Secrets in AWS SSM or GitHub Environments, never in the repo</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Launch roadmap</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Phase</th><th>Scope</th><th>Modules built</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill green">1 · Website MVP</span></td><td>Responsive fleet catalogue, booking calendar, pricing, WhatsApp enquiry, Razorpay, investor calculator (read-only)</td><td class="mono">auth, fleet, booking, pricing, payment, content, investor/calculate</td></tr>
+      <tr><td><span class="pill blue">2 · Operations</span></td><td>Admin dashboard, document verification, digital agreements, maintenance scheduling, notifications</td><td class="mono">admin, kyc, handover, maintenance, notification, worker</td></tr>
+      <tr><td><span class="pill orange">3 · Mobile apps</span></td><td>iOS and Android booking, accounts, history, support, push notifications</td><td class="mono">apps/mobile (Expo) + same API, push tokens</td></tr>
+      <tr><td><span class="pill yellow">4 · Investor portal</span></td><td>Onboarding, signed agreements, statements, reconciliation, reporting. <b>Only after legal and CA sign-off.</b></td><td class="mono">investor ledger, statements, admin repayments</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================= 08 PROTOTYPE ================= -->
+<section id="prototype" hidden>
+  <div class="eyebrow">Clickable prototype</div>
+  <h2>Working prototype</h2>
+  <p class="lede">This runs entirely in your browser. It uses the same availability check, pricing tiers, booking rules and investor formula as the planned API, with 30 vehicles and simulated bookings. Your bookings are saved in this browser only, and payments are simulated.</p>
+
+  <div class="proto-frame">
+    <div class="proto-bar">
+      <span style="display:flex;gap:5px"><i style="width:10px;height:10px;border-radius:50%;background:#e0655b;display:block"></i><i style="width:10px;height:10px;border-radius:50%;background:#e8b84a;display:block"></i><i style="width:10px;height:10px;border-radius:50%;background:#5bbf6a;display:block"></i></span>
+      <span class="url" id="pUrl">valleyride.in/</span>
+      <button class="btn ghost sm" id="resetDemo" type="button">Reset demo data</button>
+    </div>
+    <div class="ptabs" role="tablist">
+      <button class="ptab" data-p="home" role="tab">Home &amp; booking</button>
+      <button class="ptab" data-p="mine" role="tab">My bookings <span id="mineCount"></span></button>
+      <button class="ptab" data-p="invest" role="tab">Valley Ride Capital</button>
+      <button class="ptab" data-p="admin" role="tab">Admin dashboard</button>
+    </div>
+
+    <!-- HOME -->
+    <div class="pview" data-pv="home">
+      <div class="hero">
+        <svg class="mtn" viewBox="0 0 800 300" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 300 L0 170 L110 80 L180 140 L280 40 L380 150 L460 90 L560 170 L650 70 L800 160 L800 300 Z" fill="#2c4f42" opacity=".75"/>
+          <path d="M280 40 L250 70 L270 66 L285 80 L300 60 Z M650 70 L625 95 L645 92 L660 104 L672 88 Z" fill="#f4f1ea" opacity=".9"/>
+          <path d="M0 300 L0 220 L140 160 L260 210 L360 170 L500 230 L620 180 L800 230 L800 300 Z" fill="#1b3a2f"/>
+        </svg>
+        <div class="eyebrow" style="color:#ffd8a8">Dehradun · Mussoorie · Rishikesh</div>
+        <h3>Find your ride into the Himalayas</h3>
+        <p>Scooters for the city, Royal Enfields for the mountains. Real-time availability and transparent pricing, with deposits refunded on return.</p>
+        <form class="book-panel" id="searchForm" novalidate>
+          <label class="f">Pickup location<select id="fPickup"></select></label>
+          <label class="f">Return location<select id="fReturn"></select></label>
+          <label class="f">Pickup date &amp; time<input type="datetime-local" id="fStart" step="1800"></label>
+          <label class="f">Return date &amp; time<input type="datetime-local" id="fEnd" step="1800"></label>
+          <button class="btn" type="submit">Find available rides</button>
+        </form>
+      </div>
+      <div class="msg" id="searchMsg" role="status"></div>
+      <div class="fleet" id="results"></div>
+
+      <div class="sectitle"><h4>Popular routes</h4><span class="vmeta">Ride discovery content (CMS)</span></div>
+      <div class="routes">
+        <div class="route"><b>Dehradun → Mussoorie</b>35 km · 1.5 h · winding climb, Kempty Falls detour<br><span class="pill green" style="margin-top:6px">Hunter 350 · Scram 440</span></div>
+        <div class="route"><b>Dehradun → Rishikesh</b>45 km · 1.25 h · Rajaji forest road<br><span class="pill green" style="margin-top:6px">Activa 125 · Hunter 350</span></div>
+        <div class="route"><b>Sahastradhara loop</b>16 km · 40 min · sulphur springs, easy ride<br><span class="pill green" style="margin-top:6px">Activa 125</span></div>
+        <div class="route"><b>Maldevta &amp; beyond</b>20 km · river valley, gravel sections<br><span class="pill green" style="margin-top:6px">Scram 440 · Himalayan 450</span></div>
+      </div>
+    </div>
+
+    <!-- MY BOOKINGS -->
+    <div class="pview" data-pv="mine" hidden>
+      <div class="sectitle" style="margin-top:0"><h4>My bookings</h4><span class="vmeta">Customer dashboard · <code>GET /bookings</code></span></div>
+      <div id="mineList" class="grid g2"></div>
+    </div>
+
+    <!-- INVESTOR -->
+    <div class="pview" data-pv="invest" hidden>
+      <div class="eyebrow">Valley Ride Capital</div>
+      <h3 style="margin-top:0">Invest in the journey</h3>
+      <p class="vmeta" style="max-width:640px">Fund the expansion of a professionally managed two-wheeler fleet serving travellers and adventure riders across Uttarakhand. The figures below are illustrations only.</p>
+      <div class="grid g2" style="align-items:start">
+        <div class="card" style="display:grid;gap:12px">
+          <label class="f">Investment amount (₹)<input type="number" id="iAmt" min="10000" step="10000" value="250000"></label>
+          <input type="range" id="iAmtR" min="50000" max="1000000" step="10000" value="250000" aria-label="Investment amount slider">
+          <div class="f2">
+            <label class="f">Proposed annual rate (%)<input type="number" id="iRate" min="0" max="40" step="0.5" value="21"></label>
+            <label class="f">Tenure (months)<input type="number" id="iTen" min="3" max="60" step="1" value="18"></label>
+          </div>
+          <label class="f">Repayment structure<select id="iStruct">
+            <option value="amortizing">Equal monthly instalments (principal + interest)</option>
+            <option value="interest_only">Monthly interest only, principal repaid at maturity</option>
+          </select></label>
+          <label class="f">Agreement start date<input type="date" id="iStart"></label>
+        </div>
+        <div class="calc-out">
+          <div style="font-size:.8rem;opacity:.85" id="iLabel">Illustrative monthly instalment</div>
+          <div class="big" id="iEmi">—</div>
+          <div style="font-size:.8rem;opacity:.85;margin-bottom:12px" id="iSub"></div>
+          <div class="kv"><span class="k">Total paid over tenure</span><b id="iTotal"></b></div>
+          <div class="kv"><span class="k">Total interest</span><b id="iInt"></b></div>
+          <div class="kv"><span class="k">Principal returned</span><b id="iPrin"></b></div>
+          <div class="kv"><span class="k">Final payment</span><b id="iLast"></b></div>
+        </div>
+      </div>
+      <div class="note"><b>Illustrative commercial terms only.</b> Returns and repayment of principal are <b>not guaranteed</b>. They depend on the final agreement, the legal structure and the business's ability to pay. The calculation assumes end-of-month payments, a constant monthly rate (annual ÷ 12), and no fees or taxes.</div>
+      <div class="sectitle"><h4>Repayment schedule</h4><span class="vmeta">Admin ledger view · status simulated from due dates</span></div>
+      <div class="scroll"><table>
+        <thead><tr><th>#</th><th>Due date</th><th class="num">Opening</th><th class="num">Interest</th><th class="num">Principal</th><th class="num">Payment</th><th class="num">Closing</th><th>Status</th></tr></thead>
+        <tbody id="iRows"></tbody>
+      </table></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="pview" data-pv="admin" hidden>
+      <div class="grid g4" id="kpis"></div>
+      <div class="sectitle"><h4>Fleet calendar · next 14 days</h4><span class="vmeta">30 vehicles · <code>GET /admin/bookings</code></span></div>
+      <div class="legend"><span><i style="background:var(--brand)"></i>Booked</span><span><i style="background:var(--accent)"></i>Booked through this prototype</span><span><i style="background:repeating-linear-gradient(45deg,var(--danger-soft) 0 3px,var(--danger) 3px 4px)"></i>Maintenance</span><span><i style="background:var(--info-soft);border:1px solid var(--border)"></i>Today</span></div>
+      <div class="scroll card" style="padding:10px"><div class="timeline" id="timeline"></div></div>
+
+      <div class="grid g2" style="margin-top:14px;align-items:start">
+        <div class="card"><h4>Booking value by model</h4><p class="vmeta" style="margin:0 0 6px">Rental after discounts, excluding GST and deposit, all non-cancelled bookings</p><div id="revBars"></div></div>
+        <div class="card"><h4>Upcoming pickups</h4><div id="upcoming"></div></div>
+      </div>
+
+      <div class="sectitle"><h4>Fleet management</h4><span class="vmeta">Toggle maintenance to see availability change on the booking page</span></div>
+      <div class="scroll"><table>
+        <thead><tr><th>Registration</th><th>Model</th><th>Home location</th><th>Status now</th><th>Next booking</th><th></th></tr></thead>
+        <tbody id="fleetRows"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">Valley Ride · architecture and prototype · prices, rates and terms are illustrative and need legal, tax and commercial review before launch.</div></footer>
+
+<dialog id="checkout"></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<!-- ===================== CODE SNIPPETS (text) ===================== -->
+<script type="text/plain" id="s-migration">'use strict';
+/** Creates bookings + the anti-double-booking exclusion constraint. */
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS btree_gist;');
+
+    await queryInterface.createTable('bookings', {
+      id:                 { type: Sequelize.UUID, primaryKey: true, defaultValue: Sequelize.literal('gen_random_uuid()') },
+      code:               { type: Sequelize.STRING(12), allowNull: false, unique: true },
+      user_id:            { type: Sequelize.UUID, allowNull: false, references: { model: 'users', key: 'id' } },
+      vehicle_id:         { type: Sequelize.UUID, allowNull: false, references: { model: 'vehicles', key: 'id' } },
+      vehicle_model_id:   { type: Sequelize.UUID, allowNull: false, references: { model: 'vehicle_models', key: 'id' } },
+      pickup_location_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'locations', key: 'id' } },
+      return_location_id: { type: Sequelize.UUID, allowNull: false, references: { model: 'locations', key: 'id' } },
+      start_at:           { type: Sequelize.DATE, allowNull: false },   // timestamptz
+      end_at:             { type: Sequelize.DATE, allowNull: false },
+      status: {
+        type: Sequelize.ENUM('PENDING_PAYMENT','CONFIRMED','ONGOING','COMPLETED','DEPOSIT_SETTLED','CANCELLED','EXPIRED'),
+        allowNull: false, defaultValue: 'PENDING_PAYMENT',
+      },
+      hold_expires_at:    { type: Sequelize.DATE },
+      billable_days:      { type: Sequelize.INTEGER, allowNull: false },
+      km_included:        { type: Sequelize.INTEGER, allowNull: false },
+      rental_paise:       { type: Sequelize.BIGINT, allowNull: false },
+      discount_paise:     { type: Sequelize.BIGINT, allowNull: false, defaultValue: 0 },
+      fees_paise:         { type: Sequelize.BIGINT, allowNull: false, defaultValue: 0 },
+      tax_paise:          { type: Sequelize.BIGINT, allowNull: false },
+      deposit_paise:      { type: Sequelize.BIGINT, allowNull: false },
+      total_paise:        { type: Sequelize.BIGINT, allowNull: false },
+      coupon_code:        { type: Sequelize.STRING(32) },
+      created_at:         { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('now') },
+      updated_at:         { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('now') },
+    });
+
+    await queryInterface.sequelize.query(`
+      ALTER TABLE bookings
+        ADD CONSTRAINT bookings_period_valid CHECK (end_at > start_at),
+        ADD CONSTRAINT bookings_no_overlap EXCLUDE USING gist (
+          vehicle_id WITH =,
+          tstzrange(start_at, end_at, '[)') WITH &&
+        ) WHERE (status IN ('PENDING_PAYMENT','CONFIRMED','ONGOING'));
+    `);
+    await queryInterface.addIndex('bookings', ['status', 'hold_expires_at']);
+    await queryInterface.addIndex('bookings', ['user_id', 'start_at']);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.dropTable('bookings');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_bookings_status";');
+  },
+};
+</script>
+
+<script type="text/plain" id="s-model">import {
+  DataTypes, Model, Sequelize,
+  InferAttributes, InferCreationAttributes, CreationOptional, ForeignKey,
+} from 'sequelize';
+import type { BookingStatus } from '@valleyride/shared';
+import type { User } from './user.model';
+import type { Vehicle } from './vehicle.model';
+
+export class Booking extends Model<InferAttributes<Booking>, InferCreationAttributes<Booking>> {
+  declare id: CreationOptional<string>;
+  declare code: string;
+  declare userId: ForeignKey<User['id']>;
+  declare vehicleId: ForeignKey<Vehicle['id']>;
+  declare vehicleModelId: string;
+  declare pickupLocationId: string;
+  declare returnLocationId: string;
+  declare startAt: Date;
+  declare endAt: Date;
+  declare status: CreationOptional<BookingStatus>;
+  declare holdExpiresAt: Date | null;
+  declare billableDays: number;
+  declare kmIncluded: number;
+  declare rentalPaise: number;
+  declare discountPaise: CreationOptional<number>;
+  declare feesPaise: CreationOptional<number>;
+  declare taxPaise: number;
+  declare depositPaise: number;
+  declare totalPaise: number;
+  declare couponCode: string | null;
+
+  static initModel(sequelize: Sequelize) {
+    Booking.init({
+      id:               { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+      code:             { type: DataTypes.STRING(12), allowNull: false, unique: true },
+      vehicleModelId:   { type: DataTypes.UUID, allowNull: false },
+      pickupLocationId: { type: DataTypes.UUID, allowNull: false },
+      returnLocationId: { type: DataTypes.UUID, allowNull: false },
+      startAt:          { type: DataTypes.DATE, allowNull: false },
+      endAt:            { type: DataTypes.DATE, allowNull: false },
+      status:           { type: DataTypes.STRING, allowNull: false, defaultValue: 'PENDING_PAYMENT' },
+      holdExpiresAt:    { type: DataTypes.DATE },
+      billableDays:     { type: DataTypes.INTEGER, allowNull: false },
+      kmIncluded:       { type: DataTypes.INTEGER, allowNull: false },
+      rentalPaise:      { type: DataTypes.BIGINT, allowNull: false, get() { return Number(this.getDataValue('rentalPaise')); } },
+      discountPaise:    { type: DataTypes.BIGINT, defaultValue: 0 },
+      feesPaise:        { type: DataTypes.BIGINT, defaultValue: 0 },
+      taxPaise:         { type: DataTypes.BIGINT, allowNull: false },
+      depositPaise:     { type: DataTypes.BIGINT, allowNull: false },
+      totalPaise:       { type: DataTypes.BIGINT, allowNull: false },
+      couponCode:       { type: DataTypes.STRING(32) },
+    }, { sequelize, tableName: 'bookings', underscored: true });
+  }
+
+  static associate(models: any) {
+    Booking.belongsTo(models.User, { foreignKey: 'userId', as: 'customer' });
+    Booking.belongsTo(models.Vehicle, { foreignKey: 'vehicleId', as: 'vehicle' });
+    Booking.belongsTo(models.VehicleModel, { foreignKey: 'vehicleModelId', as: 'model' });
+    Booking.hasMany(models.Payment, { foreignKey: 'bookingId', as: 'payments' });
+    Booking.hasMany(models.Handover, { foreignKey: 'bookingId', as: 'handovers' });
+  }
+}
+</script>
+
+<script type="text/plain" id="s-service">import { QueryTypes, Transaction } from 'sequelize';
+import { addMinutes } from 'date-fns';
+import { sequelize, Booking, VehicleModel, Coupon } from '../../db';
+import { quote, ACTIVE_STATUSES, type CreateBookingInput } from '@valleyride/shared';
+import { AppError } from '../../utils/AppError';
+import { paymentService } from '../payment/payment.service';
+import { bookingJobs } from './booking.jobs';
+import { newBookingCode } from './booking.utils';
+
+const HOLD_MINUTES = 15;
+
+export const bookingService = {
+  /** Free units per model for a window, as used by GET /availability. */
+  async availability(startAt: Date, endAt: Date) {
+    return sequelize.query<{ model_id: string; free: number }>(`
+      SELECT v.vehicle_model_id AS model_id, COUNT(*)::int AS free
+      FROM vehicles v
+      WHERE v.status = 'ACTIVE'
+        AND NOT EXISTS (
+          SELECT 1 FROM bookings b
+          WHERE b.vehicle_id = v.id
+            AND b.status IN (:active)
+            AND tstzrange(b.start_at, b.end_at, '[)') && tstzrange(:startAt, :endAt, '[)')
+        )
+      GROUP BY v.vehicle_model_id`,
+      { replacements: { startAt, endAt, active: ACTIVE_STATUSES }, type: QueryTypes.SELECT });
+  },
+
+  /** Holds one vehicle for 15 min and returns a Razorpay order to pay. */
+  async create(userId: string, input: CreateBookingInput, idempotencyKey: string) {
+    const model = await VehicleModel.findByPk(input.vehicleModelId, { rejectOnEmpty: true });
+    const coupon = input.couponCode ? await Coupon.findValid(input.couponCode) : null;
+    const q = quote(model.toPricing(), input.startAt, input.endAt, {
+      oneWay: input.pickupLocationId !== input.returnLocationId,
+      couponPct: coupon?.percentOff ?? 0,
+    });
+
+    const booking = await sequelize.transaction(
+      { isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED },
+      async (t) => {
+        // Pick the least-used free vehicle and lock it. SKIP LOCKED lets parallel requests pick different units.
+        const [vehicle] = await sequelize.query<{ id: string }>(`
+          SELECT v.id FROM vehicles v
+          WHERE v.vehicle_model_id = :modelId AND v.status = 'ACTIVE'
+            AND NOT EXISTS (
+              SELECT 1 FROM bookings b
+              WHERE b.vehicle_id = v.id AND b.status IN (:active)
+                AND tstzrange(b.start_at, b.end_at, '[)') && tstzrange(:startAt, :endAt, '[)'))
+          ORDER BY v.odometer_km ASC
+          LIMIT 1
+          FOR UPDATE OF v SKIP LOCKED`,
+          { replacements: { modelId: model.id, startAt: input.startAt, endAt: input.endAt, active: ACTIVE_STATUSES },
+            type: QueryTypes.SELECT, transaction: t });
+
+        if (!vehicle) throw new AppError(409, 'NO_AVAILABILITY', 'This model is fully booked for the selected time.');
+
+        // The DB exclusion constraint is the final guard, so a race surfaces as a 409 rather than a double booking.
+        return Booking.create({
+          code: newBookingCode(),
+          userId,
+          vehicleId: vehicle.id,
+          vehicleModelId: model.id,
+          pickupLocationId: input.pickupLocationId,
+          returnLocationId: input.returnLocationId,
+          startAt: input.startAt,
+          endAt: input.endAt,
+          holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
+          billableDays: q.days,
+          kmIncluded: q.kmIncluded,
+          rentalPaise: q.rentalPaise,
+          discountPaise: q.discountPaise,
+          feesPaise: q.feesPaise,
+          taxPaise: q.taxPaise,
+          depositPaise: q.depositPaise,
+          totalPaise: q.payNowPaise,
+          couponCode: coupon?.code ?? null,
+        }, { transaction: t });
+      });
+
+    // Outside the transaction: external calls must never hold DB locks.
+    const order = await paymentService.createOrder(booking, idempotencyKey);
+    await bookingJobs.scheduleHoldExpiry(booking.id, HOLD_MINUTES);
+    return { booking, order };
+  },
+};
+</script>
+
+<script type="text/plain" id="s-routes">// booking.routes.ts
+import { Router } from 'express';
+import { authenticate, authorize } from '../../middleware/auth';
+import { validate } from '../../middleware/validate';
+import { requireIdempotencyKey } from '../../middleware/idempotency';
+import { createBookingSchema, availabilityQuerySchema, cancelBookingSchema } from '@valleyride/shared';
+import * as ctrl from './booking.controller';
+
+export const bookingRouter = Router();
+
+bookingRouter.get('/availability', validate({ query: availabilityQuerySchema }), ctrl.availability);
+bookingRouter.post('/bookings', authenticate, authorize('customer'), requireIdempotencyKey,
+  validate({ body: createBookingSchema }), ctrl.create);
+bookingRouter.get('/bookings', authenticate, ctrl.listMine);
+bookingRouter.get('/bookings/:id', authenticate, ctrl.getOne);
+bookingRouter.post('/bookings/:id/cancel', authenticate, validate({ body: cancelBookingSchema }), ctrl.cancel);
+
+// booking.controller.ts
+import type { Request, Response } from 'express';
+import { bookingService } from './booking.service';
+
+export async function create(req: Request, res: Response) {
+  const { booking, order } = await bookingService.create(req.user!.id, req.body, req.idempotencyKey!);
+  res.status(201).json({ data: { booking: booking.toDTO(), razorpayOrderId: order.id } });
+}
+export async function availability(req: Request, res: Response) {
+  const { startAt, endAt } = req.query as unknown as { startAt: Date; endAt: Date };
+  res.json({ data: await bookingService.availability(startAt, endAt) });
+}
+// (Express 5 forwards rejected promises to the error middleware, so no try/catch is needed.)
+</script>
+
+<script type="text/plain" id="s-pricing">export interface PricingModel {
+  pricePerDayPaise: number; depositPaise: number; kmPerDay: number;
+}
+export interface QuoteOptions { oneWay?: boolean; couponPct?: number }
+
+export const DURATION_TIERS = [            // longest tier first
+  { minDays: 28, pct: 35 },
+  { minDays: 7,  pct: 20 },
+  { minDays: 3,  pct: 10 },
+] as const;
+export const ONE_WAY_FEE_PAISE = 40_000;   // ₹400
+export const GST_PCT = 18;                 // confirm the rate with the CA before launch
+export const MIN_HOURS = 4;
+
+export function quote(m: PricingModel, startAt: Date, endAt: Date, o: QuoteOptions = {}) {
+  const hours = (endAt.getTime() - startAt.getTime()) / 3_600_000;
+  if (hours < MIN_HOURS) throw new Error('MIN_DURATION');
+  const days = Math.max(1, Math.ceil(hours / 24 - 1e-9));
+
+  const rentalPaise   = m.pricePerDayPaise * days;
+  const tierPct       = DURATION_TIERS.find(t => days >= t.minDays)?.pct ?? 0;
+  const tierOff       = Math.round(rentalPaise * tierPct / 100);
+  const couponOff     = Math.round((rentalPaise - tierOff) * (o.couponPct ?? 0) / 100);
+  const discountPaise = tierOff + couponOff;
+  const feesPaise     = o.oneWay ? ONE_WAY_FEE_PAISE : 0;
+  const taxable       = rentalPaise - discountPaise + feesPaise;
+  const taxPaise      = Math.round(taxable * GST_PCT / 100);
+
+  return {
+    days, tierPct, kmIncluded: m.kmPerDay * days,
+    rentalPaise, discountPaise, feesPaise, taxPaise,
+    depositPaise: m.depositPaise,
+    totalPaise: taxable + taxPaise,                     // non-refundable charges
+    payNowPaise: taxable + taxPaise + m.depositPaise,   // charged at checkout
+  };
+}
+</script>
+
+<script type="text/plain" id="s-amort">export type Structure = 'amortizing' | 'interest_only';
+
+export interface ScheduleRow {
+  installmentNo: number; dueDate: Date;
+  openingPaise: number; interestPaise: number; principalPaise: number;
+  paymentPaise: number; closingPaise: number;
+}
+
+/** Nominal annual rate compounded monthly, end-of-month payments.
+ *  2,50,000 @ 21% for 18 months (amortizing) gives an EMI of 16,311. */
+export function buildSchedule(p: {
+  principalPaise: number; annualRatePct: number; months: number; structure: Structure; startDate: Date;
+}): ScheduleRow[] {
+  const r = p.annualRatePct / 1200;
+  const n = p.months;
+  const emi = r === 0 ? p.principalPaise / n
+                      : p.principalPaise * r * (1 + r) ** n / ((1 + r) ** n - 1);
+  const rows: ScheduleRow[] = [];
+  let balance = p.principalPaise;
+
+  for (let i = 1; i <= n; i++) {
+    const interest  = Math.round(balance * r);
+    let principal   = p.structure === 'amortizing' ? Math.round(emi) - interest : 0;
+    if (i === n) principal = balance;                  // last row absorbs rounding
+    const due = new Date(p.startDate); due.setMonth(due.getMonth() + i);
+    rows.push({ installmentNo: i, dueDate: due, openingPaise: balance, interestPaise: interest,
+                principalPaise: principal, paymentPaise: interest + principal, closingPaise: balance - principal });
+    balance -= principal;
+  }
+  return rows;
+}
+</script>
+
+<script type="text/plain" id="s-app">// utils/AppError.ts
+export class AppError extends Error {
+  constructor(public status: number, public code: string, message: string, public details?: unknown) { super(message); }
+}
+
+// middleware/errorHandler.ts
+import type { ErrorRequestHandler } from 'express';
+import { UniqueConstraintError, DatabaseError } from 'sequelize';
+import { ZodError } from 'zod';
+import { logger } from '../utils/logger';
+
+export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  if (err instanceof AppError) return res.status(err.status).json({ error: { code: err.code, message: err.message, details: err.details } });
+  if (err instanceof ZodError) return res.status(422).json({ error: { code: 'VALIDATION', message: 'Invalid input', details: err.flatten() } });
+  // 23P01 = exclusion_violation, which here means a booking overlap that slipped past the availability check
+  if (err instanceof DatabaseError && (err.parent as any)?.code === '23P01')
+    return res.status(409).json({ error: { code: 'NO_AVAILABILITY', message: 'Vehicle was just booked. Please try again.' } });
+  if (err instanceof UniqueConstraintError) return res.status(409).json({ error: { code: 'CONFLICT', message: 'Duplicate request' } });
+  logger.error({ err, reqId: req.id }, 'unhandled');
+  res.status(500).json({ error: { code: 'INTERNAL', message: 'Something went wrong' } });
+};
+
+// app.ts
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { requestId } from './middleware/requestId';
+import { rateLimiter } from './middleware/rateLimit';
+import { apiRouter } from './routes';
+import { paymentWebhookRouter } from './modules/payment/payment.webhook';
+import { env } from './config/env';
+
+export const app = express();
+app.set('trust proxy', 1);
+app.use(helmet());
+app.use(cors({ origin: env.CORS_ORIGINS, credentials: true }));
+app.use('/api/v1/webhooks', paymentWebhookRouter);         // needs the raw body for the HMAC check, so it goes before express.json()
+app.use(express.json({ limit: '1mb' }));
+app.use(cookieParser());
+app.use(requestId);
+app.use('/api/v1', rateLimiter, apiRouter);
+app.get('/health', (_req, res) => res.json({ ok: true }));
+app.use(errorHandler);
+</script>
+
+<script type="text/plain" id="s-next">import { api } from '@/lib/api-client';
+import { VehicleCard } from '@/components/fleet/vehicle-card';
+import type { VehicleModelDTO } from '@valleyride/shared';
+
+export const revalidate = 300;   // ISR: rebuild every 5 minutes; prices change rarely
+
+export const metadata = {
+  title: 'Rent scooters & Royal Enfield bikes in Dehradun | Valley Ride',
+  description: 'Activa 125, Hunter 350, Scram 440 and Himalayan 450 for Mussoorie and Rishikesh rides.',
+};
+
+export default async function FleetPage() {
+  const models = await api.get<VehicleModelDTO[]>('/vehicle-models');
+  return (
+    <main className="container py-10">
+      <h1 className="text-3xl font-semibold">Our fleet</h1>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {models.map((m) => <VehicleCard key={m.id} model={m} />)}
+      </div>
+    </main>
+  );
+}
+</script>
+
+<script type="text/plain" id="s-resp-ok">{
+  "data": {
+    "booking": { "id": "b7e…", "code": "VR-24K9Q", "status": "PENDING_PAYMENT",
+                 "startAt": "2026-10-20T03:30:00Z", "totalPaise": 236040 },
+    "razorpayOrderId": "order_Pq1…"
+  },
+  "meta": { "requestId": "c0a1…" }
+}</script>
+<script type="text/plain" id="s-resp-err">{
+  "error": {
+    "code": "NO_AVAILABILITY",
+    "message": "This model is fully booked for the selected time.",
+    "details": null
+  },
+  "meta": { "requestId": "c0a1…" }
+}</script>
+
+<script type="text/plain" id="s-env">NODE_ENV=development
+PORT=4000
+DATABASE_URL=postgres://valley:valley@localhost:5432/valleyride
+REDIS_URL=redis://localhost:6379
+JWT_ACCESS_SECRET=change-me
+JWT_REFRESH_SECRET=change-me
+CORS_ORIGINS=http://localhost:3000
+RAZORPAY_KEY_ID=rzp_test_xxx
+RAZORPAY_KEY_SECRET=xxx
+RAZORPAY_WEBHOOK_SECRET=xxx
+MSG91_AUTH_KEY=xxx
+WHATSAPP_API_TOKEN=xxx
+AWS_REGION=ap-south-1
+S3_BUCKET_PRIVATE=valleyride-kyc-prod
+SENTRY_DSN=
+TZ_DISPLAY=Asia/Kolkata</script>
+
+<script type="text/plain" id="t-root">valley-ride/
+├── apps/
+│   ├── web/                          # Next.js (App Router, TypeScript)
+│   │   ├── app/
+│   │   │   ├── (public)/
+│   │   │   │   ├── page.tsx                  # Home + Find Your Ride
+│   │   │   │   ├── fleet/page.tsx
+│   │   │   │   ├── fleet/[slug]/page.tsx
+│   │   │   │   ├── routes/page.tsx           # Ride discovery
+│   │   │   │   ├── routes/[slug]/page.tsx
+│   │   │   │   ├── book/page.tsx             # search results
+│   │   │   │   └── checkout/[bookingId]/page.tsx
+│   │   │   ├── (auth)/login/page.tsx         # phone OTP
+│   │   │   ├── account/
+│   │   │   │   ├── bookings/page.tsx
+│   │   │   │   ├── bookings/[id]/page.tsx    # invoice, deposit, extend
+│   │   │   │   └── documents/page.tsx        # DL / ID upload
+│   │   │   ├── invest/
+│   │   │   │   ├── page.tsx                  # Valley Ride Capital + calculator
+│   │   │   │   └── portal/…                  # Phase 4
+│   │   │   ├── admin/
+│   │   │   │   ├── layout.tsx                # role guard + sidebar
+│   │   │   │   ├── page.tsx                  # KPIs
+│   │   │   │   ├── fleet/ bookings/ customers/
+│   │   │   │   ├── handover/[bookingId]/
+│   │   │   │   ├── finance/ investors/ marketing/
+│   │   │   ├── layout.tsx
+│   │   │   ├── sitemap.ts  robots.ts
+│   │   │   └── not-found.tsx
+│   │   ├── components/
+│   │   │   ├── ui/                   # shadcn/ui primitives
+│   │   │   ├── booking/  fleet/  investor/  admin/  layout/
+│   │   ├── lib/
+│   │   │   ├── api-client.ts         # fetch wrapper, cookies, errors
+│   │   │   ├── auth.ts  format.ts  razorpay.ts
+│   │   ├── hooks/
+│   │   ├── middleware.ts             # protects /account, /admin
+│   │   ├── public/images/
+│   │   ├── tailwind.config.ts
+│   │   └── next.config.mjs
+│   ├── api/                          # Express + Sequelize (see right)
+│   └── mobile/                       # Expo React Native (Phase 3)
+├── packages/
+│   ├── shared/                       # zod schemas, enums, pricing.ts, DTO types
+│   │   └── src/{schemas,constants,pricing.ts,index.ts}
+│   ├── eslint-config/
+│   └── tsconfig/
+├── infra/
+│   ├── docker-compose.yml            # postgres, redis, mailpit
+│   ├── docker/{api.Dockerfile,web.Dockerfile}
+│   └── nginx/valleyride.conf
+├── .github/workflows/{ci.yml,deploy.yml}
+├── turbo.json
+├── pnpm-workspace.yaml
+└── package.json</script>
+
+<script type="text/plain" id="t-api">apps/api/
+├── src/
+│   ├── server.ts                 # http listen + graceful shutdown
+│   ├── app.ts                    # express app, middleware, routers
+│   ├── worker.ts                 # BullMQ worker entry
+│   ├── routes.ts                 # mounts every module router
+│   ├── config/
+│   │   ├── env.ts                # zod-validated process.env
+│   │   └── database.cjs          # sequelize-cli config
+│   ├── db/
+│   │   ├── index.ts              # Sequelize instance + model registry
+│   │   ├── models/
+│   │   │   ├── user.model.ts
+│   │   │   ├── location.model.ts
+│   │   │   ├── vehicle-model.model.ts
+│   │   │   ├── vehicle.model.ts
+│   │   │   ├── vehicle-document.model.ts
+│   │   │   ├── maintenance-record.model.ts
+│   │   │   ├── booking.model.ts
+│   │   │   ├── payment.model.ts
+│   │   │   ├── handover.model.ts
+│   │   │   ├── customer-document.model.ts
+│   │   │   ├── pricing-rule.model.ts
+│   │   │   ├── coupon.model.ts
+│   │   │   ├── investor.model.ts
+│   │   │   ├── investment.model.ts
+│   │   │   ├── repayment-schedule.model.ts
+│   │   │   ├── route-guide.model.ts
+│   │   │   └── audit-log.model.ts
+│   │   ├── migrations/           # timestamped, never edited after merge
+│   │   └── seeders/              # locations, 4 models, 30 vehicles
+│   ├── modules/
+│   │   ├── auth/       auth.{routes,controller,service,schema}.ts  otp.ts  tokens.ts
+│   │   ├── fleet/      fleet.{routes,controller,service}.ts
+│   │   ├── booking/    booking.{routes,controller,service,state,jobs,utils}.ts
+│   │   ├── pricing/    pricing.service.ts  coupon.service.ts
+│   │   ├── payment/    razorpay.client.ts  payment.service.ts  payment.webhook.ts
+│   │   ├── kyc/        kyc.{routes,controller,service}.ts  s3-presign.ts
+│   │   ├── handover/   handover.{routes,controller,service}.ts  agreement-pdf.ts
+│   │   ├── investor/   investor.{routes,controller,service}.ts  amortization.ts
+│   │   ├── admin/      reports.service.ts  admin.routes.ts
+│   │   ├── notification/ whatsapp.ts  sms.ts  email.ts  templates/
+│   │   └── content/    routes-guide.{routes,service}.ts
+│   ├── middleware/
+│   │   ├── auth.ts               # authenticate + authorize(role)
+│   │   ├── validate.ts           # zod → req.body/query/params
+│   │   ├── idempotency.ts
+│   │   ├── rateLimit.ts  requestId.ts  errorHandler.ts
+│   ├── jobs/
+│   │   ├── queue.ts              # BullMQ queues
+│   │   └── processors/{holdExpiry,returnReminder,invoicePdf,docExpiry,repaymentDue}.ts
+│   └── utils/  AppError.ts  logger.ts  money.ts  dates.ts
+├── tests/
+│   ├── unit/                     # pricing, amortization, state machine
+│   └── integration/              # supertest + real postgres
+├── .sequelizerc
+├── .env.example
+├── tsconfig.json
+└── package.json</script>
+
+<script>
+(function(){
+'use strict';
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const inr = n => fmt.format(Math.round(n));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- theme ---------- */
+$('#themeBtn').addEventListener('click', () => {
+  const root = document.documentElement;
+  const isDark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = isDark ? 'light' : 'dark';
+  try { localStorage.setItem('vr-theme', root.dataset.theme); } catch (e) {}
+});
+try { const t = localStorage.getItem('vr-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+
+/* ---------- snippets ---------- */
+$$('pre[data-src]').forEach(p => { const s = document.getElementById(p.dataset.src); if (s) p.textContent = s.textContent.replace(/^\n/, ''); });
+
+/* ---------- tabs ---------- */
+const TABS = $$('.tab').map(b => b.dataset.tab);
+function showTab(id) {
+  if (!TABS.includes(id)) id = 'overview';
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === id)));
+  $$('main > section').forEach(s => { s.hidden = s.id !== id; });
+  try { history.replaceState(null, '', '#' + id); } catch (e) {}
+}
+$$('.tab').forEach(b => b.addEventListener('click', () => { showTab(b.dataset.tab); window.scrollTo({ top: 0 }); }));
+showTab((location.hash || '').slice(1));
+
+/* ---------- domain data ---------- */
+const MODELS = [
+  { id: 'activa',    name: 'Honda Activa 125',            short: 'Activa 125',    tag: 'City Explorer',       cat: 'Scooter',    count: 15, price: 649,  deposit: 2000, km: 120, extra: 4, use: 'City rides, couples, students and budget travellers' },
+  { id: 'hunter',    name: 'Royal Enfield Hunter 350',    short: 'Hunter 350',    tag: 'Urban Cruiser',       cat: 'Motorcycle', count: 5,  price: 1199, deposit: 5000, km: 200, extra: 6, use: 'City exploration, Mussoorie rides and weekend trips' },
+  { id: 'scram',     name: 'Royal Enfield Scram 440',     short: 'Scram 440',     tag: 'Adventure Crossover', cat: 'Motorcycle', count: 5,  price: 1799, deposit: 6000, km: 220, extra: 7, use: 'Scenic routes, hill rides and mixed-road touring' },
+  { id: 'himalayan', name: 'Royal Enfield Himalayan 450', short: 'Himalayan 450', tag: 'Mountain Explorer',   cat: 'Adventure',  count: 5,  price: 2199, deposit: 8000, km: 250, extra: 8, use: 'Long-distance Himalayan touring and adventure trips' },
+];
+const MODEL = Object.fromEntries(MODELS.map(m => [m.id, m]));
+const LOCATIONS = [
+  { id: 'ddn-isbt', name: 'Dehradun · ISBT' },
+  { id: 'ddn-rly',  name: 'Dehradun · Railway Station' },
+  { id: 'mus',      name: 'Mussoorie · Library Chowk' },
+  { id: 'rsk',      name: 'Rishikesh · Tapovan' },
+];
+const LOC = Object.fromEntries(LOCATIONS.map(l => [l.id, l]));
+const VEHICLES = [];
+(function () {
+  let n = 0;
+  MODELS.forEach(m => {
+    for (let i = 1; i <= m.count; i++) {
+      VEHICLES.push({ id: m.id + '-' + i, modelId: m.id, reg: 'UK07 ' + (m.id === 'activa' ? 'SC' : 'RE') + ' ' + (4100 + n * 7), loc: LOCATIONS[n % 4].id });
+      n++;
+    }
+  });
+})();
+const VEH = Object.fromEntries(VEHICLES.map(v => [v.id, v]));
+const COUPONS = { WELCOME10: 10, HOSTEL15: 15 };
+const TIERS = [{ min: 28, pct: 35 }, { min: 7, pct: 20 }, { min: 3, pct: 10 }];
+const ONE_WAY_FEE = 400, GST = 18, MIN_HOURS = 4;
+
+/* overview tables */
+$('#fleetTable').innerHTML = MODELS.map(m => `<tr><td><b>${m.name}</b></td><td>${m.tag} · <span class="vmeta">${m.use}</span></td><td class="num">${m.count}</td><td class="num">${inr(m.price)}</td><td class="num">${inr(m.deposit)}</td><td class="num">${m.km}</td></tr>`).join('')
+  + `<tr><td><b>Total</b></td><td></td><td class="num"><b>30</b></td><td></td><td></td><td></td></tr>`;
+
+/* ERD */
+const ERD = [
+  ['Identity', [
+    ['users', [['id','uuid','pk'],['role','enum'],['full_name','varchar'],['phone','varchar(15) uq'],['email','citext'],['phone_verified_at','timestamptz'],['status','enum']]],
+    ['refresh_tokens', [['id','uuid','pk'],['user_id','uuid','fk'],['token_hash','char(64)'],['expires_at','timestamptz'],['revoked_at','timestamptz']]],
+    ['customer_documents', [['id','uuid','pk'],['user_id','uuid','fk'],['type','enum DL|AADHAAR|PASSPORT'],['number_masked','varchar'],['file_key','text'],['status','enum'],['verified_by','uuid','fk'],['verified_at','timestamptz']]],
+  ]],
+  ['Fleet', [
+    ['locations', [['id','uuid','pk'],['name','varchar'],['city','varchar'],['address','text'],['lat / lng','numeric'],['open_hours','jsonb'],['is_active','bool']]],
+    ['vehicle_models', [['id','uuid','pk'],['slug','varchar uq'],['name','varchar'],['category','enum'],['engine_cc','int'],['price_day_paise','bigint'],['deposit_paise','bigint'],['km_per_day','int'],['extra_km_paise','bigint'],['images','jsonb']]],
+    ['vehicles', [['id','uuid','pk'],['vehicle_model_id','uuid','fk'],['registration_no','varchar uq'],['home_location_id','uuid','fk'],['status','enum ACTIVE|MAINT|RETIRED'],['odometer_km','int'],['purchased_on','date']]],
+    ['vehicle_documents', [['id','uuid','pk'],['vehicle_id','uuid','fk'],['type','enum RC|INSURANCE|PERMIT|PUC'],['number','varchar'],['expires_on','date'],['file_key','text']]],
+    ['maintenance_records', [['id','uuid','pk'],['vehicle_id','uuid','fk'],['type','enum'],['odometer_km','int'],['cost_paise','bigint'],['performed_on','date'],['notes','text']]],
+  ]],
+  ['Bookings & money', [
+    ['bookings', [['id','uuid','pk'],['code','varchar uq'],['user_id','uuid','fk'],['vehicle_id','uuid','fk'],['pickup_location_id','uuid','fk'],['return_location_id','uuid','fk'],['start_at / end_at','timestamptz'],['status','enum'],['hold_expires_at','timestamptz'],['rental / discount / fees / tax / deposit / total _paise','bigint'],['km_included','int']]],
+    ['payments', [['id','uuid','pk'],['booking_id','uuid','fk'],['kind','enum RENTAL|DEPOSIT|EXTRA|REFUND'],['provider_order_id','varchar'],['provider_payment_id','varchar uq'],['amount_paise','bigint'],['status','enum'],['idempotency_key','varchar uq'],['raw','jsonb']]],
+    ['handovers', [['id','uuid','pk'],['booking_id','uuid','fk'],['type','enum PICKUP|RETURN'],['odometer_km','int'],['fuel_level','smallint'],['photos','jsonb'],['damage_notes','text'],['agreement_file_key','text'],['staff_id','uuid','fk']]],
+    ['pricing_rules', [['id','uuid','pk'],['vehicle_model_id','uuid','fk'],['min_days','int'],['discount_pct','numeric(5,2)'],['season_from / to','date'],['multiplier','numeric(4,2)']]],
+    ['coupons', [['code','varchar','pk'],['percent_off','numeric'],['max_uses','int'],['used','int'],['valid_till','timestamptz'],['partner','varchar']]],
+  ]],
+  ['Investor', [
+    ['investors', [['id','uuid','pk'],['user_id','uuid','fk'],['pan_masked','varchar'],['bank_account_ref','varchar'],['kyc_status','enum']]],
+    ['investments', [['id','uuid','pk'],['investor_id','uuid','fk'],['principal_paise','bigint'],['annual_rate_pct','numeric(5,2)'],['tenure_months','int'],['structure','enum'],['start_date','date'],['agreement_file_key','text'],['status','enum']]],
+    ['repayment_schedules', [['id','uuid','pk'],['investment_id','uuid','fk'],['installment_no','int'],['due_date','date'],['principal_paise','bigint'],['interest_paise','bigint'],['status','enum DUE|PAID|LATE'],['paid_at','timestamptz'],['txn_ref','varchar']]],
+  ]],
+  ['Platform', [
+    ['route_guides', [['id','uuid','pk'],['slug','varchar uq'],['title','varchar'],['distance_km','int'],['body_md','text'],['recommended_models','uuid[]']]],
+    ['audit_logs', [['id','bigserial','pk'],['actor_id','uuid','fk'],['action','varchar'],['entity / entity_id','varchar'],['diff','jsonb'],['ip','inet']]],
+  ]],
+];
+$('#erd').innerHTML = ERD.map(([group, tables]) => `<h3>${group}</h3><div class="erd">` + tables.map(([t, cols]) =>
+  `<div class="tbl"><h4>${t}<span>${cols.length} cols</span></h4><ul>` + cols.map(([c, ty, k]) => `<li class="${k || ''}"><span class="c">${esc(c)}</span><span class="ty">${esc(ty)}</span></li>`).join('') + '</ul></div>'
+).join('') + '</div>').join('');
+
+/* API */
+const API = [
+  ['POST','/auth/otp/request','public','Send a login OTP by SMS or WhatsApp'],
+  ['POST','/auth/otp/verify','public','Verify the OTP and set access + refresh cookies'],
+  ['POST','/auth/refresh','public','Rotate the refresh token'],
+  ['GET','/me','any','Current user and role'],
+  ['GET','/locations','public','Pickup and return points'],
+  ['GET','/vehicle-models','public','Fleet catalogue with prices'],
+  ['GET','/vehicle-models/:slug','public','Model detail page'],
+  ['GET','/availability?startAt&endAt&pickup','public','Free units per model and a quote'],
+  ['POST','/quotes','public','Price breakdown (tiers, coupon, one-way, GST, deposit)'],
+  ['POST','/bookings','customer','Hold a vehicle (15 min) and return a Razorpay order'],
+  ['GET','/bookings','customer','My bookings'],
+  ['GET','/bookings/:id','customer','Booking detail, invoice, deposit status'],
+  ['POST','/bookings/:id/cancel','customer','Cancel and refund according to policy'],
+  ['POST','/bookings/:id/extend','customer','Extend if the vehicle is free, with a new payment order'],
+  ['POST','/kyc/documents/presign','customer','Pre-signed S3 URL for a DL or ID upload'],
+  ['POST','/webhooks/razorpay','signature','Payment captured, failed or refunded'],
+  ['GET','/routes','public','Ride discovery guides'],
+  ['GET','/admin/vehicles','staff','Fleet list with documents and status'],
+  ['POST','/admin/vehicles','admin','Add a vehicle'],
+  ['PATCH','/admin/vehicles/:id/status','staff','Mark ACTIVE, MAINT or RETIRED'],
+  ['POST','/admin/vehicles/:id/maintenance','staff','Log a service or repair'],
+  ['GET','/admin/bookings?from&to','staff','Pickup and return calendar'],
+  ['POST','/admin/bookings/:id/handover','staff','Pickup: photos, odometer, e-sign'],
+  ['POST','/admin/bookings/:id/return','staff','Return: inspection, extra km, damage'],
+  ['PATCH','/admin/kyc/:docId','staff','Approve or reject a document'],
+  ['GET','/admin/reports/utilisation','admin','Utilisation by vehicle and model'],
+  ['GET','/admin/reports/pnl?month','admin','Revenue, expenses, deposits held'],
+  ['POST','/admin/coupons','admin','Create a partner or referral coupon'],
+  ['POST','/investor/calculate','public','Illustrative schedule (no data stored)'],
+  ['GET','/investor/investments','investor','My investments'],
+  ['GET','/investor/investments/:id/schedule','investor','Repayment schedule and status'],
+  ['GET','/investor/statements/:id.pdf','investor','Downloadable statement'],
+  ['POST','/admin/investments','admin','Record a signed investment'],
+  ['POST','/admin/repayments/:id/mark-paid','admin','Reconcile a transfer'],
+];
+const authPill = a => ({ public: 'blue', customer: 'green', staff: 'orange', admin: 'red', investor: 'yellow' }[a] || '');
+$('#apiTable').innerHTML = API.map(([m, p, a, d]) => `<tr><td class="method m-${m}">${m}</td><td class="mono" style="font-size:.8rem">/api/v1${esc(p)}</td><td><span class="pill ${authPill(a)}">${a}</span></td><td>${esc(d)}</td></tr>`).join('');
+
+/* =================== PROTOTYPE =================== */
+const DAY = 864e5, HOUR = 36e5;
+const startOfDay = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+const addDays = (d, n) => new Date(d.getTime() + n * DAY);
+const toLocalInput = d => { const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+const fmtDT = d => d.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+const fmtD = d => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function newCode(rng) { let s = 'VR-'; for (let i = 0; i < 5; i++) s += CODE_CHARS[Math.floor((rng || Math.random)() * CODE_CHARS.length)]; return s; }
+
+function quote(m, start, end, opts) {
+  opts = opts || {};
+  const hours = (end - start) / HOUR;
+  const days = Math.max(1, Math.ceil(hours / 24 - 1e-9));
+  const rental = m.price * days;
+  const tier = (TIERS.find(t => days >= t.min) || { pct: 0 }).pct;
+  const tierOff = Math.round(rental * tier / 100);
+  const couponPct = COUPONS[(opts.coupon || '').toUpperCase()] || 0;
+  const couponOff = Math.round((rental - tierOff) * couponPct / 100);
+  const fees = opts.oneWay ? ONE_WAY_FEE : 0;
+  const taxable = rental - tierOff - couponOff + fees;
+  const tax = Math.round(taxable * GST / 100);
+  return { days, hours, tier, tierOff, couponPct, couponOff, rental, fees, taxable, tax, total: taxable + tax, deposit: m.deposit, payNow: taxable + tax + m.deposit, km: m.km * days };
+}
+
+const NAMES = ['Aarav S.', 'Isha R.', 'Kabir M.', 'Ananya P.', 'Rohan K.', 'Meera J.', 'Vihaan T.', 'Saanvi D.', 'Arjun N.', 'Diya B.', 'Neel G.', 'Tara V.', 'Dev A.', 'Riya C.'];
+function seed() {
+  const rng = mulberry32(20261014);
+  const today = startOfDay(new Date());
+  const bookings = [];
+  VEHICLES.forEach(v => {
+    const m = MODEL[v.modelId];
+    let cursor = addDays(today, -4);
+    for (let k = 0; k < 4; k++) {
+      const s = addDays(startOfDay(cursor), 1 + Math.floor(rng() * 3));
+      s.setHours(8 + Math.floor(rng() * 4), rng() < .5 ? 0 : 30);
+      const days = 1 + Math.floor(rng() * (v.modelId === 'himalayan' ? 6 : 4));
+      const e = addDays(s, days);
+      cursor = e;
+      if (s > addDays(today, 16)) break;
+      if (rng() < 0.3) continue;
+      const pickup = LOCATIONS[Math.floor(rng() * 4)].id;
+      const ret = rng() < .8 ? pickup : LOCATIONS[Math.floor(rng() * 4)].id;
+      const q = quote(m, s, e, { oneWay: pickup !== ret });
+      bookings.push({ id: 'seed-' + bookings.length, code: newCode(rng), vehicleId: v.id, modelId: v.modelId, customer: NAMES[Math.floor(rng() * NAMES.length)], phone: '', start: s, end: e, pickup, ret, status: 'CONFIRMED', q, source: 'seed', createdAt: addDays(s, -3) });
+    }
+  });
+  return { v: 2, bookings, maint: { 'activa-14': true, 'himalayan-5': true } };
+}
+const STORE = 'valleyride-proto';
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s && s.v === 2 && Array.isArray(s.bookings)) {
+        s.bookings.forEach(b => { b.start = new Date(b.start); b.end = new Date(b.end); b.createdAt = new Date(b.createdAt); });
+        return s;
+      }
+    }
+  } catch (e) {}
+  return seed();
+}
+function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
+let state = load();
+
+const blocking = b => b.status !== 'CANCELLED';
+function effStatus(b) {
+  if (b.status === 'CANCELLED') return 'CANCELLED';
+  const now = Date.now();
+  if (b.end <= now) return 'COMPLETED';
+  if (b.start <= now) return 'ONGOING';
+  return 'CONFIRMED';
+}
+const statusPill = s => `<span class="pill ${({ CONFIRMED: 'green', ONGOING: 'blue', COMPLETED: '', CANCELLED: 'red', MAINTENANCE: 'red', AVAILABLE: 'green', 'ON RENT': 'blue' })[s] || ''}">${s}</span>`;
+function freeVehicles(modelId, start, end) {
+  return VEHICLES.filter(v => v.modelId === modelId && !state.maint[v.id] &&
+    !state.bookings.some(b => b.vehicleId === v.id && blocking(b) && b.start < end && start < b.end));
+}
+
+/* ---- prototype tabs ---- */
+const PURL = { home: 'valleyride.in/', mine: 'valleyride.in/account/bookings', invest: 'valleyride.in/invest', admin: 'valleyride.in/admin' };
+function showP(id) {
+  $$('.ptab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.p === id)));
+  $$('.pview').forEach(v => { v.hidden = v.dataset.pv !== id; });
+  $('#pUrl').textContent = PURL[id];
+  if (id === 'mine') renderMine();
+  if (id === 'admin') renderAdmin();
+  if (id === 'invest') renderInvest();
+}
+$$('.ptab').forEach(b => b.addEventListener('click', () => showP(b.dataset.p)));
+
+/* ---- search ---- */
+$('#fPickup').innerHTML = LOCATIONS.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+$('#fReturn').innerHTML = $('#fPickup').innerHTML;
+(function () {
+  const s = startOfDay(addDays(new Date(), 1)); s.setHours(9);
+  $('#fStart').value = toLocalInput(s);
+  $('#fEnd').value = toLocalInput(addDays(s, 3));
+})();
+
+let lastSearch = null;
+function bikeSvg(m) {
+  const col = { activa: '#2b5f9e', hunter: '#b4372f', scram: '#c56f1a', himalayan: '#1f6b52' }[m.id];
+  if (m.id === 'activa') return `<svg viewBox="0 0 160 90" aria-hidden="true"><circle cx="34" cy="68" r="16" fill="none" stroke="currentColor" stroke-width="6" opacity=".8"/><circle cx="126" cy="68" r="16" fill="none" stroke="currentColor" stroke-width="6" opacity=".8"/><path d="M40 62 Q60 40 96 44 L112 44 L122 62 Z" fill="${col}"/><path d="M110 46 L120 14 L132 12" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="58" y="34" width="34" height="9" rx="4" fill="currentColor" opacity=".75"/></svg>`;
+  return `<svg viewBox="0 0 160 90" aria-hidden="true"><circle cx="32" cy="66" r="19" fill="none" stroke="currentColor" stroke-width="6" opacity=".8"/><circle cx="128" cy="66" r="19" fill="none" stroke="currentColor" stroke-width="6" opacity=".8"/><path d="M32 66 L62 40 L100 40 L128 66" stroke="currentColor" stroke-width="5" fill="none" opacity=".7"/><path d="M58 26 Q80 18 100 28 L96 40 L62 40 Z" fill="${col}"/><rect x="66" y="42" width="26" height="18" rx="3" fill="currentColor" opacity=".55"/><path d="M104 30 L116 12 L130 12" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/>${m.id === 'himalayan' || m.id === 'scram' ? '<path d="M118 14 L124 2" stroke="currentColor" stroke-width="3"/>' : ''}</svg>`;
+}
+
+function runSearch(silent) {
+  const msg = $('#searchMsg');
+  const start = new Date($('#fStart').value), end = new Date($('#fEnd').value);
+  const pickup = $('#fPickup').value, ret = $('#fReturn').value;
+  msg.className = 'msg'; msg.textContent = '';
+  if (isNaN(start) || isNaN(end)) { msg.className = 'msg err'; msg.textContent = 'Choose pickup and return date and time.'; return; }
+  if (start < Date.now() - 30 * 60e3) { msg.className = 'msg err'; msg.textContent = 'The pickup time is in the past.'; return; }
+  if (end <= start) { msg.className = 'msg err'; msg.textContent = 'The return time must be after the pickup time.'; return; }
+  if ((end - start) / HOUR < MIN_HOURS) { msg.className = 'msg err'; msg.textContent = `The minimum rental is ${MIN_HOURS} hours.`; return; }
+  lastSearch = { start, end, pickup, ret };
+  const q0 = quote(MODELS[0], start, end);
+  msg.innerHTML = `Showing live availability for <b>${fmtDT(start)} → ${fmtDT(end)}</b> · billed as ${q0.days} day${q0.days > 1 ? 's' : ''}${q0.tier ? ` · <span class="pill green">${q0.tier}% long-rental discount applied</span>` : ''}${pickup !== ret ? ` · one-way fee ${inr(ONE_WAY_FEE)}` : ''}`;
+  $('#results').innerHTML = MODELS.map(m => {
+    const free = freeVehicles(m.id, start, end).length;
+    const q = quote(m, start, end, { oneWay: pickup !== ret });
+    const cls = free === 0 ? 'none' : free <= 2 ? 'low' : 'ok';
+    const txt = free === 0 ? 'Sold out for these dates' : `${free} of ${m.count} available${free <= 2 ? ' · almost gone' : ''}`;
+    return `<div class="vcard"><div class="vimg">${bikeSvg(m)}</div><div class="vbody">
+      <div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><span class="pill">${m.cat}</span><span class="avail ${cls}">${txt}</span></div>
+      <h4>${m.name}</h4><div class="vmeta">${m.tag} · ${m.use}</div>
+      <div class="price">${inr(m.price)} <small>/ day</small></div>
+      <div class="kv"><span class="k">${q.days} day${q.days > 1 ? 's' : ''} rental${q.tier ? ` (−${q.tier}%)` : ''}</span><span>${inr(q.rental - q.tierOff)}</span></div>
+      <div class="kv"><span class="k">Included km</span><span>${q.km} km · then ₹${m.extra}/km</span></div>
+      <div class="kv"><span class="k">Refundable deposit</span><span>${inr(m.deposit)}</span></div>
+      <div class="kv total"><span>Total incl. GST</span><span>${inr(q.total)}</span></div>
+      <button class="btn" type="button" data-book="${m.id}" ${free === 0 ? 'disabled' : ''}>${free === 0 ? 'Unavailable' : 'Book now'}</button>
+    </div></div>`;
+  }).join('');
+}
+$('#searchForm').addEventListener('submit', e => { e.preventDefault(); runSearch(); });
+$('#results').addEventListener('click', e => { const b = e.target.closest('[data-book]'); if (b) openCheckout(b.dataset.book); });
+
+/* ---- checkout ---- */
+const dlg = $('#checkout');
+function openCheckout(modelId) {
+  if (!lastSearch) return;
+  const m = MODEL[modelId], { start, end, pickup, ret } = lastSearch;
+  dlg.innerHTML = `
+    <form method="dialog" id="coForm" novalidate>
+      <div class="dlg-h"><b>Checkout · ${m.name}</b><button class="icon-btn" value="cancel" type="submit" formnovalidate aria-label="Close">✕</button></div>
+      <div class="dlg-b">
+        <div class="vmeta">${LOC[pickup].name} ${fmtDT(start)} → ${LOC[ret].name} ${fmtDT(end)}</div>
+        <div class="f2">
+          <label class="f">Full name<input id="cName" autocomplete="name" placeholder="As on driving licence"></label>
+          <label class="f">Mobile (WhatsApp)<input id="cPhone" inputmode="numeric" maxlength="10" placeholder="98XXXXXXXX"></label>
+        </div>
+        <div class="f2">
+          <label class="f">Driving licence no.<input id="cDL" placeholder="UK0720210012345"></label>
+          <label class="f">Coupon<input id="cCoupon" placeholder="Try WELCOME10 or HOSTEL15"></label>
+        </div>
+        <div id="coSummary"></div>
+        <label class="check"><input type="checkbox" id="cAgree"> I agree to the rental agreement, damage liability terms and cancellation policy (full refund more than 24 h before pickup, 50% within 24 h; deposit always refunded after inspection).</label>
+        <div class="msg err" id="coErr" role="alert"></div>
+      </div>
+      <div class="dlg-f"><button class="btn ghost" value="cancel" type="submit" formnovalidate>Cancel</button><button class="btn" type="button" id="payBtn">Pay</button></div>
+    </form>`;
+  const upd = () => {
+    const code = $('#cCoupon').value.trim().toUpperCase();
+    const q = quote(m, start, end, { oneWay: pickup !== ret, coupon: code });
+    $('#coSummary').innerHTML = `<div class="card" style="box-shadow:none;padding:12px 14px">
+      <div class="kv"><span class="k">${inr(m.price)} × ${q.days} day${q.days > 1 ? 's' : ''}</span><span>${inr(q.rental)}</span></div>
+      ${q.tier ? `<div class="kv"><span class="k">Long-rental discount (${q.tier}%)</span><span>−${inr(q.tierOff)}</span></div>` : ''}
+      ${q.couponPct ? `<div class="kv"><span class="k">Coupon ${code} (${q.couponPct}%)</span><span>−${inr(q.couponOff)}</span></div>` : (code ? `<div class="kv"><span class="k" style="color:var(--danger)">Coupon “${esc(code)}” is not valid</span><span></span></div>` : '')}
+      ${q.fees ? `<div class="kv"><span class="k">One-way return fee</span><span>${inr(q.fees)}</span></div>` : ''}
+      <div class="kv"><span class="k">GST (${GST}%, illustrative)</span><span>${inr(q.tax)}</span></div>
+      <div class="kv"><span class="k">Rental total</span><span>${inr(q.total)}</span></div>
+      <div class="kv"><span class="k">Refundable security deposit</span><span>${inr(q.deposit)}</span></div>
+      <div class="kv total"><span>Pay now</span><span>${inr(q.payNow)}</span></div>
+      <div class="vmeta" style="margin-top:6px">Includes ${q.km} km, then ₹${m.extra}/km · late return ₹${Math.round(m.price / 8)}/hour · fuel not included · damage charged per the inspection checklist</div>
+    </div>`;
+    $('#payBtn').textContent = `Pay ${inr(q.payNow)} · Razorpay (simulated)`;
+    return q;
+  };
+  $('#cCoupon').addEventListener('input', upd);
+  upd();
+  $('#payBtn').addEventListener('click', () => {
+    const err = $('#coErr'); err.textContent = '';
+    const name = $('#cName').value.trim(), phone = $('#cPhone').value.trim(), dl = $('#cDL').value.trim().replace(/[\s-]/g, '');
+    if (name.length < 2) return (err.textContent = 'Enter your full name.');
+    if (!/^[6-9]\d{9}$/.test(phone)) return (err.textContent = 'Enter a valid 10-digit Indian mobile number.');
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]{9,13}$/i.test(dl)) return (err.textContent = 'Enter a valid driving licence number, e.g. UK0720210012345.');
+    if (!$('#cAgree').checked) return (err.textContent = 'Please accept the rental terms.');
+    const btn = $('#payBtn'); btn.disabled = true; btn.textContent = 'Processing payment…';
+    setTimeout(() => {
+      // same as the API: re-check inside the "transaction", pick the least-used free unit
+      const free = freeVehicles(modelId, start, end);
+      if (!free.length) { btn.disabled = false; upd(); err.textContent = 'Sorry, the last unit was just booked. Please choose another model.'; runSearch(); return; }
+      const q = upd();
+      const b = { id: 'u-' + Date.now(), code: newCode(), vehicleId: free[0].id, modelId, customer: name, phone, start, end, pickup, ret, status: 'CONFIRMED', q, coupon: q.couponPct ? $('#cCoupon').value.trim().toUpperCase() : null, source: 'you', createdAt: new Date() };
+      state.bookings.push(b); save();
+      dlg.close();
+      toast(`Booking ${b.code} confirmed · ${free[0].reg} reserved · WhatsApp confirmation sent (simulated)`);
+      runSearch();
+      showP('mine');
+    }, 900);
+  });
+  dlg.showModal();
+}
+
+/* ---- my bookings ---- */
+function renderMine() {
+  const mine = state.bookings.filter(b => b.source === 'you').sort((a, b) => b.createdAt - a.createdAt);
+  $('#mineCount').textContent = mine.length ? `(${mine.length})` : '';
+  if (!mine.length) { $('#mineList').innerHTML = `<div class="empty" style="grid-column:1/-1">You have no bookings yet. Search on <b>Home &amp; booking</b> and complete a checkout.</div>`; return; }
+  $('#mineList').innerHTML = mine.map(b => {
+    const m = MODEL[b.modelId], s = effStatus(b), v = VEH[b.vehicleId];
+    const hoursToStart = (b.start - Date.now()) / HOUR;
+    const refundPct = hoursToStart > 24 ? 100 : 50;
+    return `<div class="bkcard">
+      <div class="top"><b class="mono">${b.code}</b>${statusPill(s)}</div>
+      <div><b>${m.name}</b> · <span class="vmeta">${v.reg}</span></div>
+      <div class="vmeta">${LOC[b.pickup].name} · ${fmtDT(b.start)}<br>→ ${LOC[b.ret].name} · ${fmtDT(b.end)}</div>
+      <div class="kv"><span class="k">Rental (incl. GST)</span><span>${inr(b.q.total)}</span></div>
+      <div class="kv"><span class="k">Deposit</span><span>${inr(b.q.deposit)} · ${s === 'CANCELLED' ? 'refund initiated' : s === 'COMPLETED' ? 'refunded' : 'held'}</span></div>
+      ${b.refund != null ? `<div class="kv"><span class="k">Refund</span><span>${inr(b.refund)} rental + ${inr(b.q.deposit)} deposit</span></div>` : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        ${s === 'CONFIRMED' ? `<button class="btn danger sm" data-cancel="${b.id}" type="button">Cancel (${refundPct}% refund)</button>` : ''}
+        <button class="btn ghost sm" type="button" data-invoice="${b.id}">Invoice</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+$('#mineList').addEventListener('click', e => {
+  const c = e.target.closest('[data-cancel]');
+  if (c) {
+    const b = state.bookings.find(x => x.id === c.dataset.cancel);
+    if (!b || !confirm(`Cancel booking ${b.code}?`)) return;
+    const pct = (b.start - Date.now()) / HOUR > 24 ? 100 : 50;
+    b.status = 'CANCELLED'; b.refund = Math.round(b.q.total * pct / 100);
+    save(); renderMine(); toast(`${b.code} cancelled · ${inr(b.refund + b.q.deposit)} refund initiated via Razorpay (simulated)`);
+  }
+  const i = e.target.closest('[data-invoice]');
+  if (i) toast('In the live app this downloads the GST invoice PDF generated by the worker.');
+});
+
+/* ---- investor ---- */
+(function () { const d = new Date(); $('#iStart').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+function schedule(P, annual, n, structure, startDate) {
+  const r = annual / 1200;
+  const emi = r === 0 ? P / n : P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+  const rows = []; let bal = P;
+  for (let i = 1; i <= n; i++) {
+    const interest = bal * r;
+    let principal = structure === 'amortizing' ? emi - interest : 0;
+    if (i === n) principal = bal;
+    const due = new Date(startDate); due.setMonth(due.getMonth() + i);
+    rows.push({ i, due, open: bal, interest, principal, pay: interest + principal, close: bal - principal });
+    bal -= principal;
+  }
+  return { rows, emi };
+}
+function renderInvest() {
+  const P = Math.max(0, +$('#iAmt').value || 0), rate = Math.max(0, +$('#iRate').value || 0);
+  const n = Math.min(120, Math.max(1, Math.round(+$('#iTen').value || 1))), st = $('#iStruct').value;
+  const startDate = new Date($('#iStart').value || Date.now());
+  const { rows, emi } = schedule(P, rate, n, st, isNaN(startDate) ? new Date() : startDate);
+  const total = rows.reduce((a, r) => a + r.pay, 0), interest = total - P;
+  if (st === 'amortizing') {
+    $('#iLabel').textContent = 'Illustrative monthly instalment';
+    $('#iEmi').textContent = inr(emi);
+    $('#iSub').textContent = 'Principal + interest · equal monthly payments';
+  } else {
+    $('#iLabel').textContent = 'Illustrative monthly interest payment';
+    $('#iEmi').textContent = inr(P * rate / 1200);
+    $('#iSub').textContent = `Interest only · ${inr(P)} principal repaid in month ${n}`;
+  }
+  $('#iTotal').textContent = inr(total); $('#iInt').textContent = inr(interest); $('#iPrin').textContent = inr(P);
+  $('#iLast').textContent = inr(rows[rows.length - 1].pay);
+  const today = Date.now();
+  $('#iRows').innerHTML = rows.map(r => `<tr><td>${r.i}</td><td>${fmtD(r.due)}</td><td class="num">${inr(r.open)}</td><td class="num">${inr(r.interest)}</td><td class="num">${inr(r.principal)}</td><td class="num"><b>${inr(r.pay)}</b></td><td class="num">${inr(r.close)}</td><td>${r.due < today ? '<span class="pill green">PAID</span>' : (r.due - today < 31 * DAY ? '<span class="pill yellow">DUE NEXT</span>' : '<span class="pill">SCHEDULED</span>')}</td></tr>`).join('')
+    + `<tr><td colspan="3"><b>Total</b></td><td class="num"><b>${inr(interest)}</b></td><td class="num"><b>${inr(P)}</b></td><td class="num"><b>${inr(total)}</b></td><td colspan="2"></td></tr>`;
+}
+$('#iAmtR').addEventListener('input', e => { $('#iAmt').value = e.target.value; renderInvest(); });
+$('#iAmt').addEventListener('input', e => { $('#iAmtR').value = e.target.value; renderInvest(); });
+['#iRate', '#iTen', '#iStruct', '#iStart'].forEach(s => $(s).addEventListener('input', renderInvest));
+
+/* ---- admin ---- */
+function vehicleNow(v) {
+  if (state.maint[v.id]) return 'MAINTENANCE';
+  const now = Date.now();
+  return state.bookings.some(b => b.vehicleId === v.id && blocking(b) && b.start <= now && now < b.end) ? 'ON RENT' : 'AVAILABLE';
+}
+function renderAdmin() {
+  const today = startOfDay(new Date()), horizon = addDays(today, 14);
+  const statuses = VEHICLES.map(vehicleNow);
+  const onRent = statuses.filter(s => s === 'ON RENT').length, maint = statuses.filter(s => s === 'MAINTENANCE').length;
+  let bookedMs = 0;
+  state.bookings.filter(blocking).forEach(b => { const s = Math.max(b.start, today), e = Math.min(b.end, horizon); if (e > s) bookedMs += e - s; });
+  const capacity = (VEHICLES.length - maint) * 14 * DAY;
+  const live = state.bookings.filter(blocking);
+  const value = live.reduce((a, b) => a + b.q.taxable, 0);
+  const deposits = live.filter(b => effStatus(b) !== 'COMPLETED').reduce((a, b) => a + b.q.deposit, 0);
+  $('#kpis').innerHTML = [
+    ['Fleet size', VEHICLES.length], ['Available now', VEHICLES.length - onRent - maint], ['On rent now', onRent], ['In maintenance', maint],
+    ['Utilisation · next 14 days', Math.round(bookedMs / capacity * 100) + '%'], ['Booking value (excl. GST)', inr(value)], ['Deposits held / due', inr(deposits)], ['Your prototype bookings', state.bookings.filter(b => b.source === 'you' && blocking(b)).length],
+  ].map(([l, v]) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div></div>`).join('');
+
+  // timeline
+  const days = Array.from({ length: 14 }, (_, i) => addDays(today, i));
+  let html = `<div class="h" style="text-align:left">Vehicle</div>` + days.map(d => `<div class="h">${d.toLocaleDateString('en-IN', { weekday: 'narrow' })}<br>${d.getDate()}</div>`).join('');
+  VEHICLES.forEach(v => {
+    html += `<div class="rl" title="${v.reg}"><b>${MODEL[v.modelId].short}</b> <span class="vmeta">${v.reg.slice(-4)}</span></div>`;
+    days.forEach((d, i) => {
+      const de = addDays(d, 1);
+      const b = state.bookings.find(x => x.vehicleId === v.id && blocking(x) && x.start < de && d < x.end);
+      const cls = ['c', i === 0 ? 'today' : '', state.maint[v.id] ? 'maint' : '', b ? 'busy' : '', b && b.source === 'you' ? 'mine' : ''].join(' ');
+      html += `<div class="${cls}" ${b ? `title="${b.code} · ${esc(b.customer)} · ${fmtDT(b.start)} → ${fmtDT(b.end)}"` : ''}></div>`;
+    });
+  });
+  const tl = $('#timeline'); tl.style.gridTemplateColumns = `150px repeat(14, minmax(38px,1fr))`; tl.innerHTML = html;
+
+  // revenue bars
+  const byModel = MODELS.map(m => ({ m, v: live.filter(b => b.modelId === m.id).reduce((a, b) => a + b.q.taxable, 0) }));
+  const max = Math.max(1, ...byModel.map(x => x.v));
+  $('#revBars').innerHTML = byModel.map(x => `<div class="bar-row"><span>${x.m.short}</span><div style="background:var(--surface-2);border-radius:5px"><div class="bar" style="width:${(x.v / max * 100).toFixed(1)}%"></div></div><span class="num" style="text-align:right">${inr(x.v)}</span></div>`).join('');
+
+  // upcoming
+  const up = live.filter(b => b.start > Date.now()).sort((a, b) => a.start - b.start).slice(0, 7);
+  $('#upcoming').innerHTML = up.length ? `<div class="scroll"><table><tbody>` + up.map(b => `<tr><td class="mono">${b.code}</td><td>${esc(b.customer)}<br><span class="vmeta">${MODEL[b.modelId].short} · ${VEH[b.vehicleId].reg}</span></td><td>${fmtDT(b.start)}<br><span class="vmeta">${LOC[b.pickup].name}</span></td></tr>`).join('') + `</tbody></table></div>` : '<div class="vmeta">No upcoming pickups.</div>';
+
+  // fleet rows
+  $('#fleetRows').innerHTML = VEHICLES.map((v, i) => {
+    const next = state.bookings.filter(b => b.vehicleId === v.id && blocking(b) && b.start > Date.now()).sort((a, b) => a.start - b.start)[0];
+    return `<tr><td class="mono">${v.reg}</td><td>${MODEL[v.modelId].short}</td><td>${LOC[v.loc].name}</td><td>${statusPill(statuses[i])}</td><td>${next ? `${next.code} · ${fmtDT(next.start)}` : '<span class="vmeta">—</span>'}</td><td><button class="btn ghost sm" type="button" data-maint="${v.id}">${state.maint[v.id] ? 'Return to service' : 'Send to maintenance'}</button></td></tr>`;
+  }).join('');
+}
+$('#fleetRows').addEventListener('click', e => {
+  const b = e.target.closest('[data-maint]'); if (!b) return;
+  const id = b.dataset.maint;
+  if (state.maint[id]) delete state.maint[id]; else state.maint[id] = true;
+  save(); renderAdmin(); if (lastSearch) runSearch();
+  toast(`${VEH[id].reg} ${state.maint[id] ? 'marked as in maintenance; it no longer appears in availability' : 'returned to service'}`);
+});
+
+/* ---- misc ---- */
+let tt;
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 3600); }
+$('#resetDemo').addEventListener('click', () => {
+  if (!confirm('Reset all prototype bookings and fleet status?')) return;
+  try { localStorage.removeItem(STORE); } catch (e) {}
+  state = seed(); save(); runSearch(); renderMine(); renderAdmin(); toast('Demo data reset');
+});
+
+showP('home');
+runSearch();
+renderMine();
+renderInvest();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "extends": "@valleyride/tsconfig/node.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "allowJs": false
+  },
+  "include": ["src", "tests"]
+}

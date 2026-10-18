@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Valley Ride design tokens, shared with the mobile app (canvas "Valley Ride app design"):
+ * monochrome, Urbanist 400/500, white cards on a cool grey canvas, pill controls, orange only for small signals.
+ */
+:root {
+  --ink: #000000; --surface: #ffffff; --canvas: #eceef0; --field: #f4f6f8; --line: #e3e5e8;
+  --muted: #66686b; --body: #3d3f42; --dark: #1b1b1b; --hero: #17181a;
+  --orange: #f96407; --orange-tint: #fff0e6; --orange-ink: #8a3600; --disabled: #b9bdc3;
+  color-scheme: light;
+}
+
+body { background: var(--canvas); color: var(--ink); }
+::selection { background: var(--orange-tint); color: var(--orange-ink); }
+
+@layer components {
+  .glass { background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.32); backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%); }
+  .field { @apply h-[50px] w-full min-w-0 rounded-full border-0 bg-field px-[18px] text-base text-ink outline-none placeholder:text-disabled focus-visible:ring-2 focus-visible:ring-ink; }
+  .label { @apply flex flex-col gap-1.5 text-sm text-muted; }
+}
+
+@media print {
+  body { background: #fff; }
+  header, footer, nav[aria-label="Account"], nav[aria-label="Admin"] { display: none !important; }
+}
