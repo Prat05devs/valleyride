@@ -88,16 +88,17 @@ Before launch provide and test:
 
 ## 4. Hostinger website
 
-Use **Node.js Web App** hosting (the app needs a running Next.js server). Import this monorepo, select Node 22,
-keep root directory `./`, and use:
+Use **Node.js Web App** hosting (the app needs a running Next.js server). Import this repository, branch `main`:
 
 | Setting | Value |
 | --- | --- |
-| Install | `pnpm install --frozen-lockfile` (Hostinger detects pnpm from the lock file) |
-| Build | `pnpm build:hostinger` |
-| Output directory | `apps/web/.next/standalone` |
-| Entry file within output | `apps/web/server.js` |
-| Equivalent start command from repository root | `node apps/web/.next/standalone/apps/web/server.js` |
+| Framework preset | **Other** |
+| Node version | 22.x |
+| Root directory | `./` |
+| Package manager | pnpm (detected from the lock file) |
+| Build command | `pnpm build:hostinger` |
+| Output directory | *(empty: the standalone build keeps package links into the installed repository)* |
+| Entry file | `infra/hostinger/server.cjs` |
 
 Set these **before building** (Razorpay keys are configured on the backend only):
 
@@ -106,6 +107,7 @@ NEXT_PUBLIC_API_URL=https://api.valleyride.in
 NEXT_PUBLIC_SITE_URL=https://valleyride.in
 NEXT_PUBLIC_SUPPORT_WHATSAPP=<real E.164 support number>
 NEXT_PUBLIC_SUPPORT_EMAIL=<real support email>
+NEXT_PUBLIC_DESK_PHONE=<pickup desk phone, E.164>
 ```
 
 Use the port provided by Hostinger at runtime; the standalone server respects `PORT`. Do not copy the backend `.env`
