@@ -29,6 +29,13 @@
     ],
     "ignoredBuiltDependencies": [
       "msgpackr-extract"
-    ]
+    ],
+    "overrides": {
+      "body-parser": "^2.4.0",
+      "fast-uri": "^3.1.9",
+      "postcss": "^8.5.31",
+      "uuid@<11.1.1": "^11.1.1",
+      "sharp@<0.35.5": "^0.35.5"
+    }
   }
 }

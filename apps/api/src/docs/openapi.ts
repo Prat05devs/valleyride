@@ -15,7 +15,8 @@ extendZodWithOpenApi(S.sharedZod);
 type Auth = 'public' | 'customer' | 'staff' | 'admin' | 'investor' | 'any' | 'signature';
 type Op = [method: 'get' | 'post' | 'patch' | 'put' | 'delete', path: string, auth: Auth, summary: string, req?: { body?: ZodTypeAny; query?: ZodTypeAny }];
 
-const unwrap = (s: ZodTypeAny): z.AnyZodObject => (s instanceof z.ZodEffects ? unwrap(s._def.schema) : (s as z.AnyZodObject));
+// zod 4 keeps refinements on the object itself; only a transform wraps it (in a pipe).
+const unwrap = (s: ZodTypeAny): z.ZodObject => (s instanceof z.ZodPipe ? unwrap(s.in as ZodTypeAny) : (s as z.ZodObject));
 const reason = z.object({ reason: z.string().max(300).optional() });
 
 export const OPERATIONS: Op[] = [
