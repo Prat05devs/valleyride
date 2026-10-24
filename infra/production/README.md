@@ -26,7 +26,7 @@ the server setup; the certificate for `api.valleyride.in` is issued on the first
 
 ```sh
 ssh deploy@139.59.72.220
-git clone <this repository> /opt/apps/valleyride   # a private repo needs a read-only deploy key first, see below
+git clone github-valleyride:Prat05devs/valleyride.git /opt/apps/valleyride   # deploy key first, see below
 cd /opt/apps/valleyride/infra/production
 server add-db valleyride          # prints the database password once: copy it
 cp .env.example .env && chmod 600 .env
@@ -41,10 +41,11 @@ before the API starts, and waits until the API, worker and Redis are healthy. Th
 on the droplet; later ones reuse the cache. Every release afterwards is just
 `server deploy /opt/apps/valleyride/infra/production`.
 
-**Private repository:** on the server run `ssh-keygen -t ed25519 -f ~/.ssh/valleyride -N ""`, add
-`~/.ssh/valleyride.pub` to the GitHub repository under *Settings → Deploy keys* (read-only), and clone with
-`git clone git@github.com:OWNER/REPO.git` after adding to `~/.ssh/config`:
-`Host github.com` / `IdentityFile ~/.ssh/valleyride`.
+**Private repository:** GitHub allows each deploy key for one repository only, so the server reaches this one through
+its own alias. As `deploy`: `ssh-keygen -t ed25519 -f ~/.ssh/valleyride -N "" -C valleyride-droplet`, add
+`~/.ssh/valleyride.pub` under the repository's *Settings → Deploy keys* (write access off), then add to `~/.ssh/config`:
+`Host github-valleyride` / `HostName github.com` / `User git` / `IdentityFile ~/.ssh/valleyride` / `IdentitiesOnly yes`,
+and clone with `git clone github-valleyride:Prat05devs/valleyride.git /opt/apps/valleyride`.
 
 **First data:** the catalogue (pickup locations, bike models, prices, route guides) loads from the seed files; the
 sample vehicles and demo people do not (demo accounts are skipped in production anyway):
