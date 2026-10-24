@@ -1,5 +1,6 @@
 import type { RequestHandler } from 'express';
 import type { Role } from '@valleyride/shared';
+import { User } from '../db';
 import { AppError } from '../utils/AppError';
 import { ACCESS_COOKIE, verifyAccessToken } from '../modules/auth/tokens';
 
@@ -10,17 +11,23 @@ declare global {
   }
 }
 
-/** Accepts the access JWT from the httpOnly cookie (web) or an Authorization: Bearer header (mobile). */
-export const authenticate: RequestHandler = (req, _res, next) => {
+/** Verifies the cookie/Bearer token, then uses the account's current permissions rather than its JWT snapshot. */
+export const authenticate: RequestHandler = async (req, _res, next) => {
   const header = req.get('authorization');
   const token = header?.startsWith('Bearer ') ? header.slice(7) : req.cookies?.[ACCESS_COOKIE];
   if (!token) throw new AppError(401, 'UNAUTHENTICATED', 'Please log in.');
+  let userId: string;
   try {
-    const claims = verifyAccessToken(token);
-    req.user = { id: claims.sub, role: claims.role };
+    userId = verifyAccessToken(token).sub;
   } catch {
     throw new AppError(401, 'TOKEN_INVALID', 'Your session has expired. Please log in again.');
   }
+  // A role can change while the 15-minute token is still valid (for example, first-admin setup).
+  // Checking the database also makes demotions, blocked accounts and deletions effective immediately.
+  const user = await User.findByPk(userId, { attributes: ['id', 'role', 'status'] });
+  if (!user) throw new AppError(401, 'TOKEN_INVALID', 'Your session has expired. Please log in again.');
+  if (user.status === 'BLOCKED') throw new AppError(403, 'ACCOUNT_BLOCKED', 'This account is blocked. Contact support.');
+  req.user = { id: user.id, role: user.role };
   next();
 };
 
