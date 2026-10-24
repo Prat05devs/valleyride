@@ -115,6 +115,11 @@ to Hostinger. API-backed pages fetch catalogue content at build time, so bring u
 The build helper copies public assets and Next.js chunks into the standalone output. `COOKIE_DOMAIN=.valleyride.in`
 allows browser login cookies from the API to reach the website middleware. CORS allows both website origins.
 
+The Hostinger build runs Next.js from `apps/web`. PostCSS explicitly loads that app's Tailwind config, and Tailwind
+resolves its source paths relative to the config file, so builds launched from the repository root also include the
+site's utility classes. If the page shows an oversized logo and unformatted text, rebuild and redeploy the corrected
+source; the old deployment's CSS may return HTTP 200 while still missing those classes.
+
 ## 5. Mobile releases
 
 `apps/mobile/eas.json` includes internal APK and store build profiles with the permanent domain. Release code pins

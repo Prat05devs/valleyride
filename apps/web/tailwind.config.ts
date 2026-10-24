@@ -3,7 +3,11 @@ import animate from 'tailwindcss-animate';
 
 /** Tokens live in app/globals.css and match apps/mobile/src/theme. Light only, as in the design. */
 export default {
-  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  content: {
+    // Resolve source globs beside this config, including when Next is invoked from the repo root.
+    relative: true,
+    files: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  },
   theme: {
     container: { center: true, padding: { DEFAULT: '1rem', sm: '1.5rem' }, screens: { '2xl': '1280px' } },
     extend: {

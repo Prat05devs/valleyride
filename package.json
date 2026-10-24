@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "build:hostinger": "tsc -p packages/shared/tsconfig.json && node apps/web/node_modules/next/dist/bin/next build apps/web && node infra/hostinger/prepare.mjs",
+    "build:hostinger": "tsc -p packages/shared/tsconfig.json && (cd apps/web && node node_modules/next/dist/bin/next build) && node infra/hostinger/prepare.mjs",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
