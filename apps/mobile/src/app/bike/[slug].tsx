@@ -27,14 +27,21 @@ export default function Bike() {
   useEffect(() => { api.get<RouteGuideDTO[]>('/routes').then(setRoutes).catch(() => {}); }, []);
 
   useEffect(() => {
+    // Quotes require a pickup location. Ignore results from an earlier search or route.
+    if (!t.pickupId) return;
+    let active = true;
+    setQ(null);
     api.get<VehicleModelDTO>(`/vehicle-models/${slug}`).then((model) => {
+      if (!active) return;
       setM(model);
       const qs = `startAt=${encodeURIComponent(t.startAt.toISOString())}&endAt=${encodeURIComponent(t.endAt.toISOString())}${t.pickupId ? `&pickup=${t.pickupId}` : ''}${t.oneWay && t.returnId ? `&return=${t.returnId}` : ''}`;
       api.get<AvailabilityDTO[]>(`/availability?${qs}`).then((av) => {
+        if (!active) return;
         const row = av.find((a) => a.model_id === model.id);
         setFree(row?.free ?? 0); setQ(row?.quote ?? null); // the API prices it, pricing_rules included
       }).catch(() => {});
     }).catch(() => {});
+    return () => { active = false; };
   }, [slug, t.startAt, t.endAt, t.pickupId, t.returnId, t.oneWay]);
 
   if (!m || !q) return <Loading />;

@@ -1,5 +1,7 @@
 import { QueryTypes } from 'sequelize';
 import { Location, sequelize, VehicleModel } from '../../db';
+import { AppError } from '../../utils/AppError';
+import { cached } from '../../utils/cache';
 
 /** Units in service (not retired) per model, shown as "In the fleet". */
 async function unitCounts() {
@@ -7,8 +9,6 @@ async function unitCounts() {
     `SELECT vehicle_model_id AS id, COUNT(*)::int AS n FROM vehicles WHERE status <> 'RETIRED' GROUP BY vehicle_model_id`, { type: QueryTypes.SELECT });
   return new Map(rows.map((r) => [r.id, r.n]));
 }
-import { AppError } from '../../utils/AppError';
-import { cached } from '../../utils/cache';
 
 export const fleetService = {
   locations() {

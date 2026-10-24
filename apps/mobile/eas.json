@@ -1,0 +1,21 @@
+{
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.valleyride.in",
+        "EXPO_PUBLIC_WEB_URL": "https://valleyride.in"
+      },
+      "android": { "buildType": "apk" }
+    },
+    "production": {
+      "environment": "production",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.valleyride.in",
+        "EXPO_PUBLIC_WEB_URL": "https://valleyride.in"
+      }
+    }
+  }
+}

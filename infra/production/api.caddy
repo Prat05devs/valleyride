@@ -1,0 +1,19 @@
+# The API's entry in the server's shared proxy: server add-site api.valleyride.in infra/production/api.caddy
+# HTTPS (Let's Encrypt) is automatic once the DNS A record for the domain points at the server.
+api.valleyride.in {
+	log
+	encode zstd gzip
+	# JSON bodies are capped at 1 MB by the API; files go straight to S3 with pre-signed URLs.
+	request_body {
+		max_size 2MB
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+	reverse_proxy valleyride-api:4000 {
+		# Liveness, not /ready: a brief Redis blip should not take the whole API off the proxy.
+		health_uri /health
+		health_interval 5s
+	}
+}

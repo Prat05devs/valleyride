@@ -8,7 +8,8 @@ import { kycRouter } from './modules/kyc/kyc.routes';
 import { handoverRouter } from './modules/handover/handover.routes';
 import { adminRouter } from './modules/admin/admin.routes';
 import { paymentsMocked } from './modules/payment/razorpay.client';
-import { paymentDevRouter, paymentRouter } from './modules/payment/payment.dev';
+import { paymentDevRouter } from './modules/payment/payment.dev';
+import { paymentRouter } from './modules/payment/payment.routes';
 import { filesDevRouter } from './modules/kyc/files.dev';
 import { env } from './config/env';
 

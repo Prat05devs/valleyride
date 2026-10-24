@@ -8,10 +8,28 @@ const tap = (page: Page, name: string | RegExp) => page.getByRole('button', { na
 
 /**
  * The Expo app's own screens (React Native code rendered by react-native-web) at iPhone and Pixel sizes.
- * Native-only pieces are covered separately: Razorpay runs in a WebView on phones (here the mock-payment sheet),
+ * Native-only pieces need device verification: Razorpay uses its native SDK on phones (here the mock-payment sheet),
  * the camera and signature pad need a device.
  */
 test.describe('rider app', () => {
+  test('bike deep link waits for a pickup before requesting priced availability', async ({ page }) => {
+    const availability: string[] = [];
+    // A fresh deep link can load the model before the shared pickup locations arrive.
+    await page.route('**/api/v1/locations', async (route) => {
+      const response = await route.fetch();
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      await route.fulfill({ response });
+    });
+    page.on('request', (request) => {
+      if (request.url().includes('/api/v1/availability?')) availability.push(request.url());
+    });
+    await page.goto('/bike/scram-440');
+    await expect(seen(page, 'How it handles Doon roads')).toBeVisible();
+    await expect(tap(page, 'Book now')).toBeVisible();
+    expect(availability.length).toBeGreaterThan(0);
+    expect(availability.every((url) => new URL(url).searchParams.has('pickup'))).toBe(true);
+  });
+
   test('sign up → search → bike → checkout → pay → trip → cancel', async ({ page }) => {
     const errors = watchErrors(page);
     const phone = newPhone();

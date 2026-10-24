@@ -10,6 +10,7 @@ import { apiRouter } from './routes';
 import { paymentWebhookRouter } from './modules/payment/payment.webhook';
 import { env } from './config/env';
 import { docsRouter } from './docs/openapi';
+import { readiness } from './health';
 
 export const app = express();
 app.set('trust proxy', 1);
@@ -26,6 +27,7 @@ app.use('/static', express.static(path.join(__dirname, '../public'), {
   setHeaders: (res) => res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'),
 }));
 app.get('/health', (_req, res) => res.json({ ok: true }));
+app.get('/ready', readiness);
 app.use(docsRouter);                                        // OpenAPI from the Zod schemas: /api/docs
 app.use(notFound);
 app.use(errorHandler);

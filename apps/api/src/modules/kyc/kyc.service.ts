@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import type { CustomerDocumentDTO, ReviewDocumentInput, SubmitDocumentInput } from '@valleyride/shared';
 import { AuditLog, Booking, CustomerDocument, sequelize, User } from '../../db';
 import { AppError } from '../../utils/AppError';
+import { audit } from '../../utils/audit';
 import { DOCUMENT_LABEL } from '@valleyride/shared';
 import { notifyUser } from '../notification/notify';
 import { documentReviewedMessage } from '../notification/templates';
@@ -68,10 +69,10 @@ export const kycService = {
         // The newest verified document of a type replaces older ones.
         await CustomerDocument.destroy({ where: { userId: doc.userId, type: doc.type, id: { [Op.ne]: doc.id }, status: 'VERIFIED' }, transaction: t });
       }
-      await AuditLog.create({
-        actorId: staffId, action: `kyc.${input.status.toLowerCase()}`, entity: 'customer_document', entityId: doc.id,
-        diff: { status: [before, input.status], note: input.note ?? null }, ip,
-      }, { transaction: t });
+      await audit({ id: staffId, ip }, {
+        action: `kyc.${input.status.toLowerCase()}`, entity: 'customer_document', entityId: doc.id,
+        diff: { status: [before, input.status], note: input.note ?? null },
+      }, t);
       t.afterCommit(() => notifyUser(doc.userId, {
         title: input.status === 'VERIFIED' ? 'Document verified' : 'New photo needed',
         text: documentReviewedMessage({ label: DOCUMENT_LABEL[doc.type].toLowerCase(), verified: input.status === 'VERIFIED', note: input.note }),

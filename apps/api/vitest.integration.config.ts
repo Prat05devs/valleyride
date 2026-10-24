@@ -14,7 +14,6 @@ export default defineConfig({
       DATABASE_URL: process.env.DATABASE_URL ?? 'postgres://valley:valley@localhost:5432/valleyride_test',
       REDIS_URL: process.env.REDIS_URL ?? 'redis://localhost:6379/1',
       JWT_ACCESS_SECRET: 'test-access-secret',
-      JWT_REFRESH_SECRET: 'test-refresh-secret',
       CORS_ORIGINS: 'http://localhost:3000',
       RAZORPAY_KEY_ID: 'rzp_test_dummy',
       RAZORPAY_KEY_SECRET: 'dummy',

@@ -1,10 +1,10 @@
 import { DURATION_TIERS, GST_PCT, ONE_WAY_FEE_PAISE, quote, type QuoteRequestInput, type Tier } from '@valleyride/shared';
-import { AuditLog, PricingRule, VehicleModel } from '../../db';
+import { PricingRule, VehicleModel } from '../../db';
 import { AppError } from '../../utils/AppError';
+import { audit, type Actor } from '../../utils/audit';
 import { cached, invalidate } from '../../utils/cache';
 import { couponService } from './coupon.service';
 
-type Actor = { id: string; ip: string | null };
 const istDate = (d: Date) => new Date(d.getTime() + 5.5 * 3_600_000).toISOString().slice(0, 10);
 
 export interface RuleDTO { id: string; vehicleModelId: string | null; minDays: number | null; discountPct: number | null; seasonFrom: string | null; seasonTo: string | null; multiplier: number }
@@ -65,7 +65,7 @@ export const pricingService = {
     const row = input.id ? await PricingRule.findByPk(input.id) : null;
     if (input.id && !row) throw new AppError(404, 'NOT_FOUND', 'Rule not found');
     const saved = row ? await row.update(values) : await PricingRule.create(values);
-    await AuditLog.create({ actorId: a.id, action: row ? 'pricing.update' : 'pricing.create', entity: 'pricing_rule', entityId: saved.id, diff: values, ip: a.ip });
+    await audit(a, { action: row ? 'pricing.update' : 'pricing.create', entity: 'pricing_rule', entityId: saved.id, diff: values });
     await invalidate('pricing:rules');
     return toRule(saved);
   },
@@ -73,7 +73,7 @@ export const pricingService = {
   async deleteRule(a: Actor, id: string) {
     const n = await PricingRule.destroy({ where: { id } });
     if (!n) throw new AppError(404, 'NOT_FOUND', 'Rule not found');
-    await AuditLog.create({ actorId: a.id, action: 'pricing.delete', entity: 'pricing_rule', entityId: id, diff: null, ip: a.ip });
+    await audit(a, { action: 'pricing.delete', entity: 'pricing_rule', entityId: id });
     await invalidate('pricing:rules');
   },
 
@@ -88,7 +88,7 @@ export const pricingService = {
       ...(patch.kmPerDay !== undefined && { kmPerDay: patch.kmPerDay }),
       ...(patch.extraKmPaise !== undefined && { extraKmPaise: patch.extraKmPaise }),
     });
-    await AuditLog.create({ actorId: a.id, action: 'pricing.model', entity: 'vehicle_model', entityId: id, diff: { before, after: m.toDTO() }, ip: a.ip });
+    await audit(a, { action: 'pricing.model', entity: 'vehicle_model', entityId: id, diff: { before, after: m.toDTO() } });
     await invalidate('fleet:');
     return m.toDTO();
   },

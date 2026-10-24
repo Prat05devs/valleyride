@@ -2,7 +2,7 @@
  * Thin fetch wrapper for the Express API. Unwraps `{ data }`, throws ApiError for `{ error }`.
  * In the browser it sends the httpOnly cookies and retries once after a silent token refresh.
  */
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://api.valleyride.in' : 'http://localhost:4000')).replace(/\/+$/, '');
 
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string, public details?: unknown) {

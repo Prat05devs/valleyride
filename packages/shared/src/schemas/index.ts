@@ -7,3 +7,4 @@ export * from './investor';
 export * from './kyc';
 export * from './handover';
 export * from './admin';
+export * from './payment';

@@ -1,10 +1,10 @@
 import { Op } from 'sequelize';
 import type { CreateInvestmentInput, InvestorCalculateInput } from '@valleyride/shared';
-import { AuditLog, Investment, Investor, RepaymentSchedule, sequelize, User } from '../../db';
+import { Investment, Investor, RepaymentSchedule, sequelize, User } from '../../db';
 import { AppError } from '../../utils/AppError';
+import { audit, type Actor } from '../../utils/audit';
 import { buildSchedule } from './amortization';
 
-type Actor = { id: string; ip: string | null };
 const ymd = (d: Date) => d.toISOString().slice(0, 10);
 
 function scheduleDTO(r: RepaymentSchedule) {
@@ -121,7 +121,7 @@ export const investorService = {
         userId: user.id, panMasked: input.pan ? `••••••${input.pan.slice(-4)}` : null, bankAccountRef: input.bankAccountRef ?? null,
         kycStatus: input.pan ? 'VERIFIED' : 'PENDING',
       }, { transaction: t });
-      await AuditLog.create({ actorId: a.id, action: 'investor.create', entity: 'investor', entityId: inv.id, diff: { phone: input.phone }, ip: a.ip }, { transaction: t });
+      await audit(a, { action: 'investor.create', entity: 'investor', entityId: inv.id, diff: { phone: input.phone } }, t);
       return { id: inv.id, name: user.fullName, phone: user.phone, panMasked: inv.panMasked, kycStatus: inv.kycStatus };
     });
   },
@@ -136,7 +136,7 @@ export const investorService = {
       await RepaymentSchedule.bulkCreate(rows.map((r) => ({
         investmentId: inv.id, installmentNo: r.installmentNo, dueDate: ymd(r.dueDate), principalPaise: r.principalPaise, interestPaise: r.interestPaise, paidAt: null, txnRef: null,
       })), { transaction: t });
-      await AuditLog.create({ actorId: a.id, action: 'investment.create', entity: 'investment', entityId: inv.id, diff: input, ip: a.ip }, { transaction: t });
+      await audit(a, { action: 'investment.create', entity: 'investment', entityId: inv.id, diff: input }, t);
       return inv.id;
     });
   },
@@ -175,7 +175,7 @@ export const investorService = {
       await r.update({ status: 'PAID', paidAt: paidAt ?? new Date(), txnRef }, { transaction: t });
       const left = await RepaymentSchedule.count({ where: { investmentId: r.investmentId, status: { [Op.ne]: 'PAID' } }, transaction: t });
       if (left === 0) await Investment.update({ status: 'CLOSED' }, { where: { id: r.investmentId }, transaction: t });
-      await AuditLog.create({ actorId: a.id, action: 'repayment.paid', entity: 'repayment_schedule', entityId: id, diff: { txnRef }, ip: a.ip }, { transaction: t });
+      await audit(a, { action: 'repayment.paid', entity: 'repayment_schedule', entityId: id, diff: { txnRef } }, t);
       return scheduleDTO(r);
     });
   },

@@ -1,4 +1,6 @@
 /** Loads Razorpay Checkout on demand and opens it for an order created by POST /bookings. */
+import type { PaymentConfig } from '@valleyride/shared';
+import { api } from './api-client';
 
 declare global {
   interface Window { Razorpay?: new (options: Record<string, unknown>) => { open(): void; on(event: string, cb: (r: { error?: { description?: string } }) => void): void } }
@@ -27,9 +29,11 @@ export async function openCheckout(o: {
   orderId: string; amountPaise: number; bookingCode: string; phone?: string; name?: string; email?: string;
   onPaid: (r: CheckoutResult) => void; onFailed?: (reason: string) => void; onDismiss?: () => void;
 }) {
+  const config = await api.get<PaymentConfig>('/payments/config');
+  if (!config.enabled || !config.keyId) throw new Error('Online payments are not available yet. Please try again later.');
   await loadCheckout();
   const rzp = new window.Razorpay!({
-    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+    key: config.keyId,
     order_id: o.orderId,
     amount: o.amountPaise,
     currency: 'INR',

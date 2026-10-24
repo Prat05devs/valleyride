@@ -1,6 +1,7 @@
 import type { CreateCouponInput } from '@valleyride/shared';
-import { AuditLog, Coupon } from '../../db';
+import { Coupon } from '../../db';
 import { AppError } from '../../utils/AppError';
+import { audit, type Actor } from '../../utils/audit';
 
 const toDTO = (c: Coupon) => ({
   code: c.code, percentOff: Number(c.percentOff), maxUses: c.maxUses, used: c.used,
@@ -19,10 +20,10 @@ export const couponService = {
     return (await Coupon.findAll({ order: [['code', 'ASC']] })).map(toDTO);
   },
 
-  async create(actor: { id: string; ip: string | null }, input: CreateCouponInput) {
+  async create(actor: Actor, input: CreateCouponInput) {
     if (await Coupon.findByPk(input.code)) throw new AppError(409, 'DUPLICATE', 'That code already exists.');
     const c = await Coupon.create({ code: input.code, percentOff: input.percentOff, maxUses: input.maxUses ?? null, validTill: input.validTill ?? null, partner: input.partner ?? null });
-    await AuditLog.create({ actorId: actor.id, action: 'coupon.create', entity: 'coupon', entityId: c.code, diff: input, ip: actor.ip });
+    await audit(actor, { action: 'coupon.create', entity: 'coupon', entityId: c.code, diff: input });
     return toDTO(c);
   },
 };

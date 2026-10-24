@@ -10,6 +10,7 @@ export async function sendPush(userId: string, title: string, body: string, data
   const res = await fetch('https://exp.host/--/api/v2/push/send', {
     method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(tokens.map((t) => ({ to: t.token, title, body, data, sound: 'default' }))),
+    signal: AbortSignal.timeout(10_000),
   });
   const json = (await res.json().catch(() => null)) as { data?: { status: string; details?: { error?: string } }[] } | null;
   const dead = (json?.data ?? []).map((r, i) => (r.details?.error === 'DeviceNotRegistered' ? tokens[i]!.token : null)).filter(Boolean) as string[];

@@ -1,11 +1,12 @@
 import type { HandoverDTO, PickupHandoverInput, ReturnHandoverInput, StartRideInput } from '@valleyride/shared';
 import { returnCharges } from '@valleyride/shared';
-import { AuditLog, Booking, Handover, sequelize, User, Vehicle, VehicleModel } from '../../db';
+import { Booking, Handover, sequelize, User, Vehicle, VehicleModel } from '../../db';
 import { logger } from '../../utils/logger';
 import { notifyUser } from '../notification/notify';
 import { agreementSignedMessage } from '../notification/templates';
 import { agreementPdf } from './agreement-pdf';
 import { AppError } from '../../utils/AppError';
+import { audit } from '../../utils/audit';
 import { assertTransition } from '../booking/booking.state';
 import { paymentService, settleDepositIfRefunded } from '../payment/payment.service';
 import { presignGet, putObject } from '../kyc/s3-presign';
@@ -40,7 +41,7 @@ export const handoverService = {
       };
       const h = existing ? await existing.update(values, { transaction: t })
         : await Handover.create({ bookingId, type: 'PICKUP', agreementFileKey: null, signedAt: null, emergencyContact: null, checklist: null, charges: null, ...values }, { transaction: t });
-      await AuditLog.create({ actorId: staffId, action: 'handover.pickup', entity: 'booking', entityId: bookingId, diff: { odometerKm: input.odometerKm, photos: input.photos.length }, ip }, { transaction: t });
+      await audit({ id: staffId, ip }, { action: 'handover.pickup', entity: 'booking', entityId: bookingId, diff: { odometerKm: input.odometerKm, photos: input.photos.length } }, t);
       return h;
     });
   },
@@ -72,6 +73,7 @@ export const handoverService = {
 
   /** Sign, confirm the condition and leave an emergency contact: CONFIRMED → ONGOING, then the signed agreement PDF. */
   async startRide(userId: string, bookingId: string, input: StartRideInput) {
+    await bookingFor(bookingId, userId); // before anything is written to storage
     const signature = Buffer.from(input.signaturePng.split(',')[1]!, 'base64');
     const sigKey = `agreements/${bookingId}/signature-${Date.now()}.png`;
     await putObject(sigKey, signature, 'image/png');
@@ -139,7 +141,7 @@ export const handoverService = {
       }, { transaction: t });
       await Vehicle.update({ odometerKm: input.odometerKm }, { where: { id: booking.vehicleId }, transaction: t });
       await booking.update({ status: 'COMPLETED' }, { transaction: t });
-      await AuditLog.create({ actorId: staffId, action: 'handover.return', entity: 'booking', entityId: bookingId, diff: { charges }, ip }, { transaction: t });
+      await audit({ id: staffId, ip }, { action: 'handover.return', entity: 'booking', entityId: bookingId, diff: { charges } }, t);
       return { booking, charges };
     });
 

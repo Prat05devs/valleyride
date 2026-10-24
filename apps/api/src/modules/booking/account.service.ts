@@ -30,7 +30,7 @@ export const accountService = {
       if (p.kind === 'REFUND') {
         const reason = (p.raw as { reason?: string } | null)?.reason ?? '';
         return { id: p.id, kind: 'REFUND', bookingId: b.id, bookingCode: b.code, amountPaise: Number(p.amountPaise), at, pending: p.status !== 'REFUNDED',
-          note: reason === 'deposit' ? 'Deposit refund' : 'Cancellation refund' };
+          note: reason === 'deposit' ? 'Deposit refund' : reason.startsWith('cancelled') ? 'Cancellation refund' : 'Refund' };
       }
       return { id: p.id, kind: 'PAID', bookingId: b.id, bookingCode: b.code, amountPaise: Number(p.amountPaise), at, pending: false,
         note: p.kind === 'EXTRA' ? `${name(b)} · extension` : `${name(b)} · ${b.billableDays} ${b.billableDays === 1 ? 'day' : 'days'}, rental + deposit` };

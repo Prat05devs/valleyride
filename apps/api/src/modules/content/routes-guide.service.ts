@@ -1,11 +1,9 @@
 import { UniqueConstraintError } from 'sequelize';
 import type { RouteGuideInput } from '@valleyride/shared';
 import { RouteGuide } from '../../db';
-import { audit } from '../../utils/audit';
+import { audit, type Actor } from '../../utils/audit';
 import { AppError } from '../../utils/AppError';
 import { cached, invalidate } from '../../utils/cache';
-
-type Actor = { id: string; ip: string | null };
 
 /** Ride-discovery guides: public reads are cached; staff edit them in the admin console (the CMS). */
 export const routeGuideService = {
@@ -27,7 +25,7 @@ export const routeGuideService = {
       const row = id ? await RouteGuide.findByPk(id) : null;
       if (id && !row) throw new AppError(404, 'NOT_FOUND', 'Route guide not found');
       const saved = row ? await row.update(input) : await RouteGuide.create(input);
-      await audit(a.id, row ? 'content.update' : 'content.create', 'route_guide', saved.id, { slug: input.slug, title: input.title }, a.ip);
+      await audit(a, { action: row ? 'content.update' : 'content.create', entity: 'route_guide', entityId: saved.id, diff: { slug: input.slug, title: input.title } });
       await invalidate('content:');
       return saved.toDTO();
     } catch (e) {
@@ -38,7 +36,7 @@ export const routeGuideService = {
 
   async remove(a: Actor, id: string) {
     if (!(await RouteGuide.destroy({ where: { id } }))) throw new AppError(404, 'NOT_FOUND', 'Route guide not found');
-    await audit(a.id, 'content.delete', 'route_guide', id, null, a.ip);
+    await audit(a, { action: 'content.delete', entity: 'route_guide', entityId: id });
     await invalidate('content:');
   },
 };

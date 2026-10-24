@@ -1,0 +1,99 @@
+# Valley Ride API and worker on the shared server (the platform from Batra Connect's infra/server.sh).
+# Deploy and every later release: server deploy /opt/apps/valleyride/infra/production
+#
+# Shared with the other apps: the Caddy proxy on the "edge" network (api.caddy is this app's entry) and PostgreSQL on
+# the internal "data" network, where "server add-db valleyride" created the valleyride database and role.
+# Valley Ride's own: Redis (BullMQ jobs, OTPs, rate limits), reachable only inside this project. Nothing publishes a port.
+name: valleyride
+
+x-api: &api
+  build:
+    context: ../..
+    dockerfile: infra/docker/api.Dockerfile
+  image: valleyride-api:latest
+  environment:
+    NODE_ENV: production
+    PORT: 4000
+    DATABASE_URL: postgres://valleyride:${DB_PASSWORD:?Set DB_PASSWORD (printed by server add-db valleyride)}@postgres:5432/valleyride
+    DATABASE_SSL: "false" # the internal "data" network never leaves the server
+    # API + worker = 10 of PostgreSQL's 100 connections, leaving room for the other apps on this server.
+    DATABASE_POOL_MAX: 5
+    REDIS_URL: redis://redis:6379/0
+    JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Set JWT_ACCESS_SECRET (openssl rand -hex 32)}
+    CORS_ORIGINS: ${CORS_ORIGINS:-https://valleyride.in,https://www.valleyride.in}
+    COOKIE_DOMAIN: .valleyride.in
+    # Checkout reports "unavailable" until all three are set; no website or app rebuild is needed when they change.
+    RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+    RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+    RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+    # Login is by SMS code, so nobody can sign in until these are set.
+    MSG91_AUTH_KEY: ${MSG91_AUTH_KEY:-}
+    MSG91_OTP_TEMPLATE_ID: ${MSG91_OTP_TEMPLATE_ID:-}
+    WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN:-}
+    WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
+    SMTP_URL: ${SMTP_URL:-}
+    MAIL_FROM: ${MAIL_FROM:-Valley Ride <no-reply@valleyride.in>}
+    OPS_EMAIL: ${OPS_EMAIL:-}
+    CAPITAL_PORTAL_ENABLED: ${CAPITAL_PORTAL_ENABLED:-false}
+    STORAGE_DRIVER: s3
+    AWS_REGION: ${AWS_REGION:-ap-south-1}
+    S3_BUCKET_PRIVATE: ${S3_BUCKET_PRIVATE:?Set S3_BUCKET_PRIVATE}
+    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?Set AWS_ACCESS_KEY_ID}
+    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?Set AWS_SECRET_ACCESS_KEY}
+    SENTRY_DSN: ${SENTRY_DSN:-}
+    TZ_DISPLAY: Asia/Kolkata
+    # Keep the V8 heap inside the container limit so Node collects garbage before Docker kills it.
+    NODE_OPTIONS: --max-old-space-size=256
+  restart: unless-stopped
+  init: true
+  # The 2 GB droplet is shared by several APIs and one PostgreSQL. Caps stop one leaking app from starving the rest.
+  mem_limit: 384m
+  logging:
+    driver: json-file
+    options: { max-size: 10m, max-file: "3" }
+
+services:
+  api:
+    <<: *api
+    # Migrations run before every start, so a release that adds one needs no extra step. A failed migration stops
+    # the container, and "server deploy" reports it instead of serving the old schema to new code.
+    command: [sh, -c, "./node_modules/.bin/sequelize-cli db:migrate && exec node dist/server.js"]
+    networks:
+      default: {}
+      data: {}
+      edge:
+        # Unique name on the shared network: every project's "api" service would otherwise answer to "api".
+        aliases: [valleyride-api]
+    depends_on:
+      redis: { condition: service_healthy }
+
+  worker:
+    <<: *api
+    command: [node, dist/worker.js]
+    # The image's HTTP health check is for the API, not this background worker.
+    healthcheck: { disable: true }
+    networks:
+      default: {}
+      data: {}
+    depends_on:
+      api: { condition: service_healthy }
+
+  redis:
+    image: redis:7-alpine
+    # noeviction (BullMQ needs every job key); at the cap, writes fail with an error instead of the server being OOM-killed.
+    command: [redis-server, --appendonly, "yes", --maxmemory, 128mb, --maxmemory-policy, noeviction]
+    mem_limit: 192m
+    volumes: [redis:/data]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+networks:
+  edge: { external: true }
+  data: { external: true }
+
+volumes:
+  redis:

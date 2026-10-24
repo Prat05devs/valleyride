@@ -2,7 +2,7 @@ import { initSentry, captureError } from './utils/sentry';
 initSentry('worker');
 import { Worker, type Job } from 'bullmq';
 import { sequelize } from './db';
-import { closeQueues, getQueue, getRedis, QUEUES, type QueueName } from './jobs/queue';
+import { closeQueues, getQueue, QUEUES, workerConnection, type QueueName } from './jobs/queue';
 import { holdExpiry } from './jobs/processors/holdExpiry';
 import { returnReminder } from './jobs/processors/returnReminder';
 import { invoicePdf } from './jobs/processors/invoicePdf';
@@ -17,12 +17,13 @@ const PROCESSORS: Record<string, (job: Job) => Promise<unknown>> = {
 async function main() {
   await sequelize.authenticate();
 
+  const connection = workerConnection();
   const workers = (Object.keys(QUEUES) as QueueName[]).map((name) => {
     const w = new Worker(name, async (job) => {
       const run = PROCESSORS[job.name];
       if (!run) throw new Error(`No processor for job ${job.name}`);
       return run(job);
-    }, { connection: getRedis(), concurrency: 5 });
+    }, { connection, concurrency: 5 });
     w.on('failed', (job, err) => { logger.error({ job: job?.name, id: job?.id, err }, 'job failed'); captureError(err, { job: job?.name }); });
     return w;
   });
@@ -37,7 +38,7 @@ async function main() {
 
   const shutdown = async () => {
     await Promise.allSettled(workers.map((w) => w.close()));
-    await Promise.allSettled([closeQueues(), sequelize.close()]);
+    await Promise.allSettled([closeQueues(), connection.quit(), sequelize.close()]);
     process.exit(0);
   };
   process.on('SIGTERM', () => void shutdown());

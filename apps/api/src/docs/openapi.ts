@@ -54,6 +54,7 @@ export const OPERATIONS: Op[] = [
   ['post', '/kyc/documents/presign', 'customer', 'Pre-signed S3 URL for a DL or ID upload', { body: S.presignUploadSchema }],
   ['post', '/kyc/documents', 'customer', 'Submit an uploaded document (only the last 4 characters are kept)', { body: S.submitDocumentSchema }],
   ['get', '/kyc/documents', 'customer', 'My documents and their review status'],
+  ['get', '/payments/config', 'public', 'Runtime public Razorpay key and availability; contains no secrets'],
   ['post', '/payments/verify', 'customer', 'Checkout callback: verify the signature and confirm the payment (same code as the webhook)'],
   ['post', '/webhooks/razorpay', 'signature', 'Payment captured, failed or refunded (HMAC-verified, once per event id)'],
   ['get', '/routes', 'public', 'Ride discovery guides'],

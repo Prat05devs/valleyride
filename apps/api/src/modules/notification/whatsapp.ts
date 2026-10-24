@@ -16,6 +16,7 @@ export async function sendWhatsApp(phone: string, text: string, document?: { url
     method: 'POST',
     headers: { Authorization: `Bearer ${env.WHATSAPP_API_TOKEN}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ messaging_product: 'whatsapp', to: phone.replace(/^\+/, ''), ...payload }),
+    signal: AbortSignal.timeout(10_000),
   });
   const res = await send(document ? { type: 'document', document: { link: document.url, filename: document.filename, caption: text } } : { type: 'text', text: { body: text } });
   if (!res.ok) throw new Error(`WhatsApp send failed: ${res.status} ${await res.text().catch(() => '')}`);

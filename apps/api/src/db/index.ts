@@ -31,8 +31,8 @@ export const sequelize = new Sequelize(env.DATABASE_URL, {
   dialect: 'postgres',
   logging: env.NODE_ENV === 'development' ? (sql) => logger.debug(sql) : false,
   define: { underscored: true },
-  pool: { max: 10, idle: 10_000 },
-  ...(env.NODE_ENV === 'production' ? { dialectOptions: { ssl: { require: true, rejectUnauthorized: true } } } : {}),
+  pool: { max: env.DATABASE_POOL_MAX, idle: 10_000 },
+  ...(env.DATABASE_SSL ? { dialectOptions: { ssl: { require: true, rejectUnauthorized: true } } } : {}),
 });
 
 export const models = {

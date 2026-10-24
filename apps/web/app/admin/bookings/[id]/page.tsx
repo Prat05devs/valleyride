@@ -91,7 +91,7 @@ export default function AdminBookingPage({ params }: { params: Promise<{ id: str
               <tr key={p.id} className="border-t border-line">
                 <td className="px-2.5 py-3">{KIND[p.kind] ?? p.kind}</td><td className="px-2.5 py-3 text-muted">{short(p.providerOrderId)}</td><td className="px-2.5 py-3 text-muted">{short(p.providerPaymentId)}</td>
                 <td className="px-2.5 py-3 text-right font-medium">{p.kind === 'REFUND' ? '−' : ''}{formatPaise(p.amountPaise, true)}</td>
-                <td className="px-2.5 py-3"><span className={`inline-flex h-[26px] items-center rounded-full px-2.5 text-xs ${p.status === 'CAPTURED' || p.status === 'REFUNDED' ? 'bg-ink text-surface' : p.status === 'FAILED' ? 'bg-field text-muted' : 'bg-orange-tint text-orange-ink'}`}>{p.status}</span></td>
+                <td className="px-2.5 py-3"><span className={`inline-flex h-[26px] items-center rounded-full px-2.5 text-xs ${p.status === 'CAPTURED' || p.status === 'REFUNDED' ? 'bg-ink text-surface' : p.status === 'FAILED' && p.kind !== 'REFUND' ? 'bg-field text-muted' : 'bg-orange-tint text-orange-ink'}`}>{p.kind === 'REFUND' && p.status === 'FAILED' ? 'FAILED · retry in Razorpay' : p.status}</span></td>
                 <td className="px-2.5 py-3 text-muted">{formatDateTime(p.at)}</td>
               </tr>
             ))}

@@ -318,7 +318,7 @@ footer{color:var(--muted);font-size:.8rem;padding:24px 0 40px;border-top:1px sol
 
     <text class="lane" x="40" y="124">EDGE</text>
     <rect class="b edge" x="40" y="130" width="980" height="44" rx="10"/>
-    <text class="t" x="530" y="150" text-anchor="middle">Cloudflare (DNS · CDN · WAF · bot protection)  →  Nginx reverse proxy</text>
+    <text class="t" x="530" y="150" text-anchor="middle">GoDaddy DNS → Hostinger (web) · Caddy on DigitalOcean (API)</text>
     <text class="s" x="530" y="166" text-anchor="middle">valleyride.in → Next.js   ·   api.valleyride.in → Express   ·   TLS, gzip, rate limits</text>
 
     <line x1="230" y1="174" x2="230" y2="212" marker-end="url(#ah)"/>
@@ -530,34 +530,34 @@ footer{color:var(--muted);font-size:.8rem;padding:24px 0 40px;border-top:1px sol
       <h4>Environments</h4>
       <ul class="ticks">
         <li><b>Local:</b> <code>docker compose up</code> starts Postgres 16, Redis and Mailpit; <code>pnpm dev</code> runs web, api and worker with hot reload.</li>
-        <li><b>Staging:</b> deployed automatically on merge to <code>main</code>, with seeded demo data and Razorpay test keys.</li>
-        <li><b>Production:</b> deployed from a tagged release after migrations run.</li>
+        <li><b>Main branch:</b> publishes the API image; staging rollout is not enabled. Demo data and test payments stay outside production.</li>
+        <li><b>Production:</b> a <code>v*</code> tag can deploy the API after migrations, once deployment is configured. Hostinger deploys the website separately.</li>
       </ul>
     </div>
     <div class="card">
-      <h4>Recommended hosting (India region)</h4>
+      <h4>Selected hosting plan</h4>
       <ul class="ticks">
-        <li><b>Web:</b> Vercel (Mumbai edge) or the same VM as the API</li>
-        <li><b>API + worker:</b> Docker on AWS EC2 / Lightsail in ap-south-1, behind Nginx</li>
-        <li><b>Postgres:</b> AWS RDS for PostgreSQL 16 in ap-south-1, daily snapshots + point-in-time recovery</li>
-        <li><b>Redis:</b> ElastiCache or a Redis container · <b>Files:</b> S3 ap-south-1 (private)</li>
+        <li><b>Web + dashboards:</b> Hostinger Node.js hosting at <code>valleyride.in</code></li>
+        <li><b>API + worker:</b> Docker on a DigitalOcean VPS in Bangalore, behind Caddy. Stable endpoint: <code>https://api.valleyride.in/api/v1</code>; hosting moves preserve this address.</li>
+        <li><b>Postgres:</b> one private PostgreSQL 16 instance on the VPS, separate database and role per app; scheduled off-server backups and restore checks required</li>
+        <li><b>Redis:</b> private container with persistent queues · <b>Files:</b> S3 ap-south-1 (private). Setup: <a href="infra/production/README.md">production guide</a></li>
       </ul>
     </div>
     <div class="card">
       <h4>CI/CD (GitHub Actions)</h4>
       <ul class="ticks">
         <li>On PR: lint, typecheck, Vitest, API integration tests on a Postgres service container</li>
-        <li>On main: build Docker images, push to GHCR or ECR, run <code>sequelize db:migrate</code>, roll out</li>
+        <li>On main: publish the API image to GHCR. On production tags: copy deployment files, run migrations and roll out API + worker when enabled.</li>
         <li>Tracks migrations with the default <code>SequelizeMeta</code> table</li>
       </ul>
     </div>
     <div class="card">
       <h4>Observability &amp; security</h4>
       <ul class="ticks">
-        <li>Sentry (web + api), pino JSON logs, uptime checks on <code>/health</code></li>
+        <li>Sentry (web + api), pino JSON logs, liveness at <code>/health</code>, PostgreSQL + Redis readiness at <code>/ready</code></li>
         <li>OTP login, 15-minute access JWT + rotating refresh token in an httpOnly cookie</li>
         <li>RBAC on every admin route; <code>audit_logs</code> for fleet, money and KYC actions</li>
-        <li>Secrets in AWS SSM or GitHub Environments, never in the repo</li>
+        <li>Backend secrets in the protected VPS environment file; deployment credentials in GitHub Environments, never in the repo</li>
       </ul>
     </div>
   </div>

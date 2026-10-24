@@ -6,13 +6,12 @@ WORKDIR /repo
 
 FROM base AS pruner
 COPY . .
-RUN pnpm dlx turbo@2 prune @valleyride/web --docker
+RUN pnpm dlx turbo@2.11.8 prune @valleyride/web --docker
 
 FROM base AS builder
-ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_API_URL=https://api.valleyride.in
 ARG NEXT_PUBLIC_SITE_URL=https://valleyride.in
-ARG NEXT_PUBLIC_RAZORPAY_KEY_ID
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_RAZORPAY_KEY_ID=$NEXT_PUBLIC_RAZORPAY_KEY_ID
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 COPY --from=pruner /repo/out/json/ .
 RUN pnpm install --frozen-lockfile
 COPY --from=pruner /repo/out/full/ .

@@ -169,7 +169,15 @@ function Change({ booking: b, phone, onPaid, onDone, confirming }: { booking: Bo
     try {
       const res = await api.post<{ razorpayOrderId: string | null; payPaise: number }>(`/bookings/${b.id}/extend`, { endAt }, { idempotencyKey: newIdempotencyKey() });
       if (!res.razorpayOrderId) { qc.invalidateQueries({ queryKey: ['booking', b.id] }); return; }
-      await payOrder({ orderId: res.razorpayOrderId, amountPaise: res.payPaise, bookingCode: b.code, phone, onPaid, onFailed: (r) => setError(`${r} Your trip was not changed.`) });
+      await payOrder({
+        orderId: res.razorpayOrderId, amountPaise: res.payPaise, bookingCode: b.code, phone,
+        onPaid: (result) => {
+          if (!result?.paymentRefunded) return onPaid();
+          setError('Someone booked your bike for that time while you were paying, so your trip was not extended. We are refunding the full amount to the UPI or card you paid with; refunds usually take 5–7 working days.');
+          qc.invalidateQueries({ queryKey: ['booking', b.id] });
+        },
+        onFailed: (r) => setError(`${r} Your trip was not changed.`),
+      });
     } catch (e) { setError(e instanceof ApiError ? e.message : 'Could not extend'); } finally { setBusy(false); }
   }
 

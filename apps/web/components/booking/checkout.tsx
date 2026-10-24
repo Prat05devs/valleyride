@@ -48,8 +48,15 @@ export function Checkout({ bookingId }: { bookingId: string }) {
   const model = models.data?.find((m) => m.id === b.vehicleModelId);
   const pickup = locations.data?.find((l) => l.id === b.pickupLocationId);
   const ret = locations.data?.find((l) => l.id === b.returnLocationId);
-  const expired = b.status === 'EXPIRED' || b.status === 'CANCELLED' || (b.status === 'PENDING_PAYMENT' && hold.seconds === 0 && !!b.holdExpiresAt);
+  // Once the rider has paid, only the server's status counts: a payment can still confirm after the countdown ends.
+  const expired = b.status === 'EXPIRED' || b.status === 'CANCELLED' || (stage === 'review' && b.status === 'PENDING_PAYMENT' && hold.seconds === 0 && !!b.holdExpiresAt);
 
+  if (expired && stage !== 'review') return (
+    <Panel title="Your hold ended before the payment arrived">
+      <p className="text-lg text-muted">The {model?.name ?? 'bike'} was released when the 15 minutes ran out, so we are refunding the full amount to the UPI or card you paid with. Refunds usually take 5–7 working days.</p>
+      <Link href="/book" className="inline-flex h-[50px] items-center rounded-full bg-ink px-6 text-surface">Check availability again</Link>
+    </Panel>
+  );
   if (expired) return (
     <Panel title="Your hold ended">
       <p className="text-lg text-muted">We keep a bike for 15 minutes while you pay. The time ran out, so the {model?.name ?? 'bike'} was released. You weren&apos;t charged.</p>

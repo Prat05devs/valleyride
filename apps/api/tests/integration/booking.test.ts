@@ -41,8 +41,26 @@ const bookingBody = (slug: string, w: { startAt: string; endAt: string }) => ({
 });
 
 describe('public catalogue', () => {
+  it('serves only the public payment key at runtime without caching credentials', async () => {
+    const res = await request(app).get('/api/v1/payments/config').expect(200);
+    expect(res.headers['cache-control']).toBe('no-store');
+    expect(res.body.data).toEqual({ keyId: 'rzp_test_dummy', enabled: true, mode: 'test', currency: 'INR' });
+    expect(JSON.stringify(res.body)).not.toContain('whsec_test');
+  });
   it('GET /health', async () => {
     await request(app).get('/health').expect(200, { ok: true });
+  });
+
+  it('readiness checks PostgreSQL and Redis', async () => {
+    await request(app).get('/ready').expect(200, { ok: true });
+  });
+
+  it('readiness fails when the database is unavailable while liveness stays healthy', async () => {
+    const probe = vi.spyOn(sequelize, 'authenticate').mockRejectedValueOnce(new Error('database unavailable'));
+    try {
+      await request(app).get('/ready').expect(503, { ok: false });
+      await request(app).get('/health').expect(200, { ok: true });
+    } finally { probe.mockRestore(); }
   });
 
   it('lists the 4 models cheapest first, in the { data, meta.requestId } envelope', async () => {
@@ -723,6 +741,37 @@ describe('OpenAPI', () => {
 });
 
 describe('Checkout callback', () => {
+  it('keeps the provider order available after a failed attempt so a reloaded checkout can retry', async () => {
+    const agent = await loginAs('+919800000142');
+    const created = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', window(252))).expect(201);
+    const { booking, razorpayOrderId } = created.body.data;
+    const event = { event: 'payment.failed', payload: { payment: { entity: { id: 'pay_declined', order_id: razorpayOrderId, amount: booking.totalPaise, status: 'failed' } } } };
+    const { raw, signature } = signWebhook(event);
+    await request(app).post('/api/v1/webhooks/razorpay').set('Content-Type', 'application/json')
+      .set('X-Razorpay-Signature', signature).set('X-Razorpay-Event-Id', newKey()).send(raw).expect(200);
+    const detail = await agent.get(`/api/v1/bookings/${booking.id}`).expect(200);
+    expect(detail.body.data.pendingOrderId).toBe(razorpayOrderId);
+    await capture(razorpayOrderId, booking.totalPaise);
+    expect((await agent.get(`/api/v1/bookings/${booking.id}`)).body.data.status).toBe('CONFIRMED');
+  });
+
+  it('does not confirm a captured payment with the wrong amount or currency', async () => {
+    const agent = await loginAs('+919800000141');
+    const created = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', window(251))).expect(201);
+    const { booking, razorpayOrderId } = created.body.data;
+    for (const details of [{ amount: booking.totalPaise - 1, currency: 'INR' }, { amount: booking.totalPaise, currency: 'USD' }]) {
+      const event = { event: 'payment.captured', payload: { payment: { entity: { id: 'pay_mismatch', order_id: razorpayOrderId, status: 'captured', ...details } } } };
+      const { raw, signature } = signWebhook(event);
+      const res = await request(app).post('/api/v1/webhooks/razorpay').set('Content-Type', 'application/json')
+        .set('X-Razorpay-Signature', signature).set('X-Razorpay-Event-Id', newKey()).send(raw).expect(400);
+      expect(res.body.error.code).toBe('PAYMENT_AMOUNT_MISMATCH');
+    }
+    const detail = await agent.get(`/api/v1/bookings/${booking.id}`).expect(200);
+    expect(detail.body.data.status).toBe('PENDING_PAYMENT');
+    await capture(razorpayOrderId, booking.totalPaise);
+    expect((await agent.get(`/api/v1/bookings/${booking.id}`)).body.data.status).toBe('CONFIRMED');
+  });
+
   it('confirms from the signed Checkout result without waiting for the webhook, and rejects a forged signature', async () => {
     const { createHmac } = await import('node:crypto');
     const agent = await loginAs('+919800000140');
@@ -732,7 +781,70 @@ describe('Checkout callback', () => {
     const signature = createHmac('sha256', 'dummy').update(`${orderId}|${paymentId}`).digest('hex');
     await agent.post('/api/v1/payments/verify').send({ orderId, paymentId, signature: 'a'.repeat(64) }).expect(400);
     const ok = await agent.post('/api/v1/payments/verify').send({ orderId, paymentId, signature }).expect(200);
-    expect(ok.body.data.status).toBe('CONFIRMED');
+    expect(ok.body.data).toMatchObject({ status: 'CONFIRMED', paymentRefunded: false });
     await agent.post('/api/v1/payments/verify').send({ orderId, paymentId, signature }).expect(200); // repeat is harmless
+  });
+});
+
+describe('money that has nowhere to go', () => {
+  it('refunds a payment that arrives after the hold has expired instead of keeping it', async () => {
+    const agent = await loginAs('+919800000150');
+    const created = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', window(260))).expect(201);
+    const { booking, razorpayOrderId } = created.body.data;
+    await sequelize.query(`UPDATE bookings SET hold_expires_at = now() - interval '1 minute' WHERE id = :id`, { replacements: { id: booking.id } });
+    await holdExpiry({ data: { bookingId: booking.id } } as any);
+
+    await capture(razorpayOrderId, booking.totalPaise);
+
+    expect((await agent.get(`/api/v1/bookings/${booking.id}`)).body.data.status).toBe('EXPIRED');
+    const refunds = await sequelize.query<any>(`SELECT amount_paise, status, raw->>'reason' AS reason FROM payments WHERE booking_id = :id AND kind = 'REFUND'`,
+      { replacements: { id: booking.id }, type: QueryTypes.SELECT });
+    expect(refunds).toEqual([{ amount_paise: booking.totalPaise, status: 'REFUNDED', reason: 'paid after the hold ended' }]);
+  });
+
+  it('tells the checkout callback when a late payment was refunded', async () => {
+    const { createHmac } = await import('node:crypto');
+    const agent = await loginAs('+919800000152');
+    const created = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', window(264))).expect(201);
+    const { booking, razorpayOrderId: orderId } = created.body.data;
+    await sequelize.query(`UPDATE bookings SET hold_expires_at = now() - interval '1 minute' WHERE id = :id`, { replacements: { id: booking.id } });
+    await holdExpiry({ data: { bookingId: booking.id } } as any);
+
+    const paymentId = `pay_for_${orderId}`;
+    const signature = createHmac('sha256', 'dummy').update(`${orderId}|${paymentId}`).digest('hex');
+    const res = await agent.post('/api/v1/payments/verify').send({ orderId, paymentId, signature }).expect(200);
+    expect(res.body.data).toMatchObject({ status: 'EXPIRED', paymentRefunded: true });
+  });
+
+  it('marks a refund FAILED on refund.failed so the deposit is not settled, and logs it', async () => {
+    const { booking } = await confirmedBooking('+919800000151', 'hunter-350', window(262));
+    const refundId = `rfnd_fail_${Date.now()}`;
+    await sequelize.query(`INSERT INTO payments (booking_id, kind, amount_paise, status, provider_payment_id) VALUES (:id, 'REFUND', 1000, 'CREATED', :refundId)`,
+      { replacements: { id: booking.id, refundId } });
+    const { raw, signature } = signWebhook({ event: 'refund.failed', payload: { refund: { entity: { id: refundId, amount: 1000 } } } });
+    await request(app).post('/api/v1/webhooks/razorpay').set('Content-Type', 'application/json')
+      .set('X-Razorpay-Signature', signature).set('X-Razorpay-Event-Id', `evt_${newKey()}`).send(raw).expect(200);
+
+    const [row] = await sequelize.query<any>(`SELECT status FROM payments WHERE provider_payment_id = :refundId`, { replacements: { refundId }, type: QueryTypes.SELECT });
+    expect(row.status).toBe('FAILED');
+    const audits = await sequelize.query<any>(`SELECT action FROM audit_logs WHERE entity_id = :id AND action = 'payment.refund_failed'`,
+      { replacements: { id: booking.id }, type: QueryTypes.SELECT });
+    expect(audits).toHaveLength(1);
+  });
+});
+
+describe('OTP abuse limits', () => {
+  it('caps codes per phone even when every request comes from a new IP', async () => {
+    const phone = '+919800000160';
+    for (let i = 1; i <= 5; i++) {
+      await request(app).post('/api/v1/auth/otp/request').set('X-Forwarded-For', `10.0.0.${i}`).send({ phone }).expect(202);
+    }
+    const res = await request(app).post('/api/v1/auth/otp/request').set('X-Forwarded-For', '10.0.0.99').send({ phone }).expect(429);
+    expect(res.body.error.code).toBe('RATE_LIMITED');
+  });
+
+  it('answers 413, not 500, for a body over the size limit', async () => {
+    const res = await request(app).post('/api/v1/quotes').set('Content-Type', 'application/json').send(JSON.stringify({ pad: 'x'.repeat(1_100_000) })).expect(413);
+    expect(res.body.error.code).toBe('BAD_REQUEST');
   });
 });

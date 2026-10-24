@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { use } from 'react';
 import { Icon } from '@/components/brand/icon';
 import { dateOf, exact, NotInvestor, type Investment, whole } from '@/components/investor/portal';
-import { api } from '@/lib/api-client';
+import { api, API_URL } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 
 export default function InvestmentPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,7 +28,7 @@ export default function InvestmentPage({ params }: { params: Promise<{ id: strin
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><span className="text-[15px] tracking-[0.5px] text-muted">{i.ref} · Phase 4</span><h1 className="mt-1 text-[40px] font-normal tracking-[-0.6px]">{whole(i.principalPaise)} at {i.annualRatePct}% for {i.tenureMonths} months</h1></div>
         <div className="flex gap-2">
-          <a href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'}/api/v1/investor/statements/${i.id}.pdf`} className="inline-flex h-[50px] items-center gap-2 rounded-full bg-surface px-[22px] text-[15px]"><Icon name="download" size={18} />Statement PDF</a>
+          <a href={`${API_URL}/api/v1/investor/statements/${i.id}.pdf`} className="inline-flex h-[50px] items-center gap-2 rounded-full bg-surface px-[22px] text-[15px]"><Icon name="download" size={18} />Statement PDF</a>
           <button type="button" onClick={agreement} className="inline-flex h-[50px] items-center gap-2 rounded-full bg-surface px-[22px] text-[15px]"><Icon name="doc" size={18} />Signed agreement</button>
         </div>
       </div>

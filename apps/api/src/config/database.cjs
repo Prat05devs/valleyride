@@ -9,10 +9,12 @@ const common = {
   dialect: 'postgres',
   migrationStorageTableName: 'SequelizeMeta',
   define: { underscored: true },
+  ...((process.env.DATABASE_SSL ? process.env.DATABASE_SSL === 'true' : process.env.NODE_ENV === 'production')
+    ? { dialectOptions: { ssl: { require: true, rejectUnauthorized: true } } } : {}),
 };
 
 module.exports = {
   development: common,
   test: common,
-  production: { ...common, dialectOptions: { ssl: { require: true, rejectUnauthorized: true } } },
+  production: common,
 };

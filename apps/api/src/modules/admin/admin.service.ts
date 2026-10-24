@@ -5,21 +5,21 @@ import {
   AuditLog, Booking, CustomerDocument, Handover, Location, MaintenanceRecord, Payment, sequelize, User, Vehicle, VehicleDocument, VehicleModel,
 } from '../../db';
 import { AppError } from '../../utils/AppError';
+import { audit, type Actor } from '../../utils/audit';
 import { toDocumentDTO } from '../kyc/kyc.service';
 import { invalidate } from '../../utils/cache';
 import { bookingService } from '../booking/booking.service';
 
-type Actor = { id: string; ip: string | null };
-const audit = (a: Actor, action: string, entity: string, entityId: string, diff: unknown) =>
-  AuditLog.create({ actorId: a.id, action, entity, entityId, diff, ip: a.ip });
 
 /** Days until a YYYY-MM-DD date (negative when past). */
 const daysUntil = (d: string | null) => (d ? Math.ceil((new Date(`${d}T00:00:00+05:30`).getTime() - Date.now()) / 86_400_000) : null);
 
 export const adminService = {
   // ─── Fleet ────────────────────────────────────────────────────────────────────────────────────
-  async vehicles() {
+  /** The fleet list, or one vehicle when `id` is given, with its live bookings and document alerts. */
+  async vehicles(id?: string) {
     const rows = await Vehicle.findAll({
+      where: id ? { id } : {},
       include: [
         { model: VehicleModel, as: 'model', attributes: ['id', 'slug', 'name'] },
         { model: Location, as: 'homeLocation', attributes: ['id', 'name'] },
@@ -29,7 +29,7 @@ export const adminService = {
     });
     const now = new Date();
     const live = await Booking.findAll({
-      where: { status: { [Op.in]: ['CONFIRMED', 'ONGOING'] }, endAt: { [Op.gt]: now } },
+      where: { status: { [Op.in]: ['CONFIRMED', 'ONGOING'] }, endAt: { [Op.gt]: now }, ...(id ? { vehicleId: id } : {}) },
       attributes: ['id', 'code', 'vehicleId', 'status', 'startAt', 'endAt'], order: [['startAt', 'ASC']],
     });
     return rows.map((v) => {
@@ -49,7 +49,7 @@ export const adminService = {
   },
 
   async vehicle(id: string) {
-    const v = (await this.vehicles()).find((x) => x.id === id);
+    const [v] = await this.vehicles(id);
     if (!v) throw new AppError(404, 'NOT_FOUND', 'Vehicle not found');
     const [maintenance, bookings] = await Promise.all([
       MaintenanceRecord.findAll({ where: { vehicleId: id }, order: [['performedOn', 'DESC']], limit: 50 }),
@@ -66,7 +66,7 @@ export const adminService = {
   async createVehicle(a: Actor, input: CreateVehicleInput) {
     try {
       const v = await Vehicle.create({ ...input, registrationNo: input.registrationNo.replace(/\s+/g, ' '), purchasedOn: input.purchasedOn ?? null });
-      await audit(a, 'vehicle.create', 'vehicle', v.id, input);
+      await audit(a, { action: 'vehicle.create', entity: 'vehicle', entityId: v.id, diff: input });
       await invalidate('fleet:');
       return v;
     } catch (e) {
@@ -81,7 +81,7 @@ export const adminService = {
     if (!v) throw new AppError(404, 'NOT_FOUND', 'Vehicle not found');
     const before = v.status;
     await v.update({ status });
-    await audit(a, 'vehicle.status', 'vehicle', id, { status: [before, status], reason: reason ?? null });
+    await audit(a, { action: 'vehicle.status', entity: 'vehicle', entityId: id, diff: { status: [before, status], reason: reason ?? null } });
     await invalidate('fleet:');
     const affected = status === 'ACTIVE' ? [] : await Booking.findAll({
       where: { vehicleId: id, status: { [Op.in]: ACTIVE_STATUSES as string[] }, endAt: { [Op.gt]: new Date() } }, attributes: ['id', 'code', 'startAt'],
@@ -95,16 +95,18 @@ export const adminService = {
     const m = await MaintenanceRecord.create({ vehicleId: id, ...input, notes: input.notes ?? null });
     const scheduled = input.performedOn > new Date(Date.now() + 5.5 * 3_600_000).toISOString().slice(0, 10);
     if (!scheduled && input.odometerKm > v.odometerKm) await v.update({ odometerKm: input.odometerKm }); // a future date is a scheduled service
-    await audit(a, 'vehicle.maintenance', 'vehicle', id, { type: input.type, costPaise: input.costPaise });
+    await audit(a, { action: 'vehicle.maintenance', entity: 'vehicle', entityId: id, diff: { type: input.type, costPaise: input.costPaise } });
     return m;
   },
 
   async addVehicleDocument(a: Actor, id: string, input: { type: 'RC' | 'INSURANCE' | 'PERMIT' | 'PUC'; number: string; expiresOn?: string }) {
     if (!(await Vehicle.findByPk(id))) throw new AppError(404, 'NOT_FOUND', 'Vehicle not found');
-    await VehicleDocument.destroy({ where: { vehicleId: id, type: input.type } }); // one current document per type
-    const d = await VehicleDocument.create({ vehicleId: id, type: input.type, number: input.number, expiresOn: input.expiresOn ?? null, fileKey: null });
-    await audit(a, 'vehicle.document', 'vehicle', id, input);
-    return d;
+    return sequelize.transaction(async (t) => {
+      await VehicleDocument.destroy({ where: { vehicleId: id, type: input.type }, transaction: t }); // one current document per type
+      const d = await VehicleDocument.create({ vehicleId: id, type: input.type, number: input.number, expiresOn: input.expiresOn ?? null, fileKey: null }, { transaction: t });
+      await audit(a, { action: 'vehicle.document', entity: 'vehicle', entityId: id, diff: input }, t);
+      return d;
+    });
   },
 
   // ─── Bookings ─────────────────────────────────────────────────────────────────────────────────
@@ -157,7 +159,7 @@ export const adminService = {
       include: [{ model: User, as: 'actor', attributes: ['fullName', 'role'] }], order: [['createdAt', 'DESC']], limit: 50,
     });
     const AUDIT_TEXT: Record<string, string> = {
-      'handover.pickup': 'Pickup recorded at the desk', 'handover.return': 'Return inspected', 'booking.cancelled': 'Booking cancelled', 'payment.captured': 'Payment captured', 'payment.refund': 'Refund sent', 'booking.extend': 'Trip extended',
+      'handover.pickup': 'Pickup recorded at the desk', 'handover.return': 'Return inspected', 'booking.cancelled': 'Booking cancelled', 'payment.captured': 'Payment captured', 'payment.refund': 'Refund sent', 'payment.refund_failed': 'Refund failed, retry it in Razorpay', 'booking.extend': 'Trip extended',
       'kyc.verified': 'Document verified', 'kyc.rejected': 'Document rejected',
     };
     const activity = [
@@ -188,7 +190,7 @@ export const adminService = {
   async cancel(a: Actor, id: string, reason?: string) {
     const b = await Booking.findByPk(id, { attributes: ['userId'] });
     if (!b) throw new AppError(404, 'NOT_FOUND', 'Booking not found');
-    return bookingService.cancel(b.userId, id, reason ? `staff: ${reason}` : 'staff', a.id);
+    return bookingService.cancel(b.userId, id, reason ? `staff: ${reason}` : 'staff', a);
   },
 
   // ─── Dashboard ────────────────────────────────────────────────────────────────────────────────

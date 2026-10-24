@@ -16,8 +16,10 @@ export async function cached<T>(key: string, ttlSeconds: number, load: () => Pro
   return value;
 }
 
+/** SCAN rather than KEYS, which blocks Redis while it walks every key. */
 export async function invalidate(prefix: string) {
   const redis = getRedis();
-  const keys = await redis.keys(`cache:${prefix}*`);
-  if (keys.length) await redis.del(...keys);
+  for await (const keys of redis.scanStream({ match: `cache:${prefix}*`, count: 100 })) {
+    if ((keys as string[]).length) await redis.unlink(...(keys as string[]));
+  }
 }

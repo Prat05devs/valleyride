@@ -2,9 +2,8 @@
 
 import { Icon } from '@/components/brand/icon';
 import { exact, NotInvestor, PortalHeader, useInvestments } from '@/components/investor/portal';
-import { api } from '@/lib/api-client';
+import { api, API_URL } from '@/lib/api-client';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 export default function StatementsPage() {
   const { data, error } = useInvestments();
@@ -41,7 +40,7 @@ export default function StatementsPage() {
           {list.map((i) => (
             <div key={i.id} className="flex flex-wrap items-center gap-3.5 border-t border-line py-4">
               <span className="flex-[1_1_220px]"><span className="block text-[17px]">{i.ref} statement</span><span className="text-sm text-muted">Schedule and payments to date</span></span>
-              <a href={`${API}/api/v1/investor/statements/${i.id}.pdf`} aria-label={`Download the ${i.ref} statement`} className="inline-flex h-11 items-center gap-1.5 rounded-full bg-field px-[18px] text-sm"><Icon name="download" size={16} />PDF</a>
+              <a href={`${API_URL}/api/v1/investor/statements/${i.id}.pdf`} aria-label={`Download the ${i.ref} statement`} className="inline-flex h-11 items-center gap-1.5 rounded-full bg-field px-[18px] text-sm"><Icon name="download" size={16} />PDF</a>
             </div>
           ))}
         </section>

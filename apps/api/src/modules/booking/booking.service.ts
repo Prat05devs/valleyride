@@ -3,12 +3,13 @@ import { addMinutes } from 'date-fns';
 import { sequelize, Booking, VehicleModel, Coupon, Payment } from '../../db';
 import { cancellationRefund, ACTIVE_STATUSES, type CreateBookingInput } from '@valleyride/shared';
 import { pricingService } from '../pricing/pricing.service';
-import { audit } from '../../utils/audit';
+import { audit, type Actor } from '../../utils/audit';
 import { AppError } from '../../utils/AppError';
 import { applyExtension, paymentService, type PendingExtension } from '../payment/payment.service';
 import { bookingJobs } from './booking.jobs';
-import { newBookingCode } from './booking.utils';
+import { isOverlap, newBookingCode } from './booking.utils';
 import { assertTransition, EXTENDABLE } from './booking.state';
+import { assertPaymentsAvailable } from '../payment/razorpay.client';
 
 const HOLD_MINUTES = 15;
 
@@ -46,6 +47,7 @@ export const bookingService = {
 
   /** Holds one vehicle for 15 min and returns a Razorpay order to pay. */
   async create(userId: string, input: CreateBookingInput, idempotencyKey: string) {
+    assertPaymentsAvailable();
     const model = await VehicleModel.findByPk(input.vehicleModelId, { rejectOnEmpty: true });
     const coupon = input.couponCode ? await Coupon.findValid(input.couponCode) : null;
     const q = await pricingService.quoteModel(model, input.startAt, input.endAt, {
@@ -98,10 +100,15 @@ export const bookingService = {
         }, { transaction: t });
       }));
 
-    // Outside the transaction: external calls must never hold DB locks.
-    const order = await paymentService.createOrder(booking, idempotencyKey);
+    // Outside the transaction: external calls must never hold DB locks. If Razorpay cannot open the order, the hold is
+    // released at once instead of blocking the bike for 15 minutes.
     await bookingJobs.scheduleHoldExpiry(booking.id, HOLD_MINUTES);
-    return { booking, order };
+    try {
+      return { booking, order: await paymentService.createOrder(booking, idempotencyKey) };
+    } catch (err) {
+      await booking.update({ status: 'EXPIRED', holdExpiresAt: null });
+      throw err;
+    }
   },
 
   async listMine(userId: string) {
@@ -113,6 +120,7 @@ export const bookingService = {
    * superseded by a new one, so the amount Razorpay charges always matches the booking.
    */
   async applyCoupon(userId: string, id: string, code: string | null) {
+    assertPaymentsAvailable();
     const { booking, changed } = await sequelize.transaction(async (t) => {
       const booking = await Booking.findOne({ where: { id, userId }, lock: t.LOCK.UPDATE, transaction: t });
       if (!booking) throw new AppError(404, 'NOT_FOUND', 'Booking not found');
@@ -132,13 +140,15 @@ export const bookingService = {
       await Payment.update({ status: 'FAILED', raw: { superseded: 'coupon' } }, { where: { bookingId: id, kind: 'RENTAL', status: 'CREATED' }, transaction: t });
       return { booking, changed: true };
     });
-    const orderId = changed ? (await paymentService.createOrder(booking, `${id}:coupon:${Date.now()}`)).id : await this.pendingOrderId(id);
+    const existingOrder = changed ? null : await this.pendingOrderId(id);
+    const orderId = existingOrder ?? (await paymentService.createOrder(booking, `${id}:coupon:${Date.now()}`)).id;
     return { booking, razorpayOrderId: orderId };
   },
 
   async pendingOrderId(bookingId: string) {
-    const p = await Payment.findOne({ where: { bookingId, kind: 'RENTAL', status: 'CREATED' }, order: [['createdAt', 'DESC']] });
-    return p?.providerOrderId ?? null;
+    // A failed attempt can be retried against the same Razorpay order. Coupon-superseded orders cannot.
+    const payments = await Payment.findAll({ where: { bookingId, kind: 'RENTAL', status: ['CREATED', 'FAILED'] }, order: [['createdAt', 'DESC']] });
+    return payments.find((p) => p.providerOrderId && !(p.raw as { superseded?: string } | null)?.superseded)?.providerOrderId ?? null;
   },
 
   async getOne(userId: string, id: string) {
@@ -151,7 +161,7 @@ export const bookingService = {
    * Unpaid holds are simply cancelled. Paid bookings follow the cancellation policy in @valleyride/shared;
    * the Razorpay refunds run after the commit, because external calls must never hold DB locks.
    */
-  async cancel(userId: string, id: string, reason?: string, actorId: string = userId) {
+  async cancel(userId: string, id: string, reason?: string, actor: Actor = { id: userId, ip: null }) {
     const { booking, refund } = await sequelize.transaction(async (t) => {
       const booking = await Booking.findOne({ where: { id, userId }, lock: t.LOCK.UPDATE, transaction: t });
       if (!booking) throw new AppError(404, 'NOT_FOUND', 'Booking not found');
@@ -159,7 +169,8 @@ export const bookingService = {
       const refund = booking.status === 'CONFIRMED' ? cancellationRefund(booking.toDTO()) : null;
       const before = booking.status;
       await booking.update({ status: 'CANCELLED', holdExpiresAt: null }, { transaction: t });
-      await audit(actorId, 'booking.cancelled', 'booking', booking.id, { status: [before, 'CANCELLED'], reason: reason ?? null, refundPaise: refund?.refundPaise ?? 0 }, null, t);
+      await audit(actor, { action: 'booking.cancelled', entity: 'booking', entityId: booking.id,
+        diff: { status: [before, 'CANCELLED'], reason: reason ?? null, refundPaise: refund?.refundPaise ?? 0 } }, t);
       return { booking, refund };
     });
     if (refund && refund.refundPaise > 0) await paymentService.refund(booking.id, refund.refundPaise, reason ? `cancelled: ${reason}` : 'cancelled');
@@ -205,7 +216,8 @@ export const bookingService = {
     const p = await this.extendPreview(userId, id, endAt);
     if (!p.available) throw new AppError(409, 'NO_AVAILABILITY', 'Your bike is booked by someone else for that time.');
     if (p.payPaise === 0) {
-      await sequelize.transaction((t) => applyExtension(p.booking.id, { ...p.extension, ...pick(p.booking) }, t));
+      const applied = await sequelize.transaction((t) => applyExtension(p.booking.id, { ...p.extension, ...pick(p.booking) }, t));
+      if (!applied) throw new AppError(409, 'NO_AVAILABILITY', 'Your bike is booked by someone else for that time.');
       return { booking: await p.booking.reload(), razorpayOrderId: null, payPaise: 0 };
     }
     const order = await paymentService.createExtensionOrder(p.booking, p.payPaise, p.extension, idempotencyKey);
@@ -220,8 +232,6 @@ function pick(b: Booking) {
     taxPaise: Number(b.taxPaise), totalPaise: Number(b.totalPaise), tierPct: Number(b.tierPct),
   };
 }
-
-const isOverlap = (e: unknown) => (e as { parent?: { code?: string } })?.parent?.code === '23P01';
 
 async function retryOnOverlap<T>(run: () => Promise<T>, attempts = 3): Promise<T> {
   for (let i = 1; ; i++) {

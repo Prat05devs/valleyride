@@ -9,7 +9,22 @@ Two-wheeler rental platform for Dehradun, Mussoorie and Rishikesh. The design so
 | `apps/api` | Express 5 + Sequelize 6 — REST `/api/v1`, plus the BullMQ worker |
 | `apps/mobile` | Expo app (iOS + Android), same API |
 | `packages/shared` | Zod schemas, enums and `pricing.ts`, imported by every app |
-| `infra` | Docker Compose (Postgres 16, Redis, Mailpit), Dockerfiles, Nginx |
+| `infra` | Local services, Dockerfiles, production Caddy/Compose and Hostinger setup |
+
+## Production hosting
+
+The website and dashboards run on **Hostinger Node.js hosting**; the API and worker run on a **DigitalOcean VPS**
+behind Caddy. PostgreSQL and Redis stay private. Mobile release builds always call **`https://api.valleyride.in`**
+and use REST endpoints under `/api/v1`; changing backend providers only requires moving the services/data and
+updating DNS while preserving that API contract.
+
+Razorpay credentials are configured on the backend only. The website and mobile app fetch the public key at checkout,
+so adding payment keys later does not require another frontend build. Follow [payment activation](infra/production/PAYMENTS.md)
+for the key ID, key secret, webhook secret and dashboard configuration. The app now uses Razorpay's native SDK;
+rebuild native apps once to include it.
+
+Follow the [production setup and migration guide](infra/production/README.md) for the supplied droplet,
+DNS, private database, HTTPS, Hostinger build settings, mobile releases, backups and launch requirements.
 
 ## Run locally
 

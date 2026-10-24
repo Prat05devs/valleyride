@@ -28,6 +28,7 @@ paymentWebhookRouter.post('/razorpay', express.raw({ type: 'application/json', l
     if (event.event === 'payment.captured') await paymentService.handleCaptured(entity, event);
     else if (event.event === 'payment.failed') await paymentService.handleFailed(entity, event);
     else if (event.event === 'refund.processed') await paymentService.handleRefundProcessed(event.payload?.refund?.entity, event);
+    else if (event.event === 'refund.failed') await paymentService.handleRefundFailed(event.payload?.refund?.entity, event);
     else logger.info({ event: event.event }, 'razorpay event ignored');
   } catch (err) {
     await getRedis().del(seenKey);

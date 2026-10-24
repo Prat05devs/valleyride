@@ -16,7 +16,9 @@ export async function sendOtp(phone: string, code: string, channel: 'sms' | 'wha
   if (!env.MSG91_AUTH_KEY || !env.MSG91_OTP_TEMPLATE_ID) throw new Error('MSG91_AUTH_KEY and MSG91_OTP_TEMPLATE_ID must be set');
   const url = new URL('https://control.msg91.com/api/v5/otp');
   url.search = new URLSearchParams({ template_id: env.MSG91_OTP_TEMPLATE_ID, mobile: phone.replace(/^\+/, ''), otp: code }).toString();
-  const res = await fetch(url, { method: 'POST', headers: { authkey: env.MSG91_AUTH_KEY, 'Content-Type': 'application/json' } });
+  const res = await fetch(url, {
+    method: 'POST', headers: { authkey: env.MSG91_AUTH_KEY, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(10_000),
+  });
   const body = (await res.json().catch(() => null)) as { type?: string; message?: string } | null;
   if (!res.ok || body?.type === 'error') throw new Error(`MSG91 OTP failed: ${body?.message ?? res.status}`);
 }

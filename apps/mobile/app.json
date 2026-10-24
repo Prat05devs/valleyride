@@ -11,6 +11,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "in.valleyride.app",
       "buildNumber": "1",
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": ["tez", "phonepe", "paytmmp", "credpay", "mobikwik", "in.fampay.app", "bhim", "amazonpay", "navi", "kiwi", "payzapp", "jupiter", "omnicard", "icici", "popclubapp", "sbiyono", "myjio", "slice-upi", "bobupi", "shriramone", "indusmobile", "whatsapp", "kotakbank"]
+      },
       "config": {
         "usesNonExemptEncryption": false
       }

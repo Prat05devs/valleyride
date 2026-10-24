@@ -1,6 +1,7 @@
 import IORedis from 'ioredis';
 import { Queue } from 'bullmq';
 import { env } from '../config/env';
+import { logger } from '../utils/logger';
 
 /** Job names, grouped by the queue that carries them. */
 export const QUEUES = {
@@ -15,11 +16,24 @@ export type JobName = (typeof QUEUES)[QueueName][number];
 let redis: IORedis | undefined;
 const queues = new Map<QueueName, Queue>();
 
-/** One shared connection, created on first use so importing this file never opens a socket. */
+/**
+ * The shared connection for request paths (OTP, idempotency, rate limits, cache) and queue producers. Created on first
+ * use so importing this file never opens a socket. Commands fail after two reconnect attempts instead of waiting forever,
+ * so a Redis outage returns errors (or falls back, in the cache) rather than hanging requests.
+ */
 export function getRedis(): IORedis {
-  // BullMQ requires maxRetriesPerRequest: null on connections it blocks on.
-  redis ??= new IORedis(env.REDIS_URL, { maxRetriesPerRequest: null });
+  if (!redis) {
+    redis = new IORedis(env.REDIS_URL, { maxRetriesPerRequest: 2, connectTimeout: 5_000 });
+    redis.on('error', (err) => logger.warn({ err: err.message }, 'redis connection error'));
+  }
   return redis;
+}
+
+/** BullMQ workers block on Redis and need their own connection with maxRetriesPerRequest: null. */
+export function workerConnection(): IORedis {
+  const conn = new IORedis(env.REDIS_URL, { maxRetriesPerRequest: null });
+  conn.on('error', (err) => logger.warn({ err: err.message }, 'redis connection error'));
+  return conn;
 }
 
 export function getQueue(name: QueueName): Queue {

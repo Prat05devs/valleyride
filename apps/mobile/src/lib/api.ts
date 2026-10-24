@@ -1,7 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000';
+// Release builds use our domain, independent of the backend hosting provider.
+export const API_URL = (__DEV__ ? process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000' : 'https://api.valleyride.in').replace(/\/+$/, '');
 
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string, public details?: unknown) {

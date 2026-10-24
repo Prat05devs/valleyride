@@ -5,7 +5,7 @@ import { api } from '@/lib/api-client';
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const site = process.env.NEXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === 'production' ? 'https://valleyride.in' : 'http://localhost:3000');
   const pages = ['', '/fleet', '/routes', '/invest', '/terms'].map((p) => ({ url: `${site}${p}` }));
   // The sitemap should never fail a build or a crawl just because the API is briefly down.
   const [models, routes] = await Promise.all([

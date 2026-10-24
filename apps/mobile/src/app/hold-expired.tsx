@@ -10,7 +10,7 @@ import { useTrip } from '@/lib/trip';
 import { colors } from '@/theme';
 
 export default function HoldExpired() {
-  const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
+  const { bookingId, paid } = useLocalSearchParams<{ bookingId: string; paid?: string }>();
   const insets = useSafeAreaInsets();
   const { booking } = useBooking(bookingId);
   const { byId } = useModels();
@@ -25,7 +25,8 @@ export default function HoldExpired() {
         <View style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' }}><Icon name="timer" size={38} /></View>
         <T v="hero">Your hold ended</T>
         <T style={{ color: colors.muted, textAlign: 'center', lineHeight: 22 }}>
-          We keep a bike for 15 minutes while you pay. The time ran out, so the {model ? shortName(model.name) : 'bike'} was released. You weren't charged.
+          We keep a bike for 15 minutes while you pay. The time ran out, so the {model ? shortName(model.name) : 'bike'} was released.
+          {paid ? ' Your payment arrived after that, so we are refunding the full amount to the UPI or card you paid with; refunds usually take 5–7 working days.' : " You weren't charged."}
         </T>
       </View>
       <Card style={{ gap: 4 }}>
