@@ -79,8 +79,7 @@ Before launch provide and test:
 - Razorpay live key ID/secret and webhook secret. Follow [payment activation](PAYMENTS.md). Register
   `https://api.valleyride.in/api/v1/webhooks/razorpay` for captured/failed payments and processed/failed refunds.
 - MSG91 credentials and an approved OTP template; verify login on a real phone number.
-- Private S3 bucket, access credentials, and upload CORS allowing `https://valleyride.in` and
-  `https://www.valleyride.in`, PUT/GET/HEAD, and upload headers including Content-Type. Native uploads also need testing.
+- A document photo upload from the website and from a phone, then the same file opened in the admin console.
 - SMTP credentials and verified sender; WhatsApp credentials/template setup if that channel is enabled.
 - Support contacts, GSTIN, SAC code, registered address, real rental terms and cancellation policy. Existing placeholders
   are recorded in the root README. Set the Expo project ID in `apps/mobile/app.json` and configure native push credentials
