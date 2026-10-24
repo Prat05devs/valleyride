@@ -17,8 +17,6 @@ const schema = z.object({
   RAZORPAY_KEY_ID: z.string().default(''),
   RAZORPAY_KEY_SECRET: z.string().default(''),
   RAZORPAY_WEBHOOK_SECRET: z.string().default(''),
-  MSG91_AUTH_KEY: z.string().optional(),
-  MSG91_OTP_TEMPLATE_ID: z.string().optional(),
   WHATSAPP_API_TOKEN: z.string().optional(),
   /** WhatsApp Cloud API sender (Meta Business > WhatsApp > API setup). */
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),

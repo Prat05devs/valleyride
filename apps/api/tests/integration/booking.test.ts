@@ -1,15 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { QueryTypes } from 'sequelize';
 import { quote } from '@valleyride/shared';
-import { app, ids, loginAs, newKey, otpCodes, request, signWebhook, window } from './helpers';
+import { app, ids, loginAs, loginWith, newKey, request, signWebhook, TEST_PASSWORD, window } from './helpers';
 import { sequelize } from '../../src/db';
 import { closeQueues } from '../../src/jobs/queue';
 import { holdExpiry } from '../../src/jobs/processors/holdExpiry';
-
-// Capture OTPs instead of sending them.
-vi.mock('../../src/modules/notification/sms', () => ({
-  sendOtp: async (phone: string, code: string) => { otpCodes.set(phone, code); },
-}));
 
 // Razorpay is replaced with a fake that returns a new order id per call.
 let orderSeq = 0;
@@ -106,16 +101,35 @@ describe('public catalogue', () => {
 });
 
 describe('auth', () => {
-  it('logs in with an OTP, sets cookies and serves /me', async () => {
+  it('signs up with phone and password, sets cookies and serves /me without the password hash', async () => {
     const agent = await loginAs('+919800000001');
     const me = await agent.get('/api/v1/me').expect(200);
     expect(me.body.data).toMatchObject({ phone: '+919800000001', role: 'customer' });
+    expect(JSON.stringify(me.body)).not.toMatch(/scrypt|password/i);
+    const [row] = await sequelize.query<any>(`SELECT password_hash FROM users WHERE phone = '+919800000001'`, { type: QueryTypes.SELECT });
+    expect(row.password_hash).toMatch(/^scrypt\$32768\$8\$1\$/);
   });
 
-  it('rejects a wrong code', async () => {
-    await request(app).post('/api/v1/auth/otp/request').send({ phone: '+919800000002' }).expect(202);
-    const res = await request(app).post('/api/v1/auth/otp/verify').send({ phone: '+919800000002', code: '000000' === otpCodes.get('+919800000002') ? '111111' : '000000' }).expect(400);
-    expect(res.body.error.code).toBe('OTP_INVALID');
+  it('refuses a second sign-up, a wrong password, an unknown number and a short password', async () => {
+    await loginAs('+919800000002');
+    expect((await request(app).post('/api/v1/auth/register').send({ phone: '+919800000002', password: 'something-else' }).expect(409)).body.error.code).toBe('ALREADY_REGISTERED');
+    expect((await request(app).post('/api/v1/auth/login').send({ phone: '+919800000002', password: 'wrong-password' }).expect(401)).body.error.code).toBe('LOGIN_FAILED');
+    expect((await request(app).post('/api/v1/auth/login').send({ phone: '+919800000003', password: 'wrong-password' }).expect(401)).body.error.code).toBe('LOGIN_FAILED');
+    await request(app).post('/api/v1/auth/register').send({ phone: '+919800000004', password: 'short' }).expect(422);
+  });
+
+  it('changing the password signs out the other devices', async () => {
+    const phone = '+919800000005';
+    const laptop = await loginAs(phone);
+    const phoneApp = await loginAs(phone);
+    await laptop.post('/api/v1/me/password').send({ currentPassword: 'not-it', newPassword: 'a-new-password' }).expect(400);
+    await laptop.post('/api/v1/me/password').send({ currentPassword: TEST_PASSWORD, newPassword: 'a-new-password' }).expect(200);
+    await laptop.get('/api/v1/me').expect(200);                   // this device got a fresh session
+    await phoneApp.post('/api/v1/auth/refresh').expect(401);       // the other device's refresh token is revoked
+    await request(app).post('/api/v1/auth/login').send({ phone, password: TEST_PASSWORD }).expect(401);
+    await request(app).post('/api/v1/auth/login').send({ phone, password: 'a-new-password' }).expect(200);
+    await sequelize.query(`UPDATE users SET password_hash = NULL WHERE phone = :phone`, { replacements: { phone } });
+    expect((await request(app).post('/api/v1/auth/login').send({ phone, password: 'a-new-password' }).expect(401)).body.error.code).toBe('NO_PASSWORD');
   });
 
   it('protects /bookings', async () => {
@@ -477,7 +491,8 @@ describe('Valley Ride Capital (Phase 4)', () => {
     await admin.post(`/api/v1/admin/repayments/${first.id}/mark-paid`).set('Idempotency-Key', newKey()).send({ txnRef: 'UTR8812' }).expect(200);
     await admin.post(`/api/v1/admin/repayments/${first.id}/mark-paid`).set('Idempotency-Key', newKey()).send({ txnRef: 'UTR8812' }).expect(409);
 
-    const investor = await loginAs('+919800000081');
+    expect(inv.body.data.temporaryPassword).toMatch(/^[A-Za-z2-9]{10}$/); // a new person has no password yet
+    const investor = await loginWith('+919800000081', inv.body.data.temporaryPassword);
     const mine = await investor.get('/api/v1/investor/investments').expect(200);
     expect(mine.body.data[0]).toMatchObject({ paidCount: 1, tenureMonths: 18 });
     expect(mine.body.data[0].ref).toMatch(/^VRC-\d{4}$/);
@@ -524,8 +539,8 @@ describe('coupon on a held booking', () => {
 describe('investor onboarding', () => {
   it('stores only masked PAN and bank details', async () => {
     const admin = await adminAgent('+919800000097');
-    await admin.post('/api/v1/admin/investors').send({ phone: '+919800000098', fullName: 'Kavya Bisht' }).expect(201);
-    const inv = await loginAs('+919800000098');
+    const created = await admin.post('/api/v1/admin/investors').send({ phone: '+919800000098', fullName: 'Kavya Bisht' }).expect(201);
+    const inv = await loginWith('+919800000098', created.body.data.temporaryPassword);
     const res = await inv.patch('/api/v1/investor/profile').send({ pan: 'abcde9876f', bank: { holder: 'Kavya Bisht', ifsc: 'sbin0001234', accountNumber: '123456789012' } }).expect(200);
     expect(res.body.data).toMatchObject({ panMasked: '••••••876F', bankAccountRef: 'Kavya Bisht · SBIN0001234 · ••••9012', kycStatus: 'PENDING' });
     const raw = await sequelize.query<any>(`SELECT pan_masked, bank_account_ref FROM investors i JOIN users u ON u.id = i.user_id WHERE u.phone = '+919800000098'`, { type: QueryTypes.SELECT });
@@ -833,14 +848,35 @@ describe('money that has nowhere to go', () => {
   });
 });
 
-describe('OTP abuse limits', () => {
-  it('caps codes per phone even when every request comes from a new IP', async () => {
+describe('password guessing and staff resets', () => {
+  it('caps wrong passwords per phone even when every guess comes from a new IP', async () => {
     const phone = '+919800000160';
-    for (let i = 1; i <= 5; i++) {
-      await request(app).post('/api/v1/auth/otp/request').set('X-Forwarded-For', `10.0.0.${i}`).send({ phone }).expect(202);
+    await loginAs(phone);
+    for (let i = 1; i <= 10; i++) {
+      await request(app).post('/api/v1/auth/login').set('X-Forwarded-For', `10.0.0.${i}`).send({ phone, password: `guess-${i}` }).expect(401);
     }
-    const res = await request(app).post('/api/v1/auth/otp/request').set('X-Forwarded-For', '10.0.0.99').send({ phone }).expect(429);
+    const res = await request(app).post('/api/v1/auth/login').set('X-Forwarded-For', '10.0.0.99').send({ phone, password: TEST_PASSWORD }).expect(429);
     expect(res.body.error.code).toBe('RATE_LIMITED');
+  });
+
+  it('staff give a rider a temporary password, but cannot reset staff; every old session ends', async () => {
+    const rider = await loginAs('+919800000161');
+    const staff = await staffAgent('+919800000162');
+    await loginAs('+919800000163');
+    await sequelize.query(`UPDATE users SET role = 'admin' WHERE phone = '+919800000163'`);
+
+    await rider.get('/api/v1/me').expect(200);
+    await rider.post('/api/v1/admin/users/password-reset').send({ phone: '+919800000161' }).expect(403);
+    const res = await staff.post('/api/v1/admin/users/password-reset').send({ phone: '+919800000161' }).expect(200);
+    const temp = res.body.data.temporaryPassword as string;
+    expect(temp).toMatch(/^[A-Za-z2-9]{10}$/);
+    await rider.post('/api/v1/auth/refresh').expect(401);
+    await request(app).post('/api/v1/auth/login').send({ phone: '+919800000161', password: temp }).expect(200);
+
+    await staff.post('/api/v1/admin/users/password-reset').send({ phone: '+919800000163' }).expect(403);
+    await staff.post('/api/v1/admin/users/password-reset').send({ phone: '+919800000169' }).expect(404);
+    const [log] = await sequelize.query<any>(`SELECT action, actor_id FROM audit_logs WHERE action = 'user.password_reset' ORDER BY created_at DESC LIMIT 1`, { type: QueryTypes.SELECT });
+    expect(log.action).toBe('user.password_reset');
   });
 
   it('answers 413, not 500, for a body over the size limit', async () => {

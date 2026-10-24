@@ -17,7 +17,7 @@ let redis: IORedis | undefined;
 const queues = new Map<QueueName, Queue>();
 
 /**
- * The shared connection for request paths (OTP, idempotency, rate limits, cache) and queue producers. Created on first
+ * The shared connection for request paths (idempotency, rate limits, cache) and queue producers. Created on first
  * use so importing this file never opens a socket. Commands fail after two reconnect attempts instead of waiting forever,
  * so a Redis outage returns errors (or falls back, in the cache) rather than hanging requests.
  */

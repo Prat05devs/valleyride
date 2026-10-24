@@ -132,9 +132,13 @@ function RecordInvestment({ investors, onDone }: { investors: Investor[]; onDone
 function AddInvestor({ onDone }: { onDone: () => void }) {
   const [f, setF] = useState({ name: '', phone: '', pan: '' });
   const [error, setError] = useState<string | null>(null);
+  const [added, setAdded] = useState<{ phone: string; temporaryPassword: string | null } | null>(null);
   async function save() {
-    setError(null);
-    try { await api.post('/admin/investors', { fullName: f.name, phone: `+91${f.phone.replace(/\D/g, '')}`, pan: f.pan || undefined }); setF({ name: '', phone: '', pan: '' }); onDone(); }
+    setError(null); setAdded(null);
+    try {
+      const r = await api.post<{ phone: string; temporaryPassword: string | null }>('/admin/investors', { fullName: f.name, phone: `+91${f.phone.replace(/\D/g, '')}`, pan: f.pan || undefined });
+      setAdded(r); setF({ name: '', phone: '', pan: '' }); onDone();
+    }
     catch (e) { setError(e instanceof ApiError ? (e.code === 'CAPITAL_CLOSED' ? 'Adding investors is switched off until legal and CA sign-off (CAPITAL_PORTAL_ENABLED).' : e.details ? 'Check the phone and PAN.' : e.message) : 'Could not add'); }
   }
   return (
@@ -144,8 +148,15 @@ function AddInvestor({ onDone }: { onDone: () => void }) {
       <label className="label text-[13px]">Mobile (+91)<Input inputMode="numeric" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })} /></label>
       <label className="label text-[13px]">PAN (optional, only last 4 kept)<Input className="uppercase" maxLength={10} value={f.pan} onChange={(e) => setF({ ...f, pan: e.target.value.toUpperCase() })} /></label>
       {error && <p role="alert" className="m-0 text-sm text-orange-ink">{error}</p>}
+      {added && (
+        <p role="status" className="m-0 rounded-[18px] bg-field p-3 text-sm">
+          {added.temporaryPassword
+            ? <>Added. Send them their temporary password: <span className="select-all font-mono text-base">{added.temporaryPassword}</span>. It is shown only once; they can change it under Profile.</>
+            : <>Added. They already have an account, so they log in with their own password.</>}
+        </p>
+      )}
       <Button type="submit" variant="field" disabled={f.name.trim().length < 2 || f.phone.length !== 10}>Add investor</Button>
-      <span className="text-[13px] text-muted">They log in with this number to see the portal.</span>
+      <span className="text-[13px] text-muted">They log in with this number and a password to see the portal.</span>
     </form>
   );
 }

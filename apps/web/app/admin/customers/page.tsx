@@ -87,6 +87,36 @@ export default function CustomersPage() {
           </section>
         )}
       </div>
+      <PasswordReset />
     </>
+  );
+}
+
+/** A rider who forgot their password gets a temporary one from the desk; every device they use is logged out. */
+function PasswordReset() {
+  const [phone, setPhone] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<{ name: string | null; phone: string; temporaryPassword: string } | null>(null);
+  const valid = /^[6-9]\d{9}$/.test(phone);
+  async function reset() {
+    setBusy(true); setError(null); setDone(null);
+    try { setDone(await api.post('/admin/users/password-reset', { phone: `+91${phone}` })); setPhone(''); }
+    catch (e) { setError(e instanceof ApiError ? e.message : 'Could not reset the password'); } finally { setBusy(false); }
+  }
+  return (
+    <form aria-label="Reset a rider's password" className="flex max-w-[560px] flex-col gap-3 rounded-sheet bg-surface p-[22px]" onSubmit={(e) => { e.preventDefault(); if (valid) reset(); }}>
+      <h2 className="m-0 text-xl font-normal">Reset a rider&apos;s password</h2>
+      <p className="m-0 text-sm text-muted">Only after confirming it&apos;s really them, for example a WhatsApp message from the same number. They are logged out everywhere.</p>
+      <label className="label text-[13px]">Mobile (+91)<Input inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))} /></label>
+      {error && <p role="alert" className="m-0 text-sm text-orange-ink">{error}</p>}
+      {done && (
+        <p role="status" className="m-0 rounded-[18px] bg-field p-3 text-sm">
+          Temporary password for {done.name ?? done.phone}: <span className="select-all font-mono text-base">{done.temporaryPassword}</span>. It is shown only once.
+          Send it to them; they can change it under Profile.
+        </p>
+      )}
+      <Button type="submit" variant="field" disabled={!valid || busy}>{busy ? 'Resetting…' : 'Give a temporary password'}</Button>
+    </form>
   );
 }

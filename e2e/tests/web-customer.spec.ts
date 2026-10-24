@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { API, apiLogin, istWindow, JPEG, newPhone, otpFor, sql, watchErrors } from '../fixtures/stack';
+import { API, apiLogin, istWindow, JPEG, newPhone, PASSWORD, sql, watchErrors } from '../fixtures/stack';
 
 test.describe('customer on the website', () => {
-  test('login with OTP → book → coupon → pay → booking → documents → extend → cancel', async ({ page, request, browser }, info) => {
+  test('sign up with a password → book → coupon → pay → booking → documents → extend → cancel', async ({ page, request, browser }, info) => {
     const errors = watchErrors(page);
     const days = 300 + info.project.name.length * 3 + Math.floor(Math.random() * 40);
     // a coupon made by an admin
@@ -15,10 +15,10 @@ test.describe('customer on the website', () => {
     // login through the UI
     const phone = newPhone();
     await page.goto('/login?next=/fleet/hunter-350');
+    await page.getByRole('tab', { name: 'Create account' }).click();
     await page.getByPlaceholder('98765 43210').fill(phone.slice(3));
-    await page.getByRole('button', { name: 'Get OTP' }).click();
-    const otp = await otpFor(phone);
-    await page.getByLabel('Digit 1').fill(otp); // pasting fills all six boxes
+    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByRole('button', { name: 'Create account' }).click();
     await expect(page).toHaveURL(/\/account\/profile\?welcome=1/);
     await page.getByLabel(/Full name/).fill('Asha Rawat');
     await page.getByRole('button', { name: 'Continue' }).click();

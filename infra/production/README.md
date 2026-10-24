@@ -8,7 +8,7 @@ The public contract is `https://api.valleyride.in/api/v1`. Production iOS and An
 | Next.js website, customer account, staff/admin dashboards | Hostinger Node.js hosting | `https://valleyride.in` |
 | Express API and BullMQ worker | Shared DigitalOcean droplet, `/opt/apps/valleyride` | `https://api.valleyride.in` |
 | PostgreSQL 17, `valleyride` database and role | The server's shared PostgreSQL (internal `data` network) | None |
-| Redis for jobs, OTPs and rate limits | Valley Ride's own container, private to this app | None |
+| Redis for jobs and rate limits | Valley Ride's own container, private to this app | None |
 | Private KYC, handover photos, agreements, invoices | Valley Ride's `uploads` volume on the droplet, archived daily to `infra/production/backups` | Short-lived signed API links only |
 
 The droplet (Bangalore, **139.59.72.220**, 2 vCPU / 2 GB) is already set up with `server` from Batra Connect's
@@ -30,7 +30,7 @@ git clone <this repository> /opt/apps/valleyride   # a private repo needs a read
 cd /opt/apps/valleyride/infra/production
 server add-db valleyride          # prints the database password once: copy it
 cp .env.example .env && chmod 600 .env
-nano .env                         # DB_PASSWORD, JWT_ACCESS_SECRET (openssl rand -hex 32), Razorpay, login SMS
+nano .env                         # DB_PASSWORD, JWT_ACCESS_SECRET (openssl rand -hex 32), Razorpay keys
 server add-site api.valleyride.in api.caddy
 server deploy .
 curl https://api.valleyride.in/ready
@@ -58,7 +58,7 @@ done
 
 Check the locations' addresses and the prices in the admin console, then add the real bikes under *Fleet*.
 
-**First administrator:** log in once on the website with your phone number, then promote that account and log in again:
+**First administrator:** create an account on the website (Log in → Create account) with your phone number and a password, then promote it and log in again:
 
 ```sh
 docker compose -f /opt/platform/compose.yaml exec postgres psql -U postgres -d valleyride \
@@ -72,13 +72,13 @@ Each process keeps at most 5 database connections. Check `server status` after e
 
 Do not import the local database or run the full development seed set as launch data: it includes sample vehicles,
 demo people, prices, location details and investments. Load and verify the real pickup locations, fleet, rates, guides,
-and first administrator deliberately. Demo OTP and payment-simulation routes are disabled under `NODE_ENV=production`.
+and first administrator deliberately. Demo logins and the payment-simulation route are disabled under `NODE_ENV=production`.
 
 Before launch provide and test:
 
 - Razorpay live key ID/secret and webhook secret. Follow [payment activation](PAYMENTS.md). Register
   `https://api.valleyride.in/api/v1/webhooks/razorpay` for captured/failed payments and processed/failed refunds.
-- MSG91 credentials and an approved OTP template; verify login on a real phone number.
+- Create an account on the website and in the app, change its password, and reset it from the admin console.
 - A document photo upload from the website and from a phone, then the same file opened in the admin console.
 - SMTP credentials and verified sender; WhatsApp credentials/template setup if that channel is enabled.
 - Support contacts, GSTIN, SAC code, registered address, real rental terms and cancellation policy. Existing placeholders
@@ -153,7 +153,7 @@ Monitor `https://api.valleyride.in/ready` (database and Redis) with a free uptim
 Provision the new API and worker with the same `/api/v1` contract, database, storage access and JWT secrets.
 Plan a write pause or database replication for consistent transfer; stop old workers during the final handover,
 preserve queued jobs, and avoid running duplicate job schedulers against independent databases. Verify the new origin,
-including readiness, OTP, uploads, payments and webhooks. Update `api` DNS to the new provider, keep the old backend
+including readiness, login, uploads, payments and webhooks. Update `api` DNS to the new provider, keep the old backend
 available through DNS-cache expiry, and monitor before retiring it. Webhook and app URLs remain unchanged.
 
 No app rebuild is needed for a hosting move that preserves the domain and API contract. An older app already built

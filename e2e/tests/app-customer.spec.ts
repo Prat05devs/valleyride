@@ -1,10 +1,18 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { API, apiLogin, clearOtp, newPhone, otpFor, paidBooking, PNG_SIGNATURE, watchErrors } from '../fixtures/stack';
+import { API, apiLogin, newPhone, paidBooking, PASSWORD, PNG_SIGNATURE, watchErrors } from '../fixtures/stack';
 
 /** Screens below the top of the stack stay mounted but hidden; only match what the rider can see. */
 const seen = (page: Page, text: string | RegExp) => page.getByText(text, typeof text === 'string' ? { exact: true } : undefined).locator('visible=true').first();
 const tap = (page: Page, name: string | RegExp) => page.getByRole('button', { name }).locator('visible=true').first();
+
+/** The welcome screen: create an account, or log in to an existing one. */
+async function enter(page: Page, phone: string, signUp: boolean) {
+  if (signUp) await tap(page, 'New here? Create an account').click();
+  await page.getByLabel('Mobile number').fill(phone.slice(3));
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+  await tap(page, signUp ? 'Create account' : 'Log in').click();
+}
 
 /**
  * The Expo app's own screens (React Native code rendered by react-native-web) at iPhone and Pixel sizes.
@@ -35,9 +43,7 @@ test.describe('rider app', () => {
     const phone = newPhone();
     await page.goto('/');
     await expect(seen(page, 'Ride the valley')).toBeVisible();
-    await page.getByLabel('Mobile number').fill(phone.slice(3));
-    await tap(page, 'Get OTP').click();
-    await page.locator('input[aria-label="One-time code"]').fill(await otpFor(phone));
+    await enter(page, phone, true);
     await page.getByLabel('Full name').fill('Rohan Kapoor');
     await tap(page, 'Skip for now').click();
     await expect(seen(page, 'Hello, Rohan')).toBeVisible();
@@ -72,9 +78,7 @@ test.describe('rider app', () => {
     const errors = watchErrors(page);
     const phone = newPhone();
     await page.goto('/');
-    await page.getByLabel('Mobile number').fill(phone.slice(3));
-    await tap(page, 'Get OTP').click();
-    await page.locator('input[aria-label="One-time code"]').fill(await otpFor(phone));
+    await enter(page, phone, true);
     await page.getByLabel('Full name').fill('Neel Gupta');
     await tap(page, 'Skip for now').click();
     await expect(seen(page, 'Hello, Neel')).toBeVisible();
@@ -94,9 +98,7 @@ test.describe('rider app', () => {
     const errors = watchErrors(page);
     const phone = newPhone();
     await page.goto('/');
-    await page.getByLabel('Mobile number').fill(phone.slice(3));
-    await tap(page, 'Get OTP').click();
-    await page.locator('input[aria-label="One-time code"]').fill(await otpFor(phone));
+    await enter(page, phone, true);
     await page.getByLabel('Full name').fill('Diya Bisht');
     await tap(page, 'Skip for now').click();
     await expect(seen(page, 'Hello, Diya')).toBeVisible();
@@ -134,10 +136,7 @@ test.describe('rider app', () => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.goto('/');
-    await clearOtp(riderPhone);
-    await page.getByLabel('Mobile number').fill(riderPhone.slice(3));
-    await tap(page, 'Get OTP').click();
-    await page.locator('input[aria-label="One-time code"]').fill(await otpFor(riderPhone));
+    await enter(page, riderPhone, false);
     await expect(seen(page, 'Hello, Diya')).toBeVisible();
     await page.goto(`/trip/${b.id}`);
     await expect(seen(page, 'Ride complete')).toBeVisible();
@@ -157,9 +156,7 @@ test.describe('rider app', () => {
   test('opening the app with no connection keeps the rider logged in', async ({ page }) => {
     const phone = newPhone();
     await page.goto('/');
-    await page.getByLabel('Mobile number').fill(phone.slice(3));
-    await tap(page, 'Get OTP').click();
-    await page.locator('input[aria-label="One-time code"]').fill(await otpFor(phone));
+    await enter(page, phone, true);
     await page.getByLabel('Full name').fill('Arjun Negi');
     await tap(page, 'Skip for now').click();
     await expect(seen(page, 'Hello, Arjun')).toBeVisible();

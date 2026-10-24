@@ -4,6 +4,7 @@ import { Investment, Investor, RepaymentSchedule, sequelize, User } from '../../
 import { AppError } from '../../utils/AppError';
 import { audit, type Actor } from '../../utils/audit';
 import { buildSchedule } from './amortization';
+import { hashPassword, temporaryPassword } from '../auth/password';
 
 const ymd = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -109,7 +110,10 @@ export const investorService = {
     });
   },
 
-  /** Creates (or upgrades) the user with the investor role and an investor profile. Only the last 4 PAN characters are kept. */
+  /**
+   * Creates (or upgrades) the user with the investor role and an investor profile. Only the last 4 PAN characters are
+   * kept. Someone without a password gets a temporary one, shown to the admin once, to pass on with the portal link.
+   */
   async createInvestor(a: Actor, input: { phone: string; fullName: string; pan?: string; bankAccountRef?: string }) {
     return sequelize.transaction(async (t) => {
       const [user] = await User.findOrCreate({ where: { phone: input.phone }, defaults: { phone: input.phone, fullName: input.fullName, email: null, phoneVerifiedAt: null, role: 'investor' }, transaction: t });
@@ -121,8 +125,10 @@ export const investorService = {
         userId: user.id, panMasked: input.pan ? `••••••${input.pan.slice(-4)}` : null, bankAccountRef: input.bankAccountRef ?? null,
         kycStatus: input.pan ? 'VERIFIED' : 'PENDING',
       }, { transaction: t });
+      const password = user.passwordHash ? null : temporaryPassword();
+      if (password) await user.update({ passwordHash: await hashPassword(password) }, { transaction: t });
       await audit(a, { action: 'investor.create', entity: 'investor', entityId: inv.id, diff: { phone: input.phone } }, t);
-      return { id: inv.id, name: user.fullName, phone: user.phone, panMasked: inv.panMasked, kycStatus: inv.kycStatus };
+      return { id: inv.id, name: user.fullName, phone: user.phone, panMasked: inv.panMasked, kycStatus: inv.kycStatus, temporaryPassword: password };
     });
   },
 

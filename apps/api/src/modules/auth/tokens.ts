@@ -58,6 +58,12 @@ export async function rotateRefreshToken(token: string): Promise<{ userId: strin
   });
 }
 
+/** After a password change or reset: every device has to log in again. */
+export async function revokeAllRefreshTokens(userId: string) {
+  await sequelize.query(`UPDATE refresh_tokens SET revoked_at = now(), updated_at = now() WHERE user_id = :userId AND revoked_at IS NULL`,
+    { replacements: { userId } });
+}
+
 /** Logout: revokes one refresh token. Unknown or already revoked tokens are ignored. */
 export async function revokeRefreshToken(token: string) {
   await sequelize.query(`UPDATE refresh_tokens SET revoked_at = now(), updated_at = now() WHERE token_hash = :hash AND revoked_at IS NULL`,

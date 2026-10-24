@@ -1,29 +1,35 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ErrorText, T } from '@/components/ui';
 import { ApiError } from '@/lib/api';
 import { PHOTOS_HERO } from '@/lib/bikes';
+import { SUPPORT_WHATSAPP } from '@/lib/contact';
+import { whatsapp } from '@/lib/links';
 import { useSession } from '@/lib/session';
 import { colors, fonts } from '@/theme';
 
 export default function Welcome() {
   const insets = useSafeAreaInsets();
-  const { requestOtp } = useSession();
+  const { login } = useSession();
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [digits, setDigits] = useState('');
+  const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const phone = '+91' + digits.replace(/\D/g, '');
-  const valid = /^\+91[6-9]\d{9}$/.test(phone);
+  const valid = /^\+91[6-9]\d{9}$/.test(phone) && (mode === 'login' ? password.length > 0 : password.length >= 8);
 
   async function submit() {
     setBusy(true); setError(null);
     try {
-      await requestOtp(phone);
-      router.push({ pathname: '/otp', params: { phone } });
+      const user = await login(phone, password, mode === 'register');
+      router.replace(user.fullName ? '/(tabs)' : '/details');
     } catch (e) {
+      if (e instanceof ApiError && e.code === 'ALREADY_REGISTERED') { setMode('login'); setPassword(''); }
       setError(e instanceof ApiError ? e.message : 'Something went wrong');
     } finally { setBusy(false); }
   }
@@ -39,18 +45,42 @@ export default function Welcome() {
       </View>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ marginTop: 'auto' }}>
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }]}>
-          <View style={{ gap: 4 }}><T v="title">Log in</T><T v="label">We'll text a 6-digit code to your phone.</T></View>
+          <View style={{ gap: 4 }}>
+            <T v="title">{mode === 'login' ? 'Log in' : 'Create your account'}</T>
+            <T v="label">{mode === 'login' ? 'Use your mobile number and password.' : 'Your mobile number is your login.'}</T>
+          </View>
           <View style={{ gap: 8 }}>
             <T v="label">Mobile number</T>
             <View style={styles.field}>
               <Text style={styles.prefix}>+91</Text>
               <TextInput value={digits} onChangeText={setDigits} keyboardType="phone-pad" maxLength={11} placeholder="98765 43210"
                 placeholderTextColor={colors.disabled} accessibilityLabel="Mobile number" autoComplete="tel" textContentType="telephoneNumber"
-                style={styles.input} onSubmitEditing={valid ? submit : undefined} />
+                style={styles.input} />
+            </View>
+          </View>
+          <View style={{ gap: 8 }}>
+            <T v="label">Password{mode === 'register' ? ' (at least 8 characters)' : ''}</T>
+            <View style={[styles.field, { paddingRight: 8 }]}>
+              <TextInput value={password} onChangeText={setPassword} secureTextEntry={!show} maxLength={128} autoCapitalize="none" autoCorrect={false}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'} textContentType={mode === 'login' ? 'password' : 'newPassword'}
+                accessibilityLabel="Password" style={styles.input} onSubmitEditing={valid ? submit : undefined} />
+              <Pressable onPress={() => setShow(!show)} hitSlop={8} accessibilityRole="button" accessibilityLabel={show ? 'Hide password' : 'Show password'} style={{ paddingHorizontal: 12 }}>
+                <T style={{ textDecorationLine: 'underline' }}>{show ? 'Hide' : 'Show'}</T>
+              </Pressable>
             </View>
           </View>
           <ErrorText error={error} />
-          <Button label="Get OTP" onPress={submit} loading={busy} disabled={!valid} />
+          <Button label={mode === 'login' ? 'Log in' : 'Create account'} onPress={submit} loading={busy} disabled={!valid} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+            <Pressable onPress={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); }} hitSlop={8} accessibilityRole="button">
+              <T style={{ textDecorationLine: 'underline' }}>{mode === 'login' ? 'New here? Create an account' : 'Have an account? Log in'}</T>
+            </Pressable>
+            {mode === 'login' && SUPPORT_WHATSAPP && (
+              <Pressable onPress={() => whatsapp(SUPPORT_WHATSAPP, `Hi, I forgot my Valley Ride password. My number is ${phone}.`)} hitSlop={8} accessibilityRole="button">
+                <T style={{ textDecorationLine: 'underline' }}>Forgot password?</T>
+              </Pressable>
+            )}
+          </View>
           <T v="label" style={{ textAlign: 'center' }}>By continuing you agree to the rental terms and privacy policy.</T>
         </View>
       </KeyboardAvoidingView>

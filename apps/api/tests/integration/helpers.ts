@@ -4,13 +4,20 @@ import { QueryTypes } from 'sequelize';
 import { app } from '../../src/app';
 import { sequelize } from '../../src/db';
 
-export const otpCodes = new Map<string, string>();
+export const TEST_PASSWORD = 'correct-horse-1';
 
-/** Logs a new customer in through the real OTP flow and returns an agent that carries the cookies. */
+/** Logs in with a given password, e.g. a temporary one from staff. */
+export async function loginWith(phone: string, password: string) {
+  const agent = request.agent(app);
+  await agent.post('/api/v1/auth/login').send({ phone, password }).expect(200);
+  return agent;
+}
+
+/** Signs a customer up (or back in) through the real password flow and returns an agent that carries the cookies. */
 export async function loginAs(phone: string) {
   const agent = request.agent(app);
-  await agent.post('/api/v1/auth/otp/request').send({ phone }).expect(202);
-  await agent.post('/api/v1/auth/otp/verify').send({ phone, code: otpCodes.get(phone) }).expect(200);
+  const reg = await agent.post('/api/v1/auth/register').send({ phone, password: TEST_PASSWORD });
+  if (reg.status !== 201) await agent.post('/api/v1/auth/login').send({ phone, password: TEST_PASSWORD }).expect(200);
   return agent;
 }
 

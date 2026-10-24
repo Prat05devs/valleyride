@@ -6,7 +6,7 @@ export const API = process.env.E2E_API ?? 'http://localhost:4000/api/v1';
 const redis = new IORedis(process.env.E2E_REDIS ?? 'redis://localhost:6379');
 const db = new pg.Pool({ connectionString: process.env.E2E_DB ?? 'postgres://valley:valley@localhost:5432/valleyride' });
 
-/** A fresh +91 number per run, so OTP rate limits and old bookings never collide. Recorded for cleanup. */
+/** A fresh +91 number per run, so login rate limits and old bookings never collide. Recorded for cleanup. */
 export const newPhone = () => {
   const phone = `+9198${String(Date.now()).slice(-6)}${Math.floor(Math.random() * 90 + 10)}`.slice(0, 13);
   void redis.sadd('e2e:phones', phone);
@@ -24,32 +24,19 @@ export async function releaseTestBookings() {
 
 export const closeStack = async () => { await redis.quit(); await db.end(); };
 
-/** Forget an earlier code before requesting a new one, so otpFor never returns a stale one. */
-export const clearOtp = (phone: string) => redis.del(`otp:dev:${phone}`);
-
-/** The dev-only plain OTP copy the API keeps outside production (apps/api/src/modules/auth/otp.ts). */
-export async function otpFor(phone: string) {
-  for (let i = 0; i < 20; i++) {
-    const code = await redis.get(`otp:dev:${phone}`);
-    if (code) return code;
-    await new Promise((r) => setTimeout(r, 250));
-  }
-  throw new Error(`no OTP for ${phone}`);
-}
+/** Every test rider's password. */
+export const PASSWORD = 'e2e-rider-password';
 
 export const sql = <T = Record<string, unknown>>(text: string, params: unknown[] = []) => db.query(text, params).then((r) => r.rows as T[]);
 
 /** Logs a browser context in through the API (cookies land on localhost, shared by :3000 and :4000). */
 export async function apiLogin(request: APIRequestContext, phone: string, role?: 'staff' | 'admin', name = 'E2E Rider') {
-  await clearOtp(phone);
-  await request.post(`${API}/auth/otp/request`, { data: { phone } });
-  await request.post(`${API}/auth/otp/verify`, { data: { phone, code: await otpFor(phone) } });
+  const reg = await request.post(`${API}/auth/register`, { data: { phone, password: PASSWORD } });
+  if (reg.status() !== 201) await request.post(`${API}/auth/login`, { data: { phone, password: PASSWORD } });
   await request.patch(`${API}/me`, { data: { fullName: name } });
   if (role) {
     await sql('UPDATE users SET role = $1 WHERE phone = $2', [role, phone]);
-    await clearOtp(phone);
-    await request.post(`${API}/auth/otp/request`, { data: { phone } });
-    await request.post(`${API}/auth/otp/verify`, { data: { phone, code: await otpFor(phone) } }); // new token carries the role
+    await request.post(`${API}/auth/login`, { data: { phone, password: PASSWORD } }); // new token carries the role
   }
 }
 

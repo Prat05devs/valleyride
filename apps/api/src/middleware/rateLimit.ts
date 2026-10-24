@@ -32,26 +32,38 @@ export const rateLimiter = rateLimit({
 });
 
 /**
- * OTP SMS cost money and invite SMS-pumping fraud, so there are two separate limits: 5 per phone per 15 minutes
- * (however many IPs ask) and 20 per IP per hour (however many phones it tries). Both fail closed if Redis is down.
+ * Password guessing: 10 wrong tries per phone per 15 minutes (however many IPs try), and 50 per IP (however many phones
+ * it tries). Successful logins don't count. Both fail closed if Redis is down.
  */
-const otpPerPhone = rateLimit({
+const loginPerPhone = rateLimit({
   windowMs: 15 * 60_000,
-  limit: 5,
+  limit: 10,
+  skipSuccessfulRequests: true,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  store: store('otp-phone'),
+  store: store('login-phone'),
   keyGenerator: (req) => String(req.body?.phone ?? ''),
-  handler: limited('Too many codes for this number. Try again in 15 minutes.'),
+  handler: limited('Too many wrong passwords for this number. Try again in 15 minutes, or ask support to reset it.'),
 });
 
-const otpPerIp = rateLimit({
-  windowMs: 60 * 60_000,
-  limit: env.NODE_ENV === 'production' ? 20 : 10_000,
+const loginPerIp = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: env.NODE_ENV === 'production' ? 50 : 10_000,
+  skipSuccessfulRequests: true,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  store: store('otp-ip'),
-  handler: limited('Too many code requests. Try again later.'),
+  store: store('login-ip'),
+  handler: limited('Too many login attempts. Try again in 15 minutes.'),
 });
 
-export const otpLimiter = [otpPerIp, otpPerPhone];
+export const loginLimiter = [loginPerIp, loginPerPhone];
+
+/** New accounts: 10 per IP per hour, so nobody can mass-register numbers. */
+export const registerLimiter = rateLimit({
+  windowMs: 60 * 60_000,
+  limit: env.NODE_ENV === 'production' ? 10 : 10_000,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  store: store('register'),
+  handler: limited('Too many new accounts from this network. Try again later.'),
+});

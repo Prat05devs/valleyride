@@ -2,7 +2,7 @@ import { extendZodWithOpenApi, OpenAPIRegistry, OpenApiGeneratorV31 } from '@ast
 import { Router } from 'express';
 import { z, type ZodTypeAny } from 'zod';
 import * as S from '@valleyride/shared';
-import { otpRequestSchema, otpVerifySchema, pushTokenSchema, updateMeSchema } from '../modules/auth/auth.schema';
+import { changePasswordSchema, loginSchema, passwordResetSchema, pushTokenSchema, registerSchema, updateMeSchema } from '../modules/auth/auth.schema';
 
 /**
  * OpenAPI 3.1 for /api/v1, generated from the same Zod schemas the routes validate with (packages/shared), served at
@@ -19,8 +19,10 @@ const unwrap = (s: ZodTypeAny): z.AnyZodObject => (s instanceof z.ZodEffects ? u
 const reason = z.object({ reason: z.string().max(300).optional() });
 
 export const OPERATIONS: Op[] = [
-  ['post', '/auth/otp/request', 'public', 'Send a login OTP by SMS or WhatsApp', { body: otpRequestSchema }],
-  ['post', '/auth/otp/verify', 'public', 'Verify the OTP and set access + refresh cookies (tokens in the body for X-Client: mobile)', { body: otpVerifySchema }],
+  ['post', '/auth/register', 'public', 'Create a customer account with phone and password; sets the session like login', { body: registerSchema }],
+  ['post', '/auth/login', 'public', 'Phone and password; sets access + refresh cookies (tokens in the body for X-Client: mobile)', { body: loginSchema }],
+  ['post', '/me/password', 'any', 'Change your password; signs out every other device', { body: changePasswordSchema }],
+  ['post', '/admin/users/password-reset', 'staff', 'Temporary password for a rider who forgot theirs (admins: any account)', { body: passwordResetSchema }],
   ['post', '/auth/refresh', 'public', 'Rotate the refresh token'],
   ['post', '/auth/logout', 'public', 'Revoke the refresh token and clear cookies'],
   ['get', '/me', 'any', 'Current user and role'],

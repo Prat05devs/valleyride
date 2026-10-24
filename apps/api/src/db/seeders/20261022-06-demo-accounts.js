@@ -1,7 +1,7 @@
 'use strict';
 /**
  * Demo accounts (development and staging only; skipped when NODE_ENV=production). Log in with the phone number and
- * code 123456 (see src/modules/auth/demo.ts). The investor gets one sample 18-month investment so the portal has data.
+ * password `valleyride` (see src/modules/auth/demo.ts). The investor gets one sample 18-month investment so the portal has data.
  */
 const USERS = [
   { phone: '+919000000001', full_name: 'Demo Rider', role: 'customer' },

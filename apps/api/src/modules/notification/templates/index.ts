@@ -1,9 +1,6 @@
 import { formatIST } from '../../../utils/dates';
 import { formatPaise } from '../../../utils/money';
 
-export const otpMessage = (code: string) =>
-  `${code} is your Valley Ride login code. It expires in 5 minutes. Do not share it with anyone.`;
-
 export const bookingConfirmedMessage = (b: { code: string; startAt: Date; totalPaise: number }) =>
   `Your Valley Ride booking ${b.code} is confirmed for ${formatIST(b.startAt)}. Paid: ${formatPaise(b.totalPaise)}.`;
 

@@ -37,7 +37,8 @@ pnpm db:migrate && pnpm db:seed      # locations, models, 30 vehicles, route gui
 pnpm dev                             # web :3000, api :4000, worker
 ```
 
-Login is by phone OTP. Outside production the code is not sent; it is printed in the API log as `dev OTP`.
+Login is by mobile number and password ("Create account" on the website or app). A rider who forgets theirs gets a
+temporary one from staff (admin → Customers → Reset a rider's password).
 
 Mobile app:
 
@@ -48,7 +49,7 @@ pnpm --filter @valleyride/mobile dev
 
 ### Demo accounts (development and staging only)
 
-Log in with the number and the code **123456** (production sends real codes to these numbers like any other):
+Log in with the number and the password **valleyride** (in production these are ordinary numbers with no special access):
 
 | Role | Phone | Sees |
 | --- | --- | --- |
@@ -64,7 +65,7 @@ Log in with the number and the code **123456** (production sends real codes to t
   which runs the same capture code as the Razorpay webhook.
 - **Local file storage.** `STORAGE_DRIVER` defaults to `local` (also in production, where it is a Docker volume):
   KYC files, handover photos and signatures go to `apps/api/.uploads` behind HMAC-signed `/api/v1/files` links.
-- **Staff and admin access.** Log in once, then promote the account:
+- **Staff and admin access.** Create an account (or use a demo login), then promote it:
   `docker exec valleyride-postgres-1 psql -U valley -d valleyride -c "UPDATE users SET role='admin' WHERE phone='+91…'"`,
   and log in again so the new role is in the token. The console is at `/admin`.
 

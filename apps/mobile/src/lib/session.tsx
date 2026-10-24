@@ -10,8 +10,10 @@ interface Session {
   /** The session could not be checked (no network or the API is down); tokens are kept. */
   offline: boolean;
   retry: () => void;
-  requestOtp: (phone: string, channel?: 'sms' | 'whatsapp') => Promise<void>;
-  verifyOtp: (phone: string, code: string) => Promise<SessionUser>;
+  /** Phone and password; `register` creates the account first. */
+  login: (phone: string, password: string, register?: boolean) => Promise<SessionUser>;
+  /** Logs every other device out; this one keeps going with the fresh tokens. */
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   updateProfile: (p: { fullName?: string; email?: string | null }) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -38,15 +40,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  const requestOtp = useCallback(async (phone: string, channel: 'sms' | 'whatsapp' = 'sms') => {
-    await api.post('/auth/otp/request', { phone, channel });
-  }, []);
-
-  const verifyOtp = useCallback(async (phone: string, code: string) => {
-    const data = await api.post<{ user: SessionUser; accessToken: string; refreshToken: string }>('/auth/otp/verify', { phone, code });
+  const login = useCallback(async (phone: string, password: string, register = false) => {
+    const data = await api.post<{ user: SessionUser; accessToken: string; refreshToken: string }>(register ? '/auth/register' : '/auth/login', { phone, password });
     await tokens.save(data.accessToken, data.refreshToken);
     setUser(data.user);
     return data.user;
+  }, []);
+
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
+    const data = await api.post<{ accessToken: string; refreshToken: string }>('/me/password', { currentPassword, newPassword });
+    await tokens.save(data.accessToken, data.refreshToken);
   }, []);
 
   const updateProfile = useCallback(async (p: { fullName?: string; email?: string | null }) => {
@@ -64,7 +67,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (user) registerForPush(); }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => listenForTaps(), []);
 
-  const value = useMemo(() => ({ user, ready, requestOtp, verifyOtp, updateProfile, logout, offline, retry: load }), [user, ready, requestOtp, verifyOtp, updateProfile, logout, offline, load]);
+  const value = useMemo(() => ({ user, ready, login, changePassword, updateProfile, logout, offline, retry: load }), [user, ready, login, changePassword, updateProfile, logout, offline, load]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

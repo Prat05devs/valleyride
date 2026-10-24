@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export { otpRequestSchema, otpVerifySchema } from '@valleyride/shared';
-export type { OtpRequestInput, OtpVerifyInput } from '@valleyride/shared';
+export { changePasswordSchema, loginSchema, passwordResetSchema, registerSchema } from '@valleyride/shared';
+export type { ChangePasswordInput, LoginInput, RegisterInput } from '@valleyride/shared';
 
 export const updateMeSchema = z.object({
   fullName: z.string().trim().min(2).max(120).optional(),

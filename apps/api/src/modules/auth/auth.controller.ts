@@ -14,13 +14,21 @@ function sendSession(req: Request, res: Response, s: Session) {
   res.json({ data: { user: s.user, ...(mobile ? { accessToken: s.accessToken, refreshToken: s.refreshToken } : {}) } });
 }
 
-export async function requestOtp(req: Request, res: Response) {
-  await authService.requestOtp(req.body);
-  res.status(202).json({ data: { sent: true } });
+export async function register(req: Request, res: Response) {
+  res.status(201);
+  sendSession(req, res, await authService.register(req.body));
 }
 
-export async function verifyOtp(req: Request, res: Response) {
-  sendSession(req, res, await authService.verifyOtp(req.body));
+export async function login(req: Request, res: Response) {
+  sendSession(req, res, await authService.login(req.body));
+}
+
+export async function changePassword(req: Request, res: Response) {
+  sendSession(req, res, await authService.changePassword(req.user!.id, req.body));
+}
+
+export async function resetPassword(req: Request, res: Response) {
+  res.json({ data: await authService.resetPassword({ id: req.user!.id, role: req.user!.role, ip: req.ip ?? null }, req.body.phone) });
 }
 
 export async function refresh(req: Request, res: Response) {

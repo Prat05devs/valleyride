@@ -3,7 +3,7 @@
 #
 # Shared with the other apps: the Caddy proxy on the "edge" network (api.caddy is this app's entry) and PostgreSQL on
 # the internal "data" network, where "server add-db valleyride" created the valleyride database and role.
-# Valley Ride's own: Redis (BullMQ jobs, OTPs, rate limits), the "uploads" volume (KYC documents, handover photos,
+# Valley Ride's own: Redis (BullMQ jobs, rate limits), the "uploads" volume (KYC documents, handover photos,
 # agreements, invoices) and a backup service that archives it daily and before every deploy. Nothing publishes a port.
 name: valleyride
 
@@ -27,9 +27,6 @@ x-api: &api
     RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
     RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
     RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
-    # Login is by SMS code, so nobody can sign in until these are set.
-    MSG91_AUTH_KEY: ${MSG91_AUTH_KEY:-}
-    MSG91_OTP_TEMPLATE_ID: ${MSG91_OTP_TEMPLATE_ID:-}
     WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN:-}
     WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
     SMTP_URL: ${SMTP_URL:-}
