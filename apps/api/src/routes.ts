@@ -10,7 +10,7 @@ import { adminRouter } from './modules/admin/admin.routes';
 import { paymentsMocked } from './modules/payment/razorpay.client';
 import { paymentDevRouter } from './modules/payment/payment.dev';
 import { paymentRouter } from './modules/payment/payment.routes';
-import { filesDevRouter } from './modules/kyc/files.dev';
+import { filesLocalRouter } from './modules/kyc/files.local';
 import { env } from './config/env';
 
 /** Mounted at /api/v1. */
@@ -26,4 +26,4 @@ apiRouter.use(handoverRouter);
 apiRouter.use(adminRouter);
 apiRouter.use(paymentRouter);
 if (paymentsMocked) apiRouter.use(paymentDevRouter);
-if (env.STORAGE_DRIVER === 'local') apiRouter.use(filesDevRouter);
+if (env.STORAGE_DRIVER === 'local') apiRouter.use(filesLocalRouter);

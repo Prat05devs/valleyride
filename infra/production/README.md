@@ -9,7 +9,7 @@ The public contract is `https://api.valleyride.in/api/v1`. Production iOS and An
 | Express API and BullMQ worker | Shared DigitalOcean droplet, `/opt/apps/valleyride` | `https://api.valleyride.in` |
 | PostgreSQL 17, `valleyride` database and role | The server's shared PostgreSQL (internal `data` network) | None |
 | Redis for jobs, OTPs and rate limits | Valley Ride's own container, private to this app | None |
-| Private KYC, handover files and invoices | AWS S3 (ap-south-1) | Short-lived signed URLs only |
+| Private KYC, handover photos, agreements, invoices | Valley Ride's `uploads` volume on the droplet, archived daily to `infra/production/backups` | Short-lived signed API links only |
 
 The droplet (Bangalore, **139.59.72.220**, 2 vCPU / 2 GB) is already set up with `server` from Batra Connect's
 [`infra/server.sh`](https://github.com/Prat05devs/batraconnect/blob/main/infra/server.sh): one Caddy proxy owns ports
@@ -30,7 +30,7 @@ git clone <this repository> /opt/apps/valleyride   # a private repo needs a read
 cd /opt/apps/valleyride/infra/production
 server add-db valleyride          # prints the database password once: copy it
 cp .env.example .env && chmod 600 .env
-nano .env                         # DB_PASSWORD, JWT_ACCESS_SECRET (openssl rand -hex 32), Razorpay, MSG91, S3
+nano .env                         # DB_PASSWORD, JWT_ACCESS_SECRET (openssl rand -hex 32), Razorpay, login SMS
 server add-site api.valleyride.in api.caddy
 server deploy .
 curl https://api.valleyride.in/ready
@@ -132,7 +132,7 @@ website by itself.
 
 **Backups:** the server dumps every database nightly and before every deploy to `/opt/backups/postgres/valleyride/`.
 A backup on the same disk isn't a backup: copy `/opt/backups` off the droplet (DigitalOcean droplet backups, or
-`rclone` to Spaces from cron). Redis holds queued jobs in its `valleyride_redis` volume; files live in S3.
+`rclone` to Spaces from cron). Redis holds queued jobs in its `valleyride_redis` volume. Uploaded files are archived daily and before every deploy to `/opt/apps/valleyride/infra/production/backups` (kept 14 days): copy that folder off the droplet too.
 
 **Restore test** (into a scratch database, never over the live one):
 

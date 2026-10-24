@@ -30,9 +30,12 @@ const schema = z.object({
   /** Phase 4 safeguard: recording investments and investor onboarding stay off until legal and CA sign-off. */
   CAPITAL_PORTAL_ENABLED: z.enum(['true', 'false']).default('false').transform((v) => v === 'true'),
   AWS_REGION: z.string().default('ap-south-1'),
-  S3_BUCKET_PRIVATE: z.string(),
-  /** `local` keeps uploads in apps/api/.uploads for development; production always uses S3. */
-  STORAGE_DRIVER: z.enum(['s3', 'local']).optional(),
+  /**
+   * Private files (KYC, handover photos, agreements, invoices). `local` keeps them in apps/api/.uploads, which in
+   * production is a Docker volume on the server; `s3` uses S3_BUCKET_PRIVATE.
+   */
+  STORAGE_DRIVER: z.enum(['s3', 'local']).default('local'),
+  S3_BUCKET_PRIVATE: z.string().optional(),
   SENTRY_DSN: z.string().optional(),
   TZ_DISPLAY: z.string().default('Asia/Kolkata'),
   /** e.g. .valleyride.in, so cookies set by api.valleyride.in reach the Next.js middleware on valleyride.in. */
@@ -48,10 +51,9 @@ if (!parsed.success) {
 export const env = {
   ...parsed.data,
   DATABASE_SSL: parsed.data.DATABASE_SSL ? parsed.data.DATABASE_SSL === 'true' : parsed.data.NODE_ENV === 'production',
-  STORAGE_DRIVER: parsed.data.STORAGE_DRIVER ?? (parsed.data.NODE_ENV === 'production' ? 's3' : 'local'),
 };
-if (env.NODE_ENV === 'production' && env.STORAGE_DRIVER !== 's3') {
-  console.error('STORAGE_DRIVER must be s3 in production');
+if (env.STORAGE_DRIVER === 's3' && !env.S3_BUCKET_PRIVATE) {
+  console.error('STORAGE_DRIVER=s3 needs S3_BUCKET_PRIVATE');
   process.exit(1);
 }
 if (env.NODE_ENV === 'production' && (env.JWT_ACCESS_SECRET.length < 32 || /change-me|REPLACE_/i.test(env.JWT_ACCESS_SECRET))) {

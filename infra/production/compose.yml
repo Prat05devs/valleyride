@@ -3,7 +3,8 @@
 #
 # Shared with the other apps: the Caddy proxy on the "edge" network (api.caddy is this app's entry) and PostgreSQL on
 # the internal "data" network, where "server add-db valleyride" created the valleyride database and role.
-# Valley Ride's own: Redis (BullMQ jobs, OTPs, rate limits), reachable only inside this project. Nothing publishes a port.
+# Valley Ride's own: Redis (BullMQ jobs, OTPs, rate limits), the "uploads" volume (KYC documents, handover photos,
+# agreements, invoices) and a backup service that archives it daily and before every deploy. Nothing publishes a port.
 name: valleyride
 
 x-api: &api
@@ -35,15 +36,14 @@ x-api: &api
     MAIL_FROM: ${MAIL_FROM:-Valley Ride <no-reply@valleyride.in>}
     OPS_EMAIL: ${OPS_EMAIL:-}
     CAPITAL_PORTAL_ENABLED: ${CAPITAL_PORTAL_ENABLED:-false}
-    STORAGE_DRIVER: s3
-    AWS_REGION: ${AWS_REGION:-ap-south-1}
-    S3_BUCKET_PRIVATE: ${S3_BUCKET_PRIVATE:?Set S3_BUCKET_PRIVATE}
-    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?Set AWS_ACCESS_KEY_ID}
-    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?Set AWS_SECRET_ACCESS_KEY}
+    # Files stay on this server, in the "uploads" volume, behind short-lived signed links from the API.
+    STORAGE_DRIVER: local
     SENTRY_DSN: ${SENTRY_DSN:-}
     TZ_DISPLAY: Asia/Kolkata
     # Keep the V8 heap inside the container limit so Node collects garbage before Docker kills it.
     NODE_OPTIONS: --max-old-space-size=256
+  volumes:
+    - uploads:/app/.uploads
   restart: unless-stopped
   init: true
   # The 2 GB droplet is shared by several APIs and one PostgreSQL. Caps stop one leaking app from starving the rest.
@@ -91,9 +91,25 @@ services:
       timeout: 3s
       retries: 10
 
+  # "server deploy" runs this app's backup before each deploy too (it execs /backup.sh in a service named "backup").
+  # The database itself is in the server's nightly dumps (/opt/backups/postgres/valleyride).
+  backup:
+    image: alpine:3.20
+    entrypoint: [/bin/sh, -c, "while true; do /bin/sh /backup.sh || echo 'backup failed' >&2; sleep 86400; done"]
+    environment:
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./backup-files.sh:/backup.sh:ro
+      - uploads:/uploads:ro
+      - ./backups:/backups
+    network_mode: none
+    mem_limit: 64m
+    restart: unless-stopped
+
 networks:
   edge: { external: true }
   data: { external: true }
 
 volumes:
   redis:
+  uploads:

@@ -7,8 +7,9 @@ import type { PresignedUpload } from '@valleyride/shared';
 import { env } from '../../config/env';
 
 /**
- * Private files (KYC documents, handover photos, agreements). In S3 (ap-south-1) they are uploaded with pre-signed
- * PUT URLs and read through 5-minute signed GET links. The `local` driver mimics that with HMAC-signed API URLs.
+ * Private files (KYC documents, handover photos, agreements, invoices), uploaded with 10-minute signed PUT links and
+ * read through 5-minute signed GET links. `local` (the default, and production on the droplet) keeps them on disk
+ * behind HMAC-signed /api/v1/files links; `s3` uses pre-signed S3 URLs.
  */
 const UPLOAD_TTL = 10 * 60;
 export const READ_TTL = 5 * 60;
@@ -33,10 +34,10 @@ export function verifyLocalSignature(op: 'put' | 'get', key: string, exp: number
 export async function presignPut(key: string, contentType: string, origin: string): Promise<PresignedUpload> {
   if (env.STORAGE_DRIVER === 'local') {
     const exp = Math.floor(Date.now() / 1000) + UPLOAD_TTL;
-    const url = `${origin}/api/v1/dev/files?key=${encodeURIComponent(key)}&exp=${exp}&sig=${sign('put', key, exp)}`;
+    const url = `${origin}/api/v1/files?key=${encodeURIComponent(key)}&exp=${exp}&sig=${sign('put', key, exp)}`;
     return { uploadUrl: url, fileKey: key, headers: { 'Content-Type': contentType }, expiresInSeconds: UPLOAD_TTL };
   }
-  const cmd = new PutObjectCommand({ Bucket: env.S3_BUCKET_PRIVATE, Key: key, ContentType: contentType, ServerSideEncryption: 'AES256' });
+  const cmd = new PutObjectCommand({ Bucket: env.S3_BUCKET_PRIVATE!, Key: key, ContentType: contentType, ServerSideEncryption: 'AES256' });
   const uploadUrl = await getSignedUrl(client(), cmd, { expiresIn: UPLOAD_TTL });
   return { uploadUrl, fileKey: key, headers: { 'Content-Type': contentType, 'x-amz-server-side-encryption': 'AES256' }, expiresInSeconds: UPLOAD_TTL };
 }
@@ -44,15 +45,15 @@ export async function presignPut(key: string, contentType: string, origin: strin
 export async function presignGet(key: string, origin: string) {
   if (env.STORAGE_DRIVER === 'local') {
     const exp = Math.floor(Date.now() / 1000) + READ_TTL;
-    return `${origin}/api/v1/dev/files?key=${encodeURIComponent(key)}&exp=${exp}&sig=${sign('get', key, exp)}`;
+    return `${origin}/api/v1/files?key=${encodeURIComponent(key)}&exp=${exp}&sig=${sign('get', key, exp)}`;
   }
-  return getSignedUrl(client(), new GetObjectCommand({ Bucket: env.S3_BUCKET_PRIVATE, Key: key }), { expiresIn: READ_TTL });
+  return getSignedUrl(client(), new GetObjectCommand({ Bucket: env.S3_BUCKET_PRIVATE!, Key: key }), { expiresIn: READ_TTL });
 }
 
 /** Server-side write (generated PDFs). */
 export async function putObject(key: string, body: Buffer, contentType: string) {
   if (env.STORAGE_DRIVER === 'local') return localWrite(key, body);
-  await client().send(new PutObjectCommand({ Bucket: env.S3_BUCKET_PRIVATE, Key: key, Body: body, ContentType: contentType, ServerSideEncryption: 'AES256' }));
+  await client().send(new PutObjectCommand({ Bucket: env.S3_BUCKET_PRIVATE!, Key: key, Body: body, ContentType: contentType, ServerSideEncryption: 'AES256' }));
 }
 
 export async function localWrite(key: string, body: Buffer) {

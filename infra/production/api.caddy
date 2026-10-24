@@ -3,9 +3,9 @@
 api.valleyride.in {
 	log
 	encode zstd gzip
-	# JSON bodies are capped at 1 MB by the API; files go straight to S3 with pre-signed URLs.
+	# Photos and documents are uploaded through the API (10 MB cap); other bodies are capped at 1 MB by the API itself.
 	request_body {
-		max_size 2MB
+		max_size 11MB
 	}
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"

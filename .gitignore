@@ -19,3 +19,6 @@ e2e/playwright-report/
 apps/mobile/ios/
 apps/mobile/android/
 builds/
+
+# Production file archives on the server (infra/production/backup-files.sh)
+infra/production/backups/

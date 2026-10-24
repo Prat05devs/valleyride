@@ -26,6 +26,8 @@ COPY --from=builder /repo/apps/api/src/db/migrations ./src/db/migrations
 COPY --from=builder /repo/apps/api/src/db/seeders ./src/db/seeders
 COPY --from=builder /repo/apps/api/src/db/content ./src/db/content
 COPY --from=builder /repo/apps/api/public ./public
+# Private uploads; production mounts a named volume here, which Docker seeds with this owner.
+RUN mkdir -p /app/.uploads && chown node:node /app/.uploads
 USER node
 EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=10s CMD wget -qO- http://127.0.0.1:4000/ready || exit 1

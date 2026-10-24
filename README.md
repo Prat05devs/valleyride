@@ -62,8 +62,8 @@ Log in with the number and the code **123456** (production sends real codes to t
 - **Mock payments.** While `RAZORPAY_KEY_ID` is the `.env.example` placeholder (ends in `xxx`), orders are
   `order_mock_*`. Checkout on web and mobile then shows test buttons that call `POST /api/v1/dev/payments/simulate`,
   which runs the same capture code as the Razorpay webhook.
-- **Local file storage.** `STORAGE_DRIVER` defaults to `local` outside production: KYC files, handover photos and
-  signatures go to `apps/api/.uploads` behind HMAC-signed `/api/v1/dev/files` links instead of S3.
+- **Local file storage.** `STORAGE_DRIVER` defaults to `local` (also in production, where it is a Docker volume):
+  KYC files, handover photos and signatures go to `apps/api/.uploads` behind HMAC-signed `/api/v1/files` links.
 - **Staff and admin access.** Log in once, then promote the account:
   `docker exec valleyride-postgres-1 psql -U valley -d valleyride -c "UPDATE users SET role='admin' WHERE phone='+91…'"`,
   and log in again so the new role is in the token. The console is at `/admin`.
