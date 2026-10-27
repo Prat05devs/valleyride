@@ -4,7 +4,9 @@ import IORedis from 'ioredis';
 /** Rebuilds the test database from migrations + seeders before the run. Refuses anything not named *_test. */
 export default async function setup() {
   const url = process.env.DATABASE_URL ?? 'postgres://valley:valley@localhost:5432/valleyride_test';
-  const dbName = new URL(url).pathname.slice(1);
+  const target = new URL(url);
+  if (!['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)) throw new Error('Integration resets require a local disposable database.');
+  const dbName = target.pathname.slice(1);
   if (!dbName.endsWith('_test')) throw new Error(`Refusing to run integration tests against "${dbName}"; use a *_test database.`);
 
   const env = { ...process.env, NODE_ENV: 'test', DATABASE_URL: url };

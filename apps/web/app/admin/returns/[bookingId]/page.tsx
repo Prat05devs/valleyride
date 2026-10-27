@@ -83,14 +83,14 @@ export default function ReturnPage({ params }: { params: Promise<{ bookingId: st
         <Panel title="Readings and charges" className="flex-[1_1_320px]">
           <label className="label">Odometer at return (km) · pickup was {pickup.odometerKm.toLocaleString('en-IN')}<Input inputMode="numeric" value={odo === '' ? '' : odo} placeholder={String(pickup.odometerKm)} onChange={(e) => setOdo(e.target.value.replace(/\D/g, ''))} /></label>
           <label className="label">Damage charge (₹)<Input inputMode="decimal" value={damage} onChange={(e) => setDamage(e.target.value.replace(/[^\d.]/g, ''))} placeholder="0" /></label>
-          <p className="m-0 text-sm text-muted">Late return is charged automatically: {formatPaise(Math.round(b.model.pricePerDayPaise / 8))} per started hour after {formatTime(b.endAt)}, plus GST.</p>
+          <p className="m-0 text-sm text-muted">Late return is charged automatically: {formatPaise(Math.round(b.model.pricePerDayPaise / 8))} per started hour after {formatTime(b.endAt)}, including GST.</p>
         </Panel>
         <section aria-live="polite" className="flex flex-[1_1_320px] flex-col gap-3 rounded-sheet bg-dark p-6 text-base text-surface">
           <h2 className="m-0 text-xl font-normal">Deposit</h2>
           <Row k="Ridden" v={`${c.kmRidden.toLocaleString('en-IN')} km of ${b.kmIncluded} included`} />
-          <Row k={`Extra km ${c.extraKm} × ${formatPaise(b.model.extraKmPaise)} + GST`} v={formatMinus(c.extraKmPaise + c.extraKmTaxPaise)} />
+          <Row k={`Extra km ${c.extraKm} × ${formatPaise(b.model.extraKmPaise)} incl. GST`} v={formatMinus(c.extraKmPaise + c.extraKmTaxPaise)} />
           <Row k="Damage" v={formatMinus(c.damagePaise)} />
-          <Row k={`Late return${c.lateHours ? ` · ${c.lateHours} h + GST` : ''}`} v={formatMinus(c.lateFeePaise + c.lateFeeTaxPaise)} />
+          <Row k={`Late return${c.lateHours ? ` · ${c.lateHours} h incl. GST` : ''}`} v={formatMinus(c.lateFeePaise + c.lateFeeTaxPaise)} />
           <div className="h-px bg-white/[0.18]" />
           <Row k="Deposit held" v={formatPaise(b.depositPaise, true)} />
           <div className="flex items-baseline justify-between"><span>Refund to customer</span><span className="text-[30px] font-medium">{formatPaise(c.refundPaise, true)}</span></div>

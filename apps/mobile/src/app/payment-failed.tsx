@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
@@ -13,12 +14,14 @@ type Params = { bookingId: string; orderId: string; amount: string; code: string
 export default function PaymentFailed() {
   const p = useLocalSearchParams<Params>();
   const insets = useSafeAreaInsets();
-  const { booking } = useBooking(p.bookingId);
+  const { booking, error, reload } = useBooking(p.bookingId);
   const { byId } = useModels();
   const hold = useCountdown(booking?.holdExpiresAt ?? (p.hold || null));
   const model = booking && byId(booking.vehicleModelId);
   const held = booking?.status === 'PENDING_PAYMENT' && hold.seconds > 0;
   const { reason: _r, ...payParams } = p;
+
+  useEffect(() => { if (booking?.status === 'CONFIRMED') router.replace({ pathname: '/confirmed/[id]', params: { id: booking.id } }); }, [booking]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas, padding: 20, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 20, gap: 16 }}>
@@ -28,9 +31,9 @@ export default function PaymentFailed() {
           <Icon name="x" size={36} color={colors.orangeInk} strokeWidth={2} />
         </View>
         <T v="hero" style={{ textAlign: 'center' }}>Payment didn't go through</T>
-        <T style={{ color: colors.muted, textAlign: 'center' }}>{p.reason ? `${p.reason} ` : ''}Nothing was booked yet.</T>
+        <T style={{ color: colors.muted, textAlign: 'center' }}>{p.reason ? `${p.reason} ` : ''}Check the booking status before retrying.</T>
       </View>
-      {held ? <Notice icon="timer" text={`Bike still held for ${hold.text}`} /> : <Notice tone="field" icon="info" text="The hold on this bike has ended." />}
+      {held ? <Notice icon="timer" text={`Bike still held for ${hold.text}`} /> : <Notice tone="field" icon="info" text={booking ? "The hold on this bike has ended." : "Checking the booking status…"} />}
       {booking && (
         <Card style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={{ flexShrink: 1 }}>
@@ -40,6 +43,7 @@ export default function PaymentFailed() {
           <T v="price">{inr(booking.totalPaise, { decimals: 'always' })}</T>
         </Card>
       )}
+      {error && <Button label="Check booking status again" variant="secondary" onPress={reload} />}
       <View style={{ flex: 1 }} />
       {held
         ? <Button label="Try again" onPress={() => router.replace({ pathname: '/pay', params: payParams })} />

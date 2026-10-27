@@ -11,16 +11,16 @@ const idParams = z.object({ id: uuid });
 
 bookingRouter.get('/availability', validate({ query: availabilityQuerySchema }), ctrl.availability);
 bookingRouter.post('/quotes', validate({ body: quoteRequestSchema }), ctrl.quote);
-bookingRouter.post('/bookings', authenticate, authorize('customer'), requireIdempotencyKey,
+bookingRouter.post('/bookings', authenticate, authorize('customer', 'admin'), requireIdempotencyKey,
   validate({ body: createBookingSchema }), ctrl.create);
 bookingRouter.get('/bookings', authenticate, ctrl.listMine);
 bookingRouter.get('/bookings/:id', authenticate, validate({ params: idParams }), ctrl.getOne);
-bookingRouter.post('/bookings/:id/coupon', authenticate, authorize('customer'), requireIdempotencyKey,
+bookingRouter.post('/bookings/:id/coupon', authenticate, authorize('customer', 'admin'), requireIdempotencyKey,
   validate({ params: idParams, body: z.object({ code: z.string().trim().toUpperCase().max(32).nullable() }) }), ctrl.applyCoupon);
 bookingRouter.get('/bookings/:id/cancel', authenticate, validate({ params: idParams }), ctrl.cancelPreview);
 bookingRouter.post('/bookings/:id/cancel', authenticate, requireIdempotencyKey, validate({ params: idParams, body: cancelBookingSchema }), ctrl.cancel);
 bookingRouter.get('/bookings/:id/extend', authenticate, validate({ params: idParams, query: extendBookingSchema }), ctrl.extendPreview);
-bookingRouter.post('/bookings/:id/extend', authenticate, authorize('customer'), requireIdempotencyKey,
+bookingRouter.post('/bookings/:id/extend', authenticate, authorize('customer', 'admin'), requireIdempotencyKey,
   validate({ params: idParams, body: extendBookingSchema }), ctrl.extend);
 
 

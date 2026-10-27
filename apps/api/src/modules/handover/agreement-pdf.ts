@@ -19,8 +19,8 @@ export function agreementPdf(a: AgreementInput) {
     pdfRow(doc, 'Rider', `${a.rider} · ${a.phone}`);
     pdfRow(doc, 'Bike', `${a.bike} · ${a.registrationNo}`);
     pdfRow(doc, 'Rental', `${formatIST(a.startAt)} to ${formatIST(a.endAt)}`);
-    pdfRow(doc, 'Included', `${a.kmIncluded} km, then ${pdfInr(a.extraKmPaise)}/km + GST`);
-    pdfRow(doc, 'Late return', `${pdfInr(lateFeePerHourPaise(a.pricePerDayPaise))} per started hour + GST`);
+    pdfRow(doc, 'Included', `${a.kmIncluded} km, then ${pdfInr(a.extraKmPaise)}/km incl. GST`);
+    pdfRow(doc, 'Late return', `${pdfInr(lateFeePerHourPaise(a.pricePerDayPaise))} per started hour incl. GST`);
     pdfRow(doc, 'Refundable deposit', pdfInr(a.depositPaise));
     pdfRow(doc, 'Odometer at pickup', `${a.odometerKm} km`);
     pdfRow(doc, 'Emergency contact', `${a.emergencyContact.name} (${a.emergencyContact.relationship}) · ${a.emergencyContact.phone}`);

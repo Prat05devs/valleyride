@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteArt } from '@/components/art';
-import { BackButton, Button, Card, Loading, Row, T, Tag } from '@/components/ui';
+import { BackButton, Button, Card, ErrorText, Loading, Row, T, Tag } from '@/components/ui';
 import { Image } from 'expo-image';
 import { api, mediaUrl } from '@/lib/api';
 import { shortName } from '@/lib/bikes';
@@ -18,7 +18,9 @@ export default function Routes() {
   const insets = useSafeAreaInsets();
   const { byId } = useModels();
   const [routes, setRoutes] = useState<RouteGuideDTO[] | null>(null);
-  useEffect(() => { api.get<RouteGuideDTO[]>('/routes').then(setRoutes).catch(() => setRoutes([])); }, []);
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => { setError(null); api.get<RouteGuideDTO[]>('/routes').then(setRoutes).catch(() => setError('Could not load route guides. Please try again.')); }, [attempt]);
   const open = (r: RouteGuideDTO) => router.push({ pathname: '/route/[slug]', params: { slug: r.slug } });
 
   const card = (r: RouteGuideDTO) => (
@@ -43,7 +45,8 @@ export default function Routes() {
     <ScrollView style={{ backgroundColor: colors.canvas }} contentContainerStyle={{ padding: 20, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 30, gap: 14 }}>
       <Row><BackButton /><T v="title">Routes</T></Row>
       <View><T v="hero">Ride the hills from Dehradun</T><T style={{ color: colors.muted, marginTop: 4 }}>{routes ? `${routes.length} routes` : 'Routes'}, with the right bike for each.</T></View>
-      {!routes ? <Loading /> : routes.length === 0 ? <Card><T v="label">Route guides are on their way.</T></Card> : (
+      {error && <><ErrorText error={error} /><Button label="Try again" onPress={() => setAttempt((n) => n + 1)} /></>}
+      {!routes ? (!error && <Loading />) : routes.length === 0 ? <Card><T v="label">Route guides are on their way.</T></Card> : (
         <>
           <View><T v="title">Weekend climbs</T><T v="label">Hill rides from the city</T></View>
           {routes.filter((r) => !isLoop(r)).map(card)}

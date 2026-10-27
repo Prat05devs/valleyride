@@ -37,7 +37,7 @@ export default function Menu() {
             {i.badge ? <View style={styles.badge}><Text style={{ fontFamily: fonts.medium, fontSize: 13 }}>{i.badge}</Text></View> : null}
           </Pressable>
         ))}
-        <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${WEB_URL}/capital`)} style={styles.capital}>
+        <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${WEB_URL}/invest`)} style={styles.capital}>
           <T style={{ fontSize: 18 }}>Valley Ride Capital</T>
           <T v="label">Help fund the fleet. See the illustrative calculator.</T>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}><T>Open on the website</T><Icon name="forward" size={18} /></View>

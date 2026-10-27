@@ -3,19 +3,18 @@ import { pdfHeader, pdfInr, pdfRow, renderPdf } from '../../utils/pdf';
 import type { invoiceFor } from './booking.invoice';
 
 type Invoice = Awaited<ReturnType<typeof invoiceFor>>;
-const ph = (v: string | null, label: string) => v ?? `[${label}]`;
 
-/** Tax invoice PDF from the same data as GET /bookings/:id/invoice. Owner-supplied fields print as placeholders. */
+/** Receipt PDF from stored booking amounts; tax-invoice title requires a configured business GSTIN. */
 export function invoicePdf(inv: Invoice) {
   return renderPdf(`Invoice ${inv.number}`, (doc) => {
-    pdfHeader(doc, inv.final ? 'Tax invoice' : 'Booking invoice', `${inv.number} · issued ${formatIST(new Date(inv.issuedAt), { dateStyle: 'medium' })}`);
-    doc.fontSize(9).fillColor('#66686B').text(`GSTIN ${ph(inv.seller.gstin, 'your GSTIN')} · ${ph(inv.seller.address, 'Registered business address')}`);
+    pdfHeader(doc, inv.seller.gstin ? 'Tax invoice' : 'Booking receipt', `${inv.number} · issued ${formatIST(new Date(inv.issuedAt), { dateStyle: 'medium' })}`);
+    doc.fontSize(9).fillColor('#66686B').text(`${inv.seller.name}\n${inv.seller.address}\n${inv.seller.email}${inv.seller.gstin ? ` · GSTIN ${inv.seller.gstin}` : ''}`);
     doc.moveDown();
     doc.fillColor('#000');
     pdfRow(doc, 'Billed to', `${inv.billedTo.name ?? ''} · ${inv.billedTo.phone ?? ''}`);
     pdfRow(doc, 'Booking', inv.bookingCode);
     doc.moveDown();
-    pdfRow(doc, `Item · SAC ${ph(inv.seller.sac, 'code')}`, 'Amount', true);
+    pdfRow(doc, `Item${inv.seller.sac ? ` · SAC ${inv.seller.sac}` : ''}`, 'Amount', true);
     for (const l of inv.lines) pdfRow(doc, l.label, pdfInr(l.amountPaise));
     doc.moveDown(0.3);
     pdfRow(doc, 'Taxable value', pdfInr(inv.taxablePaise));

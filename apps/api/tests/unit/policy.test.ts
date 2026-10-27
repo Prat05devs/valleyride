@@ -17,14 +17,16 @@ describe('cancellationRefund', () => {
 describe('returnCharges', () => {
   const booking = { kmIncluded: 600, endAt: hoursFromNow(0), depositPaise: 500_000 };
   const hunter = { extraKmPaise: 600, pricePerDayPaise: 119_900 };
-  it('matches the design: 57 km over at ₹6 plus GST comes out of a ₹5,000 deposit', () => {
+  it('deducts 57 km at the listed ₹6 including GST without taxing it again', () => {
     const c = returnCharges(booking, hunter, { odometerStartKm: 1055, odometerEndKm: 1712, returnedAt: hoursFromNow(-0.13) });
-    expect(c).toMatchObject({ kmRidden: 657, extraKm: 57, extraKmPaise: 34_200, extraKmTaxPaise: 6_156, lateHours: 0, refundPaise: 459_644, owedPaise: 0 });
+    expect(c).toMatchObject({ kmRidden: 657, extraKm: 57, lateHours: 0, refundPaise: 465_800, owedPaise: 0 });
+    expect(c.extraKmPaise + c.extraKmTaxPaise).toBe(34_200);
   });
   it('charges every started late hour at an eighth of the day price', () => {
     expect(lateFeePerHourPaise(119_900)).toBe(14_988);
     const c = returnCharges(booking, hunter, { odometerStartKm: 0, odometerEndKm: 10, returnedAt: hoursFromNow(1.01) });
-    expect(c).toMatchObject({ lateHours: 2, lateFeePaise: 29_976, lateFeeTaxPaise: 5_396 });
+    expect(c.lateHours).toBe(2);
+    expect(c.lateFeePaise + c.lateFeeTaxPaise).toBe(29_976);
   });
   it('reports anything above the deposit as owed', () => {
     const c = returnCharges(booking, hunter, { odometerStartKm: 0, odometerEndKm: 600, returnedAt: hoursFromNow(0), damagePaise: 700_000 });

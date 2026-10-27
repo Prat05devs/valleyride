@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BackButton, Button, ErrorText, Row, T } from '@/components/ui';
 import { ApiError } from '@/lib/api';
@@ -21,7 +21,7 @@ export default function ProfileEdit() {
 
   async function save() {
     setBusy(true); setError(null);
-    try { await updateProfile({ fullName: name.trim(), email: email.trim() || null }); router.back(); }
+    try { await updateProfile({ fullName: name.trim(), email: email.trim() || null }); router.canGoBack() ? router.back() : router.replace('/(tabs)/profile'); }
     catch (e) { setError(e instanceof ApiError ? (e.code === 'VALIDATION' ? 'Check the name and email.' : e.message) : 'Could not save'); }
     finally { setBusy(false); }
   }
@@ -34,7 +34,7 @@ export default function ProfileEdit() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.canvas }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.canvas }} behavior="padding">
       <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 20, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 20, gap: 18 }} keyboardShouldPersistTaps="handled">
         <Row><BackButton /><T v="title">Edit profile</T></Row>
         <View style={{ gap: 8 }}>

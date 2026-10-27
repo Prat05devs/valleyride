@@ -9,6 +9,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
+      "appleTeamId": "9Q56J23Z23",
       "bundleIdentifier": "in.valleyride.app",
       "buildNumber": "1",
       "infoPlist": {
@@ -21,6 +22,10 @@
     "android": {
       "package": "in.valleyride.app",
       "versionCode": 1,
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#FFFFFF"
@@ -32,10 +37,20 @@
       "output": "single"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "origin": "https://valleyride.in"
+        }
+      ],
       "expo-status-bar",
       "expo-font",
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -49,7 +64,8 @@
         "expo-image-picker",
         {
           "cameraPermission": "Valley Ride uses the camera to photograph your driving licence and ID for verification.",
-          "photosPermission": "Valley Ride lets you upload a photo of your driving licence or ID."
+          "photosPermission": "Valley Ride lets you upload a photo of your driving licence or ID.",
+          "microphonePermission": false
         }
       ],
       [
@@ -59,15 +75,20 @@
         }
       ],
       "./plugins/with-scene-lifecycle",
-      "./plugins/with-test-cleartext"
+      "./plugins/with-test-cleartext",
+      "./plugins/with-release-signing"
     ],
     "experiments": {
       "typedRoutes": false
     },
     "extra": {
+      "router": {
+        "origin": "https://valleyride.in"
+      },
       "eas": {
-        "projectId": ""
+        "projectId": "605395ba-9ea7-489d-8690-79cba6821f17"
       }
-    }
+    },
+    "owner": "wtsolutions5"
   }
 }

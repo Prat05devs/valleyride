@@ -10,7 +10,7 @@ export const photoSchema = z.object({
   url: z.string().trim().min(1).max(500).regex(/^(\/static\/|https:\/\/)/, 'Use /static/… or an https:// URL'),
   credit: z.string().trim().min(1).max(160),
   license: z.string().trim().max(60).default(''),
-  source: z.string().trim().url().max(500).optional(),
+  source: z.string().trim().url().max(500).regex(/^https:\/\//, 'Use an https:// URL').optional(),
 });
 export type Photo = z.infer<typeof photoSchema>;
 
@@ -36,7 +36,7 @@ export const vehicleSpecsSchema = z.object({
   goodToKnow: z.array(z.string().trim().min(1).max(300)).max(12),
   /** Facts only the owner can give (helmets, mounts, variant, colour); empty until staff add them. */
   fromUs: z.array(z.string().trim().min(1).max(300)).max(12).default([]),
-  sources: z.array(z.object({ label: z.string().trim().min(1).max(120), url: z.string().trim().url().max(500) })).max(10).default([]),
+  sources: z.array(z.object({ label: z.string().trim().min(1).max(120), url: z.string().trim().url().max(500).regex(/^https:\/\//, 'Use an https:// URL') })).max(10).default([]),
 });
 export type VehicleSpecs = z.infer<typeof vehicleSpecsSchema>;
 

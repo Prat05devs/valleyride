@@ -11,10 +11,12 @@ interface Line { id: string; kind: 'PAID' | 'REFUND'; bookingId: string; booking
 interface Held { bookingId: string; bookingCode: string; bike: string; depositPaise: number; status: string }
 
 export default function PaymentsPage() {
-  const { data } = useQuery({ queryKey: ['payments'], queryFn: () => api.get<{ lines: Line[]; depositsHeld: Held[] }>('/me/payments') });
+  const { data, isError, isLoading, refetch } = useQuery({ queryKey: ['payments'], queryFn: () => api.get<{ lines: Line[]; depositsHeld: Held[] }>('/me/payments') });
   return (
     <>
       <h1 className="m-0 text-[40px] font-normal tracking-[-0.6px]">Payments and refunds</h1>
+      {isLoading && <p role="status">Loading payments…</p>}
+      {isError && <p role="alert">Could not load payments and refunds. <button type="button" className="underline" onClick={() => void refetch()}>Try again</button></p>}
       {data?.depositsHeld.map((h) => (
         <Link key={h.bookingId} href={`/account/bookings/${h.bookingId}`} className="flex flex-wrap items-center justify-between gap-3 rounded-sheet bg-dark px-7 py-6 text-surface">
           <span><span className="block text-sm text-white/80">Deposit held with us · {h.bookingCode}</span><span className="text-[30px] font-medium">{formatPaise(h.depositPaise)}</span></span>

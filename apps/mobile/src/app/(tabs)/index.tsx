@@ -1,4 +1,4 @@
-import type { VehicleModelDTO } from '@valleyride/shared';
+import type { RouteGuideDTO, VehicleModelDTO } from '@valleyride/shared';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -7,8 +7,8 @@ import { RouteArt } from '@/components/art';
 import { Glass } from '@/components/Glass';
 import { Icon } from '@/components/Icon';
 import { PhotoHeader } from '@/components/PhotoHeader';
-import { Card, IconButton, SectionHeader, T } from '@/components/ui';
-import { api } from '@/lib/api';
+import { Button, Card, ErrorText, IconButton, SectionHeader, T } from '@/components/ui';
+import { api, mediaUrl } from '@/lib/api';
 import { bikePhoto, BIKE_COPY, brandOf, shortName } from '@/lib/bikes';
 import { fmtTime } from '@/lib/format';
 import { inr } from '@/lib/format';
@@ -16,17 +16,25 @@ import { useSession } from '@/lib/session';
 import { useTrip } from '@/lib/trip';
 import { colors, fonts } from '@/theme';
 
-const ROUTES = [
-  { slug: 'dehradun-mussoorie', title: 'Dehradun → Mussoorie', meta: '35 km · 1.5 h · winding climb', kind: 'climb' as const },
-  { slug: 'sahastradhara-loop', title: 'Sahastradhara loop', meta: '16 km · 40 min · easy ride', kind: 'loop' as const },
-  { slug: 'dehradun-rishikesh', title: 'Dehradun → Rishikesh', meta: '45 km · 1.25 h · forest road', kind: 'climb' as const },
-];
+/** Short card lines, as on the website's home page; routes without an entry show their distance only. */
+const ROUTE_META: Record<string, { time?: string; feel: string }> = {
+  'dehradun-mussoorie': { time: '1.5 h', feel: 'winding climb' },
+  'dehradun-rishikesh': { time: '1.25 h', feel: 'forest road' },
+  'sahastradhara-loop': { time: '40 min', feel: 'easy ride' },
+  maldevta: { feel: 'river valley' },
+};
+const routeLine = (r: RouteGuideDTO) => [`${r.distanceKm} km`, ROUTE_META[r.slug]?.time, ROUTE_META[r.slug]?.feel].filter(Boolean).join(' · ');
 
 export default function Home() {
   const { user } = useSession();
   const trip = useTrip();
   const [models, setModels] = useState<VehicleModelDTO[]>([]);
-  useEffect(() => { api.get<VehicleModelDTO[]>('/vehicle-models').then(setModels).catch(() => {}); }, []);
+  const [fleetError, setFleetError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => { setFleetError(null); api.get<VehicleModelDTO[]>('/vehicle-models').then(setModels).catch(() => setFleetError('Could not load the fleet. Please try again.')); }, [attempt]);
+  // Routes are a teaser here; the section stays hidden if they fail to load, and the Routes screen has its own retry.
+  const [routes, setRoutes] = useState<RouteGuideDTO[]>([]);
+  useEffect(() => { api.get<RouteGuideDTO[]>('/routes').then(setRoutes).catch(() => {}); }, [attempt]);
 
   const first = (user?.fullName ?? '').split(' ')[0] || 'rider';
   const picks = models.filter((m) => m.category !== 'SCOOTER');
@@ -57,6 +65,7 @@ export default function Home() {
       </PhotoHeader>
 
       <View style={{ paddingTop: 26, gap: 16 }}>
+        {fleetError && <View style={{ paddingHorizontal: 20, gap: 10 }}><ErrorText error={fleetError} /><Button label="Try again" onPress={() => setAttempt((n) => n + 1)} /></View>}
         <SectionHeader title="Top picks" sub="Ride the hills this week" action="View all" onAction={() => router.push('/rides')} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: 20 }}>
           {picks.map((m) => (
@@ -75,18 +84,22 @@ export default function Home() {
         </ScrollView>
       </View>
 
-      <View style={{ paddingTop: 26, gap: 16 }}>
-        <SectionHeader title="Popular routes" sub="Weekend rides from Dehradun" action="View all" onAction={() => router.push('/routes')} />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }}>
-          {ROUTES.map((r) => (
-            <Card key={r.slug} style={{ width: 220, padding: 14, gap: 6 }} onPress={() => router.push({ pathname: '/route/[slug]', params: { slug: r.slug } })}>
-              <RouteArt kind={r.kind} height={92} />
-              <T style={{ fontSize: 17 }}>{r.title}</T>
-              <T v="label">{r.meta}</T>
-            </Card>
-          ))}
-        </ScrollView>
-      </View>
+      {routes.length > 0 && (
+        <View style={{ paddingTop: 26, gap: 16 }}>
+          <SectionHeader title="Popular routes" sub="Weekend rides from Dehradun" action="View all" onAction={() => router.push('/routes')} />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }}>
+            {routes.map((r) => (
+              <Card key={r.id} style={{ width: 240, padding: 14, gap: 6 }} onPress={() => router.push({ pathname: '/route/[slug]', params: { slug: r.slug } })}>
+                {r.mapImage
+                  ? <Image source={{ uri: mediaUrl(r.mapImage) }} style={styles.routeMap} contentFit="cover" transition={150} accessibilityLabel={`Map of the ${r.title} route`} />
+                  : <RouteArt kind={r.distanceKm < 25 ? 'loop' : 'climb'} height={92} />}
+                <T style={{ fontSize: 17 }} numberOfLines={1}>{r.title}</T>
+                <T v="label" numberOfLines={1}>{routeLine(r)}</T>
+              </Card>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       <View style={{ paddingTop: 26, gap: 16 }}>
         <SectionHeader title="Our fleet" sub="30 bikes across four models" />
@@ -111,4 +124,5 @@ const styles = StyleSheet.create({
   search: { marginTop: 26, height: 68, flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 22, paddingRight: 8 },
   searchHit: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 14, height: '100%' },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  routeMap: { width: '100%', height: 120, borderRadius: 18, backgroundColor: colors.field },
 });

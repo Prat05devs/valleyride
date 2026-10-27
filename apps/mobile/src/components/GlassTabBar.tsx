@@ -32,7 +32,7 @@ export function GlassTabBar({ state, navigation, unreadHelp = false }: Props) {
             if (!focused && !ev.defaultPrevented) navigation.navigate(route.name);
           };
           return (
-            <Pressable key={route.key} onPress={onPress} accessibilityRole="tab" accessibilityState={{ selected: focused }}
+            <Pressable key={route.key} onPress={onPress} accessibilityRole="tab" accessibilityState={{ selected: focused }} aria-selected={focused}
               accessibilityLabel={meta.label + (route.name === 'help' && unreadHelp && !focused ? ', unread message' : '')}
               style={({ pressed }) => [styles.circle, focused ? styles.active : styles.idle, { transform: [{ scale: pressed ? 0.92 : 1 }] }]}>
               <Icon name={meta.icon} size={24} color={focused ? colors.surface : colors.ink} strokeWidth={1.7} />

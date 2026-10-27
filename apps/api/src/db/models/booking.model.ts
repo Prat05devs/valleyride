@@ -28,6 +28,8 @@ export class Booking extends Model<InferAttributes<Booking>, InferCreationAttrib
   declare totalPaise: number;
   declare couponCode: string | null;
   declare tierPct: CreationOptional<number>;
+  declare clientRequestKey: CreationOptional<string | null>;
+  declare clientRequestHash: CreationOptional<string | null>;
 
   toDTO(): BookingDTO {
     return {
@@ -63,6 +65,8 @@ export class Booking extends Model<InferAttributes<Booking>, InferCreationAttrib
       totalPaise:       { type: DataTypes.BIGINT, allowNull: false },
       couponCode:       { type: DataTypes.STRING(32) },
       tierPct:          { type: DataTypes.DECIMAL(5, 2), allowNull: false, defaultValue: 0 },
+      clientRequestKey: { type: DataTypes.STRING(100), allowNull: true },
+      clientRequestHash: { type: DataTypes.STRING(64), allowNull: true },
     }, { sequelize, tableName: 'bookings', underscored: true });
   }
 

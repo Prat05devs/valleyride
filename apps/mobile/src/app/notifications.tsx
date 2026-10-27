@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '@/components/Icon';
-import { BackButton, Card, Loading, Row, T } from '@/components/ui';
+import { BackButton, Button, Card, ErrorText, Loading, Row, T } from '@/components/ui';
 import { fmtDate, fmtTime } from '@/lib/format';
 import { copyFor, useNotifications, type FeedItem } from '@/lib/notifications';
 import { colors } from '@/theme';
@@ -12,7 +12,7 @@ const isToday = (iso: string) => new Date(iso).toDateString() === new Date().toD
 
 export default function Notifications() {
   const insets = useSafeAreaInsets();
-  const { items, readAt, unread, markAllRead } = useNotifications();
+  const { items, readAt, unread, markAllRead, error, reload } = useNotifications();
   const today = (items ?? []).filter((i) => isToday(i.at));
   const earlier = (items ?? []).filter((i) => !isToday(i.at));
 
@@ -48,7 +48,8 @@ export default function Notifications() {
         <Row><BackButton /><T v="title">Notifications</T></Row>
         {unread > 0 && <Pressable accessibilityRole="button" onPress={markAllRead} hitSlop={10}><T style={{ color: colors.muted }}>Mark all read</T></Pressable>}
       </View>
-      {!items ? <Loading /> : items.length === 0 ? <Card style={{ alignItems: 'center', paddingVertical: 28 }}><T>You're all caught up</T></Card> : (
+      {error && <><ErrorText error={error} /><Button label="Try again" onPress={reload} /></>}
+      {!items ? (!error && <Loading />) : items.length === 0 ? <Card style={{ alignItems: 'center', paddingVertical: 28 }}><T>You're all caught up</T></Card> : (
         <>{group('Today', today)}{group('Earlier', earlier)}</>
       )}
     </ScrollView>

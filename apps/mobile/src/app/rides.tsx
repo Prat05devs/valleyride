@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
-import { BackButton, Card, Chip, ErrorText, Loading, T, Tag } from '@/components/ui';
+import { BackButton, Button, Card, Chip, ErrorText, LoadError, Loading, T, Tag } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
 import { bikePhoto, BIKE_COPY, brandOf, shortName } from '@/lib/bikes';
 import { fmtDate, fmtTime, inr } from '@/lib/format';
@@ -21,17 +21,23 @@ export default function Rides() {
   const [quotes, setQuotes] = useState<Record<string, Quote | undefined>>({});
   const [cat, setCat] = useState('all');
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    if (!t.pickupId) return;
+    let active = true;
     setError(null);
+    setModels(null);
     const q = `startAt=${encodeURIComponent(t.startAt.toISOString())}&endAt=${encodeURIComponent(t.endAt.toISOString())}${t.pickupId ? `&pickup=${t.pickupId}` : ''}${t.oneWay && t.returnId ? `&return=${t.returnId}` : ''}`;
     Promise.all([api.get<VehicleModelDTO[]>('/vehicle-models'), api.get<AvailabilityDTO[]>(`/availability?${q}`)])
-      .then(([ms, av]) => { setModels(ms); setFree(Object.fromEntries(av.map((a) => [a.model_id, a.free]))); setQuotes(Object.fromEntries(av.map((a) => [a.model_id, a.quote]))); })
-      .catch((e) => setError(e instanceof ApiError ? e.message : 'Could not load rides'));
-  }, [t.startAt, t.endAt, t.pickupId, t.returnId, t.oneWay]);
+      .then(([ms, av]) => { if (active) { setModels(ms); setFree(Object.fromEntries(av.map((a) => [a.model_id, a.free]))); setQuotes(Object.fromEntries(av.map((a) => [a.model_id, a.quote]))); } })
+      .catch((e) => { if (active) setError(e instanceof ApiError ? e.message : 'Could not load rides'); });
+    return () => { active = false; };
+  }, [t.startAt, t.endAt, t.pickupId, t.returnId, t.oneWay, attempt]);
 
   const list = (models ?? []).filter((m) => cat === 'all' || m.category === cat);
   const available = list.filter((m) => (free[m.id] ?? 0) > 0);
+  if (t.locationError && !t.pickupId) return <LoadError error={t.locationError} onRetry={t.reloadLocations} />;
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.canvas }}>
@@ -49,14 +55,16 @@ export default function Rides() {
           {CATS.map((c) => <Chip key={c.id} label={c.label} selected={cat === c.id} onPress={() => setCat(c.id)} />)}
         </ScrollView>
         <ErrorText error={error} />
+        {error && <Button label="Try again" onPress={() => setAttempt((n) => n + 1)} />}
         {!models && !error ? <Loading /> : (
           <>
             <T v="label">{available.length} {available.length === 1 ? 'model' : 'models'} free for your {t.days}-day trip</T>
+            {list.length === 0 && !error && <T>No rides in this category. Choose another filter.</T>}
             {list.map((m) => {
               const n = free[m.id] ?? 0;
               const q = quotes[m.id]; // priced by the API (pricing_rules included), never on the phone
               return (
-                <Card key={m.id} style={{ gap: 6, opacity: n ? 1 : 0.55 }} onPress={n ? () => router.push({ pathname: '/bike/[slug]', params: { slug: m.slug } }) : undefined}>
+                <Card key={m.id} style={{ gap: 6, opacity: n ? 1 : 0.75 }} onPress={() => router.push({ pathname: '/bike/[slug]', params: { slug: m.slug } })}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Tag label={BIKE_COPY[m.slug]?.tag ?? m.category} />
                     <T v="label" style={{ color: colors.orangeInk }}>{n === 0 ? 'Fully booked' : n <= 2 ? `Only ${n} left` : `${n} free`}</T>

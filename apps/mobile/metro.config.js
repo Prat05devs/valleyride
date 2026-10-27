@@ -7,6 +7,8 @@ const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
+// Keep archive/bundle memory bounded on developer Macs that are also compiling native code.
+config.maxWorkers = 2;
 config.watchFolders = [workspaceRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),

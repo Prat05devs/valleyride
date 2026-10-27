@@ -7,7 +7,7 @@ export interface InvoiceLine { label: string; amountPaise: number }
 /**
  * Tax invoice data for a booking: the rental at checkout plus extra km and late fees from the return inspection.
  * The refundable deposit and damage recovery are not part of it. GSTIN, SAC and the business address are
- * owner-supplied and shown as placeholders until set.
+ * owner-supplied; missing registration fields are omitted from the receipt.
  */
 export async function invoiceFor(userId: string | null, bookingId: string) {
   const booking = await Booking.findOne({ where: userId ? { id: bookingId, userId } : { id: bookingId } });
@@ -21,11 +21,11 @@ export async function invoiceFor(userId: string | null, bookingId: string) {
   const c: ReturnCharges | null = ret?.charges ?? null;
   const short = model.name.replace(/^Royal Enfield |^Honda /, '');
   const lines: InvoiceLine[] = [
-    { label: `${short} rental · ${booking.billableDays} ${booking.billableDays === 1 ? 'day' : 'days'} × ₹${(model.priceDayPaise / 100).toLocaleString('en-IN')}`, amountPaise: Number(booking.rentalPaise) },
+    { label: `${short} rental · ${booking.billableDays} ${booking.billableDays === 1 ? 'day' : 'days'} (taxable component)`, amountPaise: Number(booking.rentalPaise) },
   ];
   if (Number(booking.discountPaise) > 0) lines.push({ label: booking.couponCode ? `Discounts incl. coupon ${booking.couponCode}` : 'Long-rental discount', amountPaise: -Number(booking.discountPaise) });
   if (Number(booking.feesPaise) > 0) lines.push({ label: 'One-way fee', amountPaise: Math.min(Number(booking.feesPaise), ONE_WAY_FEE_PAISE) });
-  if (c?.extraKmPaise) lines.push({ label: `Extra km · ${c.extraKm} × ₹${model.extraKmPaise / 100}`, amountPaise: c.extraKmPaise });
+  if (c?.extraKmPaise) lines.push({ label: `Extra km · ${c.extraKm} (taxable component)`, amountPaise: c.extraKmPaise });
   if (c?.lateFeePaise) lines.push({ label: `Late return · ${c.lateHours} h`, amountPaise: c.lateFeePaise });
 
   const taxablePaise = lines.reduce((s, l) => s + l.amountPaise, 0);
@@ -37,7 +37,7 @@ export async function invoiceFor(userId: string | null, bookingId: string) {
     number: `VR-INV-${yymm}-${booking.code.slice(3)}`,
     issuedAt: issuedAt.toISOString(),
     final: !!ret,
-    seller: { name: 'Valley Ride', gstin: null as string | null, sac: null as string | null, address: null as string | null },
+    seller: { name: 'WT IT Solutions · Valley Ride', gstin: process.env.BUSINESS_GSTIN ?? null, sac: process.env.BUSINESS_SAC ?? null, address: 'Near IT Park, Sahastradhara Road, Dehradun, India', email: 'admin@wtsolutions.cc' },
     billedTo: { name: user?.fullName ?? null, phone: user?.phone ?? null },
     bookingCode: booking.code,
     lines, taxablePaise, gstPct: GST_PCT,

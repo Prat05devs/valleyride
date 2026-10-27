@@ -21,15 +21,18 @@ export const fonts = {
   medium: 'Urbanist_500Medium',
 } as const;
 
+/** Android pads text by the font's full ascent and descent, which pushes labels off-centre in pills and buttons. */
+export const tight = { includeFontPadding: false } as const;
+
 /** Urbanist Regular and Medium only; sizes from the style guide. */
 export const type = {
-  hero: { fontFamily: fonts.regular, fontSize: 32, letterSpacing: -0.4, color: colors.ink },
-  title: { fontFamily: fonts.regular, fontSize: 24, color: colors.ink },
-  cardTitle: { fontFamily: fonts.regular, fontSize: 20, color: colors.ink },
-  button: { fontFamily: fonts.regular, fontSize: 18 },
-  body: { fontFamily: fonts.regular, fontSize: 16, color: colors.ink },
-  label: { fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
-  price: { fontFamily: fonts.medium, fontSize: 22, color: colors.ink },
+  hero: { ...tight, fontFamily: fonts.regular, fontSize: 32, letterSpacing: -0.4, color: colors.ink },
+  title: { ...tight, fontFamily: fonts.regular, fontSize: 24, color: colors.ink },
+  cardTitle: { ...tight, fontFamily: fonts.regular, fontSize: 20, color: colors.ink },
+  button: { ...tight, fontFamily: fonts.regular, fontSize: 18 },
+  body: { ...tight, fontFamily: fonts.regular, fontSize: 16, color: colors.ink },
+  label: { ...tight, fontFamily: fonts.regular, fontSize: 14, color: colors.muted },
+  price: { ...tight, fontFamily: fonts.medium, fontSize: 22, color: colors.ink },
 } as const;
 
 export const radius = { card: 28, tile: 22, sheet: 32, hero: 36, pill: 999 } as const;

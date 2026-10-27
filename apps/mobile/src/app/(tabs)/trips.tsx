@@ -43,13 +43,14 @@ export default function Trips() {
       <View><T v="hero">Trips</T><T v="label" style={{ marginTop: 2 }}>Your bookings and deposits</T></View>
       <View style={styles.segment} accessibilityRole="tablist">
         {(['upcoming', 'past'] as const).map((k) => (
-          <Pressable key={k} accessibilityRole="tab" accessibilityState={{ selected: tab === k }} onPress={() => setTab(k)}
+          <Pressable key={k} accessibilityRole="tab" accessibilityState={{ selected: tab === k }} aria-selected={tab === k} onPress={() => setTab(k)}
             style={[styles.seg, tab === k && { backgroundColor: colors.ink }]}>
             <T style={{ color: tab === k ? colors.surface : colors.ink }}>{k === 'upcoming' ? 'Upcoming' : 'Past'}</T>
           </Pressable>
         ))}
       </View>
       <ErrorText error={error} />
+      {error && <Button label="Try again" onPress={load} />}
 
       {list && shown.length === 0 && (
         <Card style={{ alignItems: 'center', gap: 10, paddingVertical: 28 }}>

@@ -17,7 +17,7 @@ interface Invoice {
 
 const money = (p: number) => (p < 0 ? '−' : '') + formatPaise(Math.abs(p), true);
 /** Owner-supplied fields stay as visible placeholders until they are set. */
-const ph = (v: string | null, label: string) => v ?? `[${label}]`;
+
 
 /** Tax invoice; the PDF comes from GET /bookings/:id/invoice.pdf. */
 export default function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
@@ -33,15 +33,15 @@ export default function InvoicePage({ params }: { params: Promise<{ id: string }
       </div>
       <article className="flex flex-col gap-6 rounded-[36px] bg-surface p-8 print:rounded-none print:p-0">
         <div className="flex flex-wrap justify-between gap-4">
-          <div><div className="text-2xl font-medium">Valley <span className="text-orange">Ride</span></div><div className="text-sm text-muted">GSTIN {ph(inv.seller.gstin, 'your GSTIN')}</div><div className="text-sm text-muted">{ph(inv.seller.address, 'Registered business address')}</div></div>
-          <div className="text-right"><div className="text-sm text-muted">{inv.final ? 'Tax invoice' : 'Booking invoice'}</div><div className="text-xl tracking-[0.5px]">{inv.number}</div><div className="text-sm text-muted">Issued {formatDay(inv.issuedAt)}</div></div>
+          <div><div className="text-2xl font-medium">{inv.seller.name}</div>{inv.seller.gstin && <div className="text-sm text-muted">GSTIN {inv.seller.gstin}</div>}<div className="text-sm text-muted">{inv.seller.address}</div></div>
+          <div className="text-right"><div className="text-sm text-muted">{inv.seller.gstin ? 'Tax invoice' : 'Booking receipt'}</div><div className="text-xl tracking-[0.5px]">{inv.number}</div><div className="text-sm text-muted">Issued {formatDay(inv.issuedAt)}</div></div>
         </div>
         <div className="flex flex-wrap justify-between gap-4 rounded-[22px] bg-field p-5">
           <div><div className="text-sm text-muted">Billed to</div><div className="text-lg">{inv.billedTo.name ?? '—'}</div><div className="text-sm text-muted">{inv.billedTo.phone}</div></div>
           <div className="text-right"><div className="text-sm text-muted">Booking</div><div className="text-lg">{inv.bookingCode}</div></div>
         </div>
         <table className="w-full border-collapse text-base">
-          <thead><tr className="text-left text-sm text-muted"><th className="py-2 font-normal">Item · SAC {ph(inv.seller.sac, 'code')}</th><th className="py-2 text-right font-normal">Amount</th></tr></thead>
+          <thead><tr className="text-left text-sm text-muted"><th className="py-2 font-normal">Item{inv.seller.sac ? ` · SAC ${inv.seller.sac}` : ''}</th><th className="py-2 text-right font-normal">Amount</th></tr></thead>
           <tbody>
             {inv.lines.map((l) => <tr key={l.label} className="border-t border-line"><td className="py-3">{l.label}</td><td className="py-3 text-right">{money(l.amountPaise)}</td></tr>)}
             <tr className="border-t border-line"><td className="py-3">Taxable value</td><td className="py-3 text-right">{money(inv.taxablePaise)}</td></tr>

@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
-import { Button, Card, IconButton, InfoRow, Loading, T } from '@/components/ui';
+import { Button, Card, IconButton, InfoRow, LoadError, Loading, T } from '@/components/ui';
 import { useBooking, useModels } from '@/lib/data';
 import { fmtDateTime } from '@/lib/format';
 import { addToCalendar, openDirections } from '@/lib/links';
@@ -12,10 +12,10 @@ import { colors } from '@/theme';
 export default function Confirmed() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const { booking } = useBooking(id);
+  const { booking, error, reload } = useBooking(id);
   const { byId } = useModels();
   const { locations } = useTrip();
-  if (!booking) return <Loading />;
+  if (!booking) return error ? <LoadError error={error} onRetry={reload} /> : <Loading />;
   const pickup = locations.find((l) => l.id === booking.pickupLocationId);
   const model = byId(booking.vehicleModelId);
   const close = () => router.replace('/(tabs)/trips');
@@ -26,7 +26,7 @@ export default function Confirmed() {
       <View style={styles.ring}><View style={styles.check}><Icon name="check" size={38} color={colors.surface} strokeWidth={2} /></View></View>
       <View style={{ gap: 6, alignItems: 'center' }}>
         <T v="hero">You're booked</T>
-        <T style={{ color: colors.muted, textAlign: 'center' }}>Confirmation and invoice sent on WhatsApp.</T>
+        <T style={{ color: colors.muted, textAlign: 'center' }}>Your booking is confirmed. Details and receipt are available in Trips.</T>
       </View>
       <View style={{ gap: 6, alignItems: 'center' }}>
         <T v="label">Booking code</T>
@@ -42,7 +42,7 @@ export default function Confirmed() {
       <View style={{ alignSelf: 'stretch', flexDirection: 'row', gap: 10 }}>
         <Button label="Add to calendar" variant="secondary" size="md" style={{ flex: 1 }}
           onPress={() => addToCalendar({ title: `Valley Ride pickup · ${model?.name ?? 'your bike'}`, start: booking.startAt, end: booking.endAt, location: pickup ? `${pickup.name}, ${pickup.address}` : 'Valley Ride', details: `Booking ${booking.code}. Bring your original driving licence and ID.` })} />
-        <Button label="Directions" variant="secondary" size="md" style={{ flex: 1 }} disabled={!pickup} onPress={() => pickup && openDirections(pickup)} />
+        <Button label="Google Maps" variant="secondary" size="md" style={{ flex: 1 }} disabled={!pickup} onPress={() => pickup && openDirections(pickup)} />
       </View>
     </ScrollView>
   );

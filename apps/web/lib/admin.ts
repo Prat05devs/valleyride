@@ -20,6 +20,7 @@ export interface Dashboard {
 export interface FleetVehicle {
   id: string; registrationNo: string; status: 'ACTIVE' | 'MAINT' | 'RETIRED'; odometerKm: number; purchasedOn: string | null;
   model: { id: string; slug: string; name: string }; home: { id: string; name: string };
+  current?: { id: string; name: string };
   onRide: { bookingId: string; code: string; endAt: string } | null; next: { bookingId: string; code: string; startAt: string } | null;
   documents: { id: string; type: string; number: string; expiresOn: string | null; daysLeft: number | null }[]; docAlert: boolean;
 }

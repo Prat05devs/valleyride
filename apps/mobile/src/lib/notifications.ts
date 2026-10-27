@@ -24,12 +24,16 @@ export function copyFor(n: FeedItem): { title: string; body: string } {
 export function useNotifications() {
   const [items, setItems] = useState<FeedItem[] | null>(null);
   const [readAt, setReadAt] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
   const load = useCallback(async () => {
-    const [feed, r] = await Promise.all([api.get<FeedItem[]>('/me/notifications').catch(() => []), kv.get(READ_KEY)]);
-    setItems(feed); setReadAt(r ?? '');
+    setError(null);
+    try {
+      const [feed, r] = await Promise.all([api.get<FeedItem[]>('/me/notifications'), kv.get(READ_KEY)]);
+      setItems(feed); setReadAt(r ?? '');
+    } catch { setError('Could not load notifications. Please try again.'); }
   }, []);
   useEffect(() => { load(); }, [load]);
   const markAllRead = useCallback(async () => { const now = new Date().toISOString(); await kv.set(READ_KEY, now); setReadAt(now); }, []);
   const unread = (items ?? []).filter((i) => i.at > readAt).length;
-  return { items, readAt, unread, markAllRead, reload: load };
+  return { items, readAt, unread, markAllRead, error, reload: load };
 }

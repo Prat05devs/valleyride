@@ -9,9 +9,9 @@ const SECTIONS = [
   { h: 'Booking and payment', p: 'A bike is held for 15 minutes while you pay. Rental, GST and the refundable deposit are paid together through Razorpay.' },
   { h: 'Cancellation', p: 'More than 24 hours before pickup, the full rental is refunded; within 24 hours, 50%. The deposit is always refunded.' },
   { h: 'At pickup', p: 'Bring your original driving licence and an ID proof. Staff take photos of the bike with you, and you sign the rental agreement in the app.' },
-  { h: 'On the ride', p: 'Each booking includes a km allowance. Extra km and late returns are charged per the rates shown when you booked, plus GST. Helmets are compulsory for rider and pillion.' },
+  { h: 'On the ride', p: 'Each booking includes a km allowance. Extra km and late returns are charged per the rates shown when you booked, including GST. Helmets are compulsory for rider and pillion.' },
   { h: 'Return and deposit', p: 'Damage found at return is charged from the deposit after inspection. The rest of the deposit goes back to the card or UPI you paid with.' },
-  { h: 'Your data', p: "KYC documents are stored privately in India (Mumbai region) and only staff can open them. For Aadhaar, only the last 4 digits are kept, in line with India's DPDP Act, 2023." },
+  { h: 'Your data', p: 'Document photos are stored privately on our server and are available to authorised staff for verification. We keep only the last 4 characters of the document number you enter. A photo may still show the full number; use a masked Aadhaar if you choose to upload Aadhaar.' },
 ];
 
 export default function Terms() {

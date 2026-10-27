@@ -93,6 +93,7 @@ export default function RouteGuide() {
           {way.length > 0 && (
             <Card style={{ paddingBottom: 4 }}>
               <T style={{ fontSize: 18, marginBottom: 16 }}>Along the way</T>
+              {r.mapImage ? <Image source={{ uri: mediaUrl(r.mapImage) }} style={styles.map} contentFit="cover" transition={150} accessibilityLabel={`Map of the ${r.title} route`} /> : null}
               {way.map((s, i) => (
                 <View key={s.name} style={{ flexDirection: 'row', gap: 12 }}>
                   <View style={{ width: 44, alignItems: 'center' }}>
@@ -179,6 +180,7 @@ const styles = StyleSheet.create({
   coverTitle: { fontFamily: fonts.regular, fontSize: 34, letterSpacing: -0.5, color: colors.surface },
   glassChip: { height: 32, justifyContent: 'center', borderRadius: 999, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.35)' },
   glassChipText: { fontFamily: fonts.regular, fontSize: 14, color: colors.surface },
+  map: { width: '100%', aspectRatio: 16 / 10, borderRadius: 20, backgroundColor: colors.field, marginBottom: 22 },
   highlight: { borderRadius: 999, backgroundColor: colors.field, paddingHorizontal: 12, paddingVertical: 7 },
   kind: { fontFamily: fonts.regular, fontSize: 11, letterSpacing: 0.6, color: colors.muted },
   dot: { width: 13, height: 13, borderRadius: 7, marginTop: 6 },

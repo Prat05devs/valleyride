@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '@/components/Icon';
-import { Button, Card, Divider, T, Tag } from '@/components/ui';
+import { Button, Card, Divider, ErrorText, T, Tag } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useNotifications } from '@/lib/notifications';
 import { useSession } from '@/lib/session';
@@ -16,13 +16,19 @@ export default function Profile() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useSession();
   const [docs, setDocs] = useState<CustomerDocumentDTO[] | null>(null);
+  const [docError, setDocError] = useState<string | null>(null);
   const { unread, reload } = useNotifications();
-  useFocusEffect(useCallback(() => { api.get<CustomerDocumentDTO[]>('/kyc/documents').then(setDocs).catch(() => setDocs([])); reload(); }, [reload]));
+  const loadDocs = useCallback(async () => {
+    setDocError(null);
+    try { setDocs(await api.get<CustomerDocumentDTO[]>('/kyc/documents')); }
+    catch { setDocError('Could not check your documents.'); }
+  }, []);
+  useFocusEffect(useCallback(() => { void loadDocs(); void reload(); }, [reload, loadDocs]));
 
   const dl = docs?.find((d) => d.type === 'DL');
   const id = docs?.find((d) => d.type !== 'DL');
   const all = !!dl && !!id && dl.status === 'VERIFIED' && id.status === 'VERIFIED';
-  const state = (d?: CustomerDocumentDTO) => (!d ? 'Not added' : d.status === 'VERIFIED' ? 'Verified' : d.status === 'PENDING' ? 'In review' : 'Needs a new photo');
+  const state = (d?: CustomerDocumentDTO) => (docError ? 'Could not check' : docs === null ? 'Loading…' : !d ? 'Not added' : d.status === 'VERIFIED' ? 'Verified' : d.status === 'PENDING' ? 'In review' : 'Needs a new photo');
   const initial = (user?.fullName ?? user?.phone ?? '?').trim()[0]?.toUpperCase();
 
   return (
@@ -37,11 +43,12 @@ export default function Profile() {
       <Card onPress={() => router.push('/documents')} style={{ gap: 12 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <T style={{ fontSize: 18 }}>Documents</T>
-          {docs && <Tag label={all ? 'All verified' : 'Action needed'} tone={all ? 'ink' : 'orange'} />}
+          {docs && !docError && <Tag label={all ? 'All verified' : 'Action needed'} tone={all ? 'ink' : 'orange'} />}
         </View>
         <DocLine label="Driving licence" value={state(dl)} />
         <DocLine label={id ? `ID proof · ${DOCUMENT_LABEL[id.type]} ${id.numberMasked}` : 'ID proof'} value={state(id)} />
       </Card>
+      {docError && <><ErrorText error={docError} /><Button label="Try again" onPress={loadDocs} /></>}
 
       <Card style={{ paddingVertical: 6 }}>
         <Item icon="wallet" label="Payments and refunds" onPress={() => router.push('/payments')} />

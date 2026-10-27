@@ -1,4 +1,4 @@
-import { GST_PCT } from './pricing';
+import { splitInclusiveGst } from './pricing';
 
 /**
  * Cancellation policy from the architecture document's booking prototype: full refund of the rental more than
@@ -23,7 +23,7 @@ export const lateFeePerHourPaise = (pricePerDayPaise: number) => Math.round(pric
 export const LATE_GRACE_MINUTES = 0;
 
 /**
- * What comes out of the deposit at return: extra km and late hours (both plus GST) and any damage from the
+ * What comes out of the deposit at return: extra km and late hours (both already including GST) and damage from the
  * inspection checklist. Anything above the deposit is shown as still owed.
  */
 export function returnCharges(
@@ -33,12 +33,16 @@ export function returnCharges(
 ) {
   const kmRidden = Math.max(0, r.odometerEndKm - r.odometerStartKm);
   const extraKm = Math.max(0, kmRidden - b.kmIncluded);
-  const extraKmPaise = extraKm * m.extraKmPaise;
+  const extraKmInclGstPaise = extraKm * m.extraKmPaise;
   const lateMinutes = (new Date(r.returnedAt).getTime() - new Date(b.endAt).getTime()) / 60_000 - LATE_GRACE_MINUTES;
   const lateHours = lateMinutes > 0 ? Math.ceil(lateMinutes / 60) : 0;
-  const lateFeePaise = lateHours * lateFeePerHourPaise(m.pricePerDayPaise);
-  const extraKmTaxPaise = Math.round((extraKmPaise * GST_PCT) / 100);
-  const lateFeeTaxPaise = Math.round((lateFeePaise * GST_PCT) / 100);
+  const lateFeeInclGstPaise = lateHours * lateFeePerHourPaise(m.pricePerDayPaise);
+  const extraKmSplit = splitInclusiveGst(extraKmInclGstPaise);
+  const lateFeeSplit = splitInclusiveGst(lateFeeInclGstPaise);
+  const extraKmPaise = extraKmSplit.netPaise;
+  const lateFeePaise = lateFeeSplit.netPaise;
+  const extraKmTaxPaise = extraKmSplit.taxPaise;
+  const lateFeeTaxPaise = lateFeeSplit.taxPaise;
   const taxPaise = extraKmTaxPaise + lateFeeTaxPaise;
   const damagePaise = r.damagePaise ?? 0;
   const deductionPaise = extraKmPaise + lateFeePaise + taxPaise + damagePaise;

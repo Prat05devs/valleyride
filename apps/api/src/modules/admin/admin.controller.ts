@@ -13,6 +13,7 @@ const range = (req: Request) => req.query as unknown as { from: Date; to: Date }
 export const dashboard = async (_req: Request, res: Response) => { res.json({ data: await adminService.dashboard() }); };
 
 export const vehicles = async (_req: Request, res: Response) => { res.json({ data: await adminService.vehicles() }); };
+export const relocateVehicle = async (req: Request, res: Response) => { res.json({ data: await adminService.relocateVehicle(actor(req), id(req), req.body.locationId, req.body.reason) }); };
 export const vehicle = async (req: Request, res: Response) => { res.json({ data: await adminService.vehicle(id(req)) }); };
 export async function createVehicle(req: Request, res: Response) {
   const v = await adminService.createVehicle(actor(req), req.body);

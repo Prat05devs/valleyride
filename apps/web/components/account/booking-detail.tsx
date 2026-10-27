@@ -4,7 +4,7 @@ import { formatOpenHours, type BookingDTO, type CancellationRefund, type Custome
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { MapArt } from '@/components/brand/art';
 import { Icon } from '@/components/brand/icon';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,7 @@ export function BookingDetail({ id }: { id: string }) {
   const { data: me } = useMe();
   const { model, location } = useCatalog();
   const [extending, setExtending] = useState<'confirming' | null>(null);
+  const [agreementError, setAgreementError] = useState<string | null>(null);
   const booking = useQuery({
     queryKey: ['booking', id], queryFn: () => api.get<BookingDTO>(`/bookings/${id}`),
     refetchInterval: (q) => (extending || q.state.data?.status === 'COMPLETED' ? 3000 : false),
@@ -44,6 +45,7 @@ export function BookingDetail({ id }: { id: string }) {
   const m = model(b.vehicleModelId);
   const pickup = location(b.pickupLocationId);
   const ret = location(b.returnLocationId);
+  const directionsPoint = b.status === 'ONGOING' ? ret ?? pickup : pickup;
   const step = { CONFIRMED: 1, ONGOING: 2, COMPLETED: 3, DEPOSIT_SETTLED: 4 }[b.status as string] ?? 0;
   const closed = b.status === 'CANCELLED' || b.status === 'EXPIRED';
   const r = handover.data?.return;
@@ -115,7 +117,7 @@ export function BookingDetail({ id }: { id: string }) {
                 <span className="text-base text-muted">{[(b.status === 'ONGOING' ? ret ?? pickup : pickup).address, formatOpenHours((b.status === 'ONGOING' ? ret ?? pickup : pickup).openHours)?.replace('Open ', 'open ')].filter(Boolean).join(' · ')}</span>
                 <span className="mt-1.5 flex gap-2.5">
                   <a className="inline-flex h-12 items-center rounded-full bg-ink px-[22px] text-[15px] text-surface" target="_blank" rel="noreferrer"
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pickup.lat != null ? `${pickup.lat},${pickup.lng}` : `${pickup.name}, ${pickup.address}`)}`}>Directions</a>
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(directionsPoint?.lat != null && directionsPoint?.lng != null ? `${directionsPoint.lat},${directionsPoint.lng}` : `${directionsPoint?.name}, ${directionsPoint?.address}`)}`}>Google Maps</a>
                   {DESK && <a className="inline-flex h-12 items-center rounded-full bg-field px-[22px] text-[15px]" href={`tel:${DESK}`}>Call desk</a>}
                 </span>
               </div>
@@ -133,9 +135,18 @@ export function BookingDetail({ id }: { id: string }) {
               <Line label="Paid" value={formatPaise(b.totalPaise, true)} strong />
               <Link href={`/account/bookings/${b.id}/invoice`} className="mt-1.5 flex h-[50px] items-center justify-center gap-2 rounded-full bg-field text-[15px]"><Icon name="download" size={18} />{b.status === 'COMPLETED' || b.status === 'DEPOSIT_SETTLED' ? 'Final invoice' : 'Invoice'}</Link>
               {handover.data?.pickup?.signedAt && (
-                <button type="button" onClick={async () => { const r = await api.get<{ url: string }>(`/bookings/${b.id}/agreement`).catch(() => null); if (r) window.open(r.url, '_blank', 'noopener'); }}
+                <button type="button" onClick={async () => {
+                  setAgreementError(null);
+                  const tab = window.open('about:blank', '_blank');
+                  if (tab) tab.opener = null;
+                  try {
+                    const r = await api.get<{ url: string }>(`/bookings/${b.id}/agreement`);
+                    if (tab) tab.location.replace(r.url); else window.location.assign(r.url);
+                  } catch { tab?.close(); setAgreementError('Could not open the signed agreement. Please try again.'); }
+                }}
                   className="flex h-[50px] items-center justify-center gap-2 rounded-full bg-field text-[15px]"><Icon name="doc" size={18} />Signed agreement</button>
               )}
+              {agreementError && <p role="alert" className="text-sm text-orange-ink">{agreementError}</p>}
             </section>
           )}
           {b.status === 'PENDING_PAYMENT' && <Link href={`/checkout/${b.id}`} className="flex h-14 items-center justify-center rounded-full bg-ink text-surface">Finish paying</Link>}
@@ -152,6 +163,7 @@ export function BookingDetail({ id }: { id: string }) {
 function Change({ booking: b, phone, onPaid, onDone, confirming }: { booking: BookingDTO; phone?: string; onPaid: () => void; onDone: () => void; confirming: boolean }) {
   const qc = useQueryClient();
   const [to, setTo] = useState(isoToIstInput(new Date(new Date(b.endAt).getTime() + 86_400_000).toISOString()));
+  const extensionAttempt = useRef({ endAt: '', key: newIdempotencyKey() });
   const [cancelOpen, setCancelOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,9 +177,10 @@ function Change({ booking: b, phone, onPaid, onDone, confirming }: { booking: Bo
   useEffect(() => { if (confirming && b.endAt === endAt) onDone(); }, [confirming, b.endAt, endAt, onDone]);
 
   async function extend() {
+    if (extensionAttempt.current.endAt !== endAt) extensionAttempt.current = { endAt, key: newIdempotencyKey() };
     setBusy(true); setError(null);
     try {
-      const res = await api.post<{ razorpayOrderId: string | null; payPaise: number }>(`/bookings/${b.id}/extend`, { endAt }, { idempotencyKey: newIdempotencyKey() });
+      const res = await api.post<{ razorpayOrderId: string | null; payPaise: number }>(`/bookings/${b.id}/extend`, { endAt }, { idempotencyKey: extensionAttempt.current.key });
       if (!res.razorpayOrderId) { qc.invalidateQueries({ queryKey: ['booking', b.id] }); return; }
       await payOrder({
         orderId: res.razorpayOrderId, amountPaise: res.payPaise, bookingCode: b.code, phone,
@@ -187,7 +200,7 @@ function Change({ booking: b, phone, onPaid, onDone, confirming }: { booking: Bo
       <label className="label">Extend the return to<input type="datetime-local" step={1800} min={isoToIstInput(b.endAt)} value={to} onChange={(e) => setTo(e.target.value)} className="field h-[54px]" /></label>
       {p && <span className={cn('text-sm', p.available ? 'text-muted' : 'text-orange-ink')}>{p.available ? `${b.billableDays} → ${p.quote.days} days · ${b.kmIncluded} → ${p.quote.kmIncluded} km` : 'Your bike is booked by someone else for that time.'}</span>}
       {error && <p role="alert" className="m-0 rounded-[20px] bg-orange-tint px-4 py-3 text-sm text-orange-ink">{error}</p>}
-      <Button className="h-[54px]" disabled={!p || !p.available || busy || confirming} onClick={extend}>
+      <Button className="h-[54px]" disabled={!later || !p || !p.available || preview.isFetching || preview.isError || busy || confirming} onClick={extend}>
         {confirming ? 'Confirming payment…' : p ? (p.payPaise ? `Extend · pay ${formatPaise(p.payPaise, true)}` : 'Extend, no extra charge') : 'Extend'}
       </Button>
       {b.status === 'CONFIRMED' && <button type="button" onClick={() => setCancelOpen(true)} className="flex h-11 items-center justify-center text-[15px] underline">Cancel booking</button>}

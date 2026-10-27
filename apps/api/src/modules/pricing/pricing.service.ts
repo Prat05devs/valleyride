@@ -4,6 +4,7 @@ import { AppError } from '../../utils/AppError';
 import { audit, type Actor } from '../../utils/audit';
 import { cached, invalidate } from '../../utils/cache';
 import { couponService } from './coupon.service';
+import { assertDeskWindow } from '../booking/booking-window';
 
 const istDate = (d: Date) => new Date(d.getTime() + 5.5 * 3_600_000).toISOString().slice(0, 10);
 
@@ -40,6 +41,7 @@ export const pricingService = {
 
   /** POST /quotes: the same quote the booking engine charges, so the price shown is the price paid. */
   async quoteFor(input: QuoteRequestInput) {
+    await assertDeskWindow(input.startAt, input.endAt, input.pickupLocationId, input.returnLocationId);
     const model = await VehicleModel.findByPk(input.vehicleModelId);
     if (!model) throw new AppError(404, 'NOT_FOUND', 'Vehicle model not found');
     const couponPct = await couponService.percentOff(input.couponCode);

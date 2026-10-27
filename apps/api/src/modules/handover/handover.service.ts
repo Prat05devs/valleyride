@@ -139,7 +139,7 @@ export const handoverService = {
         damageNotes: input.damageNotes ?? null, agreementFileKey: null, staffId, signedAt: null, emergencyContact: null,
         checklist: input.checklist, charges,
       }, { transaction: t });
-      await Vehicle.update({ odometerKm: input.odometerKm }, { where: { id: booking.vehicleId }, transaction: t });
+      await Vehicle.update({ odometerKm: input.odometerKm, currentLocationId: booking.returnLocationId }, { where: { id: booking.vehicleId }, transaction: t });
       await booking.update({ status: 'COMPLETED' }, { transaction: t });
       await audit({ id: staffId, ip }, { action: 'handover.return', entity: 'booking', entityId: bookingId, diff: { charges } }, t);
       return { booking, charges };

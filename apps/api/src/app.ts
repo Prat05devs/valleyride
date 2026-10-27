@@ -28,6 +28,6 @@ app.use('/static', express.static(path.join(__dirname, '../public'), {
 }));
 app.get('/health', (_req, res) => res.json({ ok: true }));
 app.get('/ready', readiness);
-app.use(docsRouter);                                        // OpenAPI from the Zod schemas: /api/docs
+if (env.NODE_ENV !== 'production') app.use(docsRouter);      // OpenAPI from the Zod schemas: /api/docs (not public in production)
 app.use(notFound);
 app.use(errorHandler);

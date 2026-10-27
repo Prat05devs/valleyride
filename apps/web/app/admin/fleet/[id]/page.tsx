@@ -1,6 +1,6 @@
 'use client';
 
-import type { BookingDTO } from '@valleyride/shared';
+import type { BookingDTO, LocationDTO } from '@valleyride/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { use, useState } from 'react';
@@ -12,6 +12,7 @@ import { Input, Select } from '@/components/ui/input';
 import { docLabel, type FleetVehicle } from '@/lib/admin';
 import { api, ApiError } from '@/lib/api-client';
 import { bikePhoto } from '@/lib/bikes';
+import { useMe } from '@/lib/use-me';
 import { formatDate, formatDay, formatPaise } from '@/lib/format';
 
 type Detail = FleetVehicle & {
@@ -23,6 +24,10 @@ const DOCS = ['RC', 'INSURANCE', 'PERMIT', 'PUC'] as const;
 export default function VehiclePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const qc = useQueryClient();
+  const { data: me } = useMe();
+  const points = useQuery({ queryKey: ['locations'], queryFn: () => api.get<LocationDTO[]>('/locations') });
+  const [transfer, setTransfer] = useState({ locationId: '', reason: '' });
+  const [transferring, setTransferring] = useState(false);
   const { data: v, refetch } = useQuery({ queryKey: ['admin', 'vehicle', id], queryFn: () => api.get<Detail>(`/admin/vehicles/${id}`) });
   const today = new Date(Date.now() + 5.5 * 3_600_000).toISOString().slice(0, 10);
   const [m, setM] = useState({ type: 'SERVICE', odometerKm: '', costRupees: '', performedOn: today, notes: '' });
@@ -47,6 +52,7 @@ export default function VehiclePage({ params }: { params: Promise<{ id: string }
         </span>
         <div className="flex min-w-0 flex-[2_1_300px] flex-col gap-1.5">
           <h1 className="m-0 text-[34px] font-medium tracking-[1px]">{v.registrationNo}</h1>
+          <span className="text-base text-muted">Current hub: {v.current?.name ?? v.home.name}</span>
           <span className="text-base text-muted">{v.model.name} · home {v.home.name}{v.purchasedOn ? ` · bought ${formatDay(v.purchasedOn)}` : ''}</span>
           <div className="mt-1.5 flex flex-wrap gap-2">
             <Badge>{v.status === 'ACTIVE' ? 'Active' : v.status === 'MAINT' ? 'Maintenance' : 'Retired'}</Badge>
@@ -59,6 +65,12 @@ export default function VehiclePage({ params }: { params: Promise<{ id: string }
             <option value="ACTIVE">Active</option><option value="MAINT">Maintenance</option><option value="RETIRED">Retired</option></Select></label>
       </section>
       {error && <p role="alert" className="m-0 rounded-[20px] bg-orange-tint px-4 py-3 text-sm text-orange-ink">{error}</p>}
+      {me?.role === 'admin' && <Panel title="Record a physical hub transfer">
+        <p className="m-0 text-sm text-muted">Record the destination after moving the bike. Active reservations must be finished or cancelled first.</p>
+        <label className="label">Destination hub<Select value={transfer.locationId} onChange={(e) => setTransfer({ ...transfer, locationId: e.target.value })}><option value="">Choose a hub</option>{points.data?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</Select></label>
+        <label className="label">Transfer note<Input value={transfer.reason} onChange={(e) => setTransfer({ ...transfer, reason: e.target.value })} /></label>
+        <Button disabled={transferring || !transfer.locationId || transfer.reason.trim().length < 3} onClick={async () => { setTransferring(true); await run(() => api.patch(`/admin/vehicles/${id}/location`, transfer)); setTransferring(false); }}>Save current hub</Button>
+      </Panel>}
       <div className="flex flex-wrap items-start gap-4">
         <Panel title="Documents" className="flex-[999_1_420px] py-2">
           {DOCS.map((t) => {

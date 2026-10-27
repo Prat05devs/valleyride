@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
-import { IconButton, T } from '@/components/ui';
+import { Button, ErrorText, IconButton, T } from '@/components/ui';
 import { useTrip } from '@/lib/trip';
 import { colors } from '@/theme';
 
@@ -26,6 +26,7 @@ export default function PickupPoint() {
         <T v="title">{which === 'return' ? 'Return point' : 'Pickup point'}</T>
       </View>
       <ScrollView contentContainerStyle={{ padding: 20, gap: 10 }}>
+        {t.locationError && <><ErrorText error={t.locationError} /><Button label="Try again" onPress={t.reloadLocations} /></>}
         {which === 'return' && <T v="label">Returning somewhere else adds a ₹400 one-way fee.</T>}
         {cities.map((city) => (
           <View key={city} style={{ gap: 10 }}>
@@ -33,7 +34,7 @@ export default function PickupPoint() {
             {t.locations.filter((l) => l.city === city).map((l) => {
               const on = l.id === selected;
               return (
-                <Pressable key={l.id} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => pick(l.id)}
+                <Pressable key={l.id} accessibilityRole="radio" accessibilityState={{ checked: on }} aria-checked={on} onPress={() => pick(l.id)}
                   style={[styles.row, { borderColor: on ? colors.ink : colors.line }]}>
                   <View style={{ flex: 1, gap: 2 }}>
                     <T style={{ fontSize: 17 }}>{l.name.split(' · ')[1] ?? l.name}</T>

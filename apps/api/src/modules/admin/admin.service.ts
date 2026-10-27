@@ -23,23 +23,25 @@ export const adminService = {
       include: [
         { model: VehicleModel, as: 'model', attributes: ['id', 'slug', 'name'] },
         { model: Location, as: 'homeLocation', attributes: ['id', 'name'] },
+        { model: Location, as: 'currentLocation', attributes: ['id', 'name'] },
         { model: VehicleDocument, as: 'documents' },
       ],
       order: [['registrationNo', 'ASC']],
     });
     const now = new Date();
     const live = await Booking.findAll({
-      where: { status: { [Op.in]: ['CONFIRMED', 'ONGOING'] }, endAt: { [Op.gt]: now }, ...(id ? { vehicleId: id } : {}) },
+      where: { [Op.or]: [{ status: 'ONGOING' }, { status: 'CONFIRMED', endAt: { [Op.gt]: now } }], ...(id ? { vehicleId: id } : {}) },
       attributes: ['id', 'code', 'vehicleId', 'status', 'startAt', 'endAt'], order: [['startAt', 'ASC']],
     });
     return rows.map((v) => {
-      const r = v as Vehicle & { model: VehicleModel; homeLocation: Location; documents: VehicleDocument[] };
+      const r = v as Vehicle & { model: VehicleModel; homeLocation: Location; currentLocation: Location | null; documents: VehicleDocument[] };
       const mine = live.filter((b) => b.vehicleId === v.id);
       const out = mine.find((b) => b.status === 'ONGOING');
       const docs = r.documents.map((d) => ({ id: d.id, type: d.type, number: d.number, expiresOn: d.expiresOn, daysLeft: daysUntil(d.expiresOn) }));
       return {
         id: v.id, registrationNo: v.registrationNo, status: v.status, odometerKm: v.odometerKm, purchasedOn: v.purchasedOn,
         model: { id: r.model.id, slug: r.model.slug, name: r.model.name }, home: { id: r.homeLocation.id, name: r.homeLocation.name },
+        current: { id: r.currentLocation?.id ?? r.homeLocation.id, name: r.currentLocation?.name ?? r.homeLocation.name },
         onRide: out ? { bookingId: out.id, code: out.code, endAt: out.endAt.toISOString() } : null,
         next: mine.find((b) => b.status === 'CONFIRMED') ? (({ id, code, startAt }) => ({ bookingId: id, code, startAt: startAt.toISOString() }))(mine.find((b) => b.status === 'CONFIRMED')!) : null,
         documents: docs,
@@ -65,7 +67,9 @@ export const adminService = {
 
   async createVehicle(a: Actor, input: CreateVehicleInput) {
     try {
-      const v = await Vehicle.create({ ...input, registrationNo: input.registrationNo.replace(/\s+/g, ' '), purchasedOn: input.purchasedOn ?? null });
+      const location = await Location.findOne({ where: { id: input.homeLocationId, isActive: true } });
+      if (!location) throw new AppError(422, 'LOCATION_UNAVAILABLE', 'Choose an active home point.');
+      const v = await Vehicle.create({ ...input, currentLocationId: input.homeLocationId, registrationNo: input.registrationNo.replace(/\s+/g, ' '), purchasedOn: input.purchasedOn ?? null });
       await audit(a, { action: 'vehicle.create', entity: 'vehicle', entityId: v.id, diff: input });
       await invalidate('fleet:');
       return v;
@@ -73,6 +77,23 @@ export const adminService = {
       if (e instanceof UniqueConstraintError) throw new AppError(409, 'DUPLICATE', 'A vehicle with this registration already exists.');
       throw e;
     }
+  },
+
+  /** A recorded physical transfer, never a way to bypass a rider's existing reservation. */
+  async relocateVehicle(a: Actor, id: string, locationId: string, reason: string) {
+    await sequelize.transaction(async (t) => {
+      const v = await Vehicle.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
+      if (!v) throw new AppError(404, 'NOT_FOUND', 'Vehicle not found');
+      const location = await Location.findOne({ where: { id: locationId, isActive: true }, transaction: t });
+      if (!location) throw new AppError(422, 'LOCATION_UNAVAILABLE', 'Choose an active destination hub.');
+      const reserved = await Booking.count({ where: { vehicleId: id, status: { [Op.in]: ACTIVE_STATUSES as string[] } }, transaction: t });
+      if (reserved) throw new AppError(409, 'VEHICLE_RESERVED', 'Finish or cancel this unit’s active reservations before recording a transfer.');
+      const before = v.currentLocationId ?? v.homeLocationId;
+      await v.update({ currentLocationId: locationId }, { transaction: t });
+      await audit(a, { action: 'vehicle.relocated', entity: 'vehicle', entityId: id, diff: { currentLocationId: [before, locationId], reason } }, t);
+    });
+    await invalidate('fleet:');
+    return this.vehicle(id);
   },
 
   /** MAINT or RETIRED leaves existing bookings in place and reports them so staff can move riders to another unit. */

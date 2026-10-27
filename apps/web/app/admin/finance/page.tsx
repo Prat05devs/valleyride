@@ -22,8 +22,8 @@ export default function FinancePage() {
   const now = new Date(Date.now() + 5.5 * 3_600_000);
   const months = Array.from({ length: 12 }, (_, i) => { const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1)); return d.toISOString().slice(0, 7); });
   const [month, setMonth] = useState(months[0]!);
-  const { data, error } = useQuery({ queryKey: ['admin', 'pnl', month], queryFn: () => api.get<{ current: Pnl; previous: Pnl }>(`/admin/reports/pnl?month=${month}`) });
-  if (error) return <><PageTitle title="Finance" /><p className="rounded-sheet bg-surface p-6">{(error as Error).message}</p></>;
+  const { data, error, refetch } = useQuery({ queryKey: ['admin', 'pnl', month], queryFn: () => api.get<{ current: Pnl; previous: Pnl }>(`/admin/reports/pnl?month=${month}`) });
+  if (error) return <><PageTitle title="Finance" /><p role="alert" className="rounded-sheet bg-surface p-6">{(error as Error).message} <button type="button" className="underline" onClick={() => void refetch()}>Try again</button></p></>;
   const c = data?.current; const p = data?.previous;
   const max = Math.max(1, ...(c?.byModel.map((m) => m.rentalPaise) ?? [1]));
   const money = (v: number | null | undefined, neg = false) => (v === null ? <span className="text-orange-ink">[enter]</span> : v === undefined ? '—' : `${neg && v ? '−' : ''}${formatPaise(v)}`);

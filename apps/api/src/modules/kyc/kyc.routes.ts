@@ -8,8 +8,8 @@ import * as ctrl from './kyc.controller';
 export const kycRouter = Router();
 const docParams = z.object({ docId: uuid });
 
-kycRouter.post('/kyc/documents/presign', authenticate, authorize('customer'), validate({ body: presignUploadSchema }), ctrl.presign);
-kycRouter.post('/kyc/documents', authenticate, authorize('customer'), validate({ body: submitDocumentSchema }), ctrl.submit);
+kycRouter.post('/kyc/documents/presign', authenticate, authorize('customer', 'admin'), validate({ body: presignUploadSchema }), ctrl.presign);
+kycRouter.post('/kyc/documents', authenticate, authorize('customer', 'admin'), validate({ body: submitDocumentSchema }), ctrl.submit);
 kycRouter.get('/kyc/documents', authenticate, ctrl.listMine);
 
 kycRouter.get('/admin/kyc', authenticate, authorize('staff'), validate({ query: z.object({ status: z.enum(['PENDING', 'VERIFIED', 'REJECTED']).optional() }) }), ctrl.queue);

@@ -15,7 +15,7 @@ const UPCOMING = ['PENDING_PAYMENT', 'CONFIRMED', 'ONGOING'];
 
 export default function BookingsPage() {
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
-  const { data } = useQuery({ queryKey: ['bookings'], queryFn: () => api.get<BookingDTO[]>('/bookings') });
+  const { data, isError, isLoading, refetch } = useQuery({ queryKey: ['bookings'], queryFn: () => api.get<BookingDTO[]>('/bookings') });
   const { model, location } = useCatalog();
   const upcoming = (data ?? []).filter((b) => UPCOMING.includes(b.status) && !(b.status === 'PENDING_PAYMENT' && b.holdExpiresAt && new Date(b.holdExpiresAt) < new Date())).sort((a, b) => a.startAt.localeCompare(b.startAt));
   const past = (data ?? []).filter((b) => !upcoming.includes(b));
@@ -33,7 +33,9 @@ export default function BookingsPage() {
         </div>
       </div>
 
-      {data && (tab === 'upcoming' ? upcoming : past).length === 0 && (
+      {isLoading && <p role="status">Loading bookings…</p>}
+      {isError && <p role="alert">Could not load your bookings. <button type="button" className="underline" onClick={() => void refetch()}>Try again</button></p>}
+      {data && !isError && (tab === 'upcoming' ? upcoming : past).length === 0 && (
         <div className="flex flex-col items-start gap-4 rounded-sheet bg-surface p-8">
           <span className="text-xl">{tab === 'upcoming' ? 'No upcoming trips' : 'No past trips yet'}</span>
           {tab === 'upcoming' && <Link href="/book" className="inline-flex h-12 items-center rounded-full bg-ink px-6 text-surface">Find a ride</Link>}

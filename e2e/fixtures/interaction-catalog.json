@@ -1,0 +1,1459 @@
+{
+  "vehicle-models": [
+    {
+      "id": "16dcf4d0-0997-4eca-8846-1099a2c2c281",
+      "slug": "activa-125",
+      "name": "Honda Activa 125",
+      "category": "SCOOTER",
+      "engineCc": 124,
+      "pricePerDayPaise": 64900,
+      "depositPaise": 200000,
+      "kmPerDay": 120,
+      "extraKmPaise": 400,
+      "images": [],
+      "specs": {
+        "fromUs": [],
+        "groups": [
+          {
+            "rows": [
+              {
+                "label": "Type",
+                "value": "Single cylinder, 4-stroke, air-cooled, PGM-FI fuel injection"
+              },
+              {
+                "label": "Displacement",
+                "value": "123.92 cc"
+              },
+              {
+                "label": "Max power",
+                "value": "6.20 kW (8.4 PS)"
+              },
+              {
+                "label": "Max torque",
+                "value": "10.5 Nm"
+              },
+              {
+                "label": "Gearbox",
+                "value": "Automatic (CVT): twist and go"
+              },
+              {
+                "label": "Start",
+                "value": "Self start; idling stop system"
+              },
+              {
+                "label": "Emissions",
+                "value": "BS6 phase 2 (OBD2B)"
+              }
+            ],
+            "title": "Engine"
+          },
+          {
+            "rows": [
+              {
+                "label": "Front brake",
+                "value": "Disc (H-Smart) or drum (DLX)"
+              },
+              {
+                "label": "Rear brake",
+                "value": "Drum"
+              },
+              {
+                "label": "Wheels",
+                "value": "12-inch front, 10-inch rear"
+              },
+              {
+                "label": "Tyres",
+                "value": "90/90-12 front, 90/100-10 rear, tubeless"
+              },
+              {
+                "label": "Front suspension",
+                "value": "Telescopic fork"
+              }
+            ],
+            "title": "Brakes, wheels and suspension"
+          },
+          {
+            "rows": [
+              {
+                "label": "Seat height",
+                "value": "765 mm"
+              },
+              {
+                "label": "Ground clearance",
+                "value": "162 mm"
+              },
+              {
+                "label": "Kerb weight",
+                "value": "About 108 kg (varies by variant)"
+              },
+              {
+                "label": "Fuel tank",
+                "value": "5.3 litres"
+              }
+            ],
+            "title": "Size and weight"
+          },
+          {
+            "rows": [
+              {
+                "label": "Display",
+                "value": "4.2-inch TFT with Bluetooth"
+              },
+              {
+                "label": "Phone app",
+                "value": "Honda RoadSync: navigation, call and message alerts"
+              },
+              {
+                "label": "Charging",
+                "value": "USB Type-C"
+              },
+              {
+                "label": "Lights",
+                "value": "LED headlamp"
+              },
+              {
+                "label": "Key",
+                "value": "Smart key (H-Smart) or standard key (DLX)"
+              }
+            ],
+            "title": "Features"
+          }
+        ],
+        "mileage": {
+          "note": "Honda does not publish an official figure. Expect the lower end with a pillion or on the Mussoorie climb.",
+          "range": "About 240 km a tank",
+          "tankL": 5.3,
+          "claimed": null,
+          "realWorld": "45–50 km/l"
+        },
+        "sources": [
+          {
+            "url": "https://www.honda2wheelersindia.com/activa125",
+            "label": "Honda 2Wheelers India: Activa 125"
+          },
+          {
+            "url": "https://honda2wheelersindia.com/media-center/PressReleaseDetails/3549",
+            "label": "Honda: 2025 Activa 125 launch (OBD2B)"
+          }
+        ],
+        "terrain": [
+          {
+            "note": "Light, automatic and narrow. The best choice for Rajpur Road, Paltan Bazaar and the market lanes.",
+            "label": "City and traffic",
+            "score": 5
+          },
+          {
+            "note": "Climbs to Mussoorie fine solo at a steady pace; slower with a pillion on the steepest bends near Kolhukhet and Kingcraig.",
+            "label": "Hill climbs and hairpins",
+            "score": 3
+          },
+          {
+            "note": "Comfortable at 60–70 km/h on the Haridwar road to Rishikesh.",
+            "label": "Highway",
+            "score": 3
+          },
+          {
+            "note": "Small wheels feel every pothole. Fine to Sahastradhara; not the bike for the dirt sections past Maldevta.",
+            "label": "Broken roads and gravel",
+            "score": 2
+          },
+          {
+            "note": "Wide, flat seat and a light machine make it easy for couples in town.",
+            "label": "Two up",
+            "score": 4
+          }
+        ],
+        "overview": "India's best-known scooter in its latest form: a 124 cc fuel-injected engine with Honda's idling-stop system, a 4.2-inch TFT display that pairs with your phone for turn-by-turn directions, and a USB Type-C port. It weighs only about 108 kg, has no gears to think about and is the easiest way to get around Dehradun, out to Sahastradhara or down to Rishikesh.",
+        "modelYear": 2026,
+        "goodToKnow": [
+          "No clutch and no gears: the left lever is the rear brake.",
+          "Idling stop switches the engine off at a standstill; it restarts as soon as you twist the throttle.",
+          "Scooters have little engine braking. Coming down from Mussoorie, brake in short firm squeezes instead of holding the brakes on.",
+          "The 5.3-litre tank gives about 240 km. Fill up in the city before a hill ride.",
+          "Pair your phone with the Honda RoadSync app before you set off to get directions on the display."
+        ],
+        "highlights": [
+          {
+            "label": "Power",
+            "value": "8.4 PS"
+          },
+          {
+            "label": "Torque",
+            "value": "10.5 Nm"
+          },
+          {
+            "label": "Mileage",
+            "value": "45–50 km/l"
+          },
+          {
+            "label": "Weight",
+            "value": "≈108 kg"
+          }
+        ]
+      },
+      "units": 1
+    },
+    {
+      "id": "2d99e319-9afd-4dbd-bd99-5771c92a104f",
+      "slug": "hunter-350",
+      "name": "Royal Enfield Hunter 350",
+      "category": "MOTORCYCLE",
+      "engineCc": 349,
+      "pricePerDayPaise": 119900,
+      "depositPaise": 500000,
+      "kmPerDay": 200,
+      "extraKmPaise": 600,
+      "images": [],
+      "specs": {
+        "fromUs": [],
+        "groups": [
+          {
+            "rows": [
+              {
+                "label": "Type",
+                "value": "Single cylinder, 4-stroke, air-oil cooled, fuel injected"
+              },
+              {
+                "label": "Displacement",
+                "value": "349 cc"
+              },
+              {
+                "label": "Max power",
+                "value": "20.2 bhp (14.87 kW) at 6,100 rpm"
+              },
+              {
+                "label": "Max torque",
+                "value": "27 Nm at 4,000 rpm"
+              },
+              {
+                "label": "Gearbox",
+                "value": "5-speed"
+              },
+              {
+                "label": "Clutch",
+                "value": "Wet multi-plate, assist and slip"
+              }
+            ],
+            "title": "Engine"
+          },
+          {
+            "rows": [
+              {
+                "label": "Frame",
+                "value": "Twin downtube spine frame"
+              },
+              {
+                "label": "Front",
+                "value": "41 mm telescopic fork"
+              },
+              {
+                "label": "Rear",
+                "value": "Twin shocks, 6-step adjustable preload"
+              }
+            ],
+            "title": "Chassis and suspension"
+          },
+          {
+            "rows": [
+              {
+                "label": "Front brake",
+                "value": "300 mm disc, twin-piston caliper"
+              },
+              {
+                "label": "Rear brake",
+                "value": "270 mm disc"
+              },
+              {
+                "label": "ABS",
+                "value": "Dual channel"
+              },
+              {
+                "label": "Tyres",
+                "value": "110/70-17 front, 140/70-17 rear, tubeless on alloy wheels"
+              }
+            ],
+            "title": "Brakes and tyres"
+          },
+          {
+            "rows": [
+              {
+                "label": "Seat height",
+                "value": "790 mm"
+              },
+              {
+                "label": "Ground clearance",
+                "value": "160 mm"
+              },
+              {
+                "label": "Wheelbase",
+                "value": "1,370 mm"
+              },
+              {
+                "label": "Kerb weight",
+                "value": "181 kg (90% fuel and oil)"
+              },
+              {
+                "label": "Fuel tank",
+                "value": "13 litres"
+              }
+            ],
+            "title": "Size and weight"
+          },
+          {
+            "rows": [
+              {
+                "label": "Lights",
+                "value": "LED headlamp and tail lamp"
+              },
+              {
+                "label": "Instruments",
+                "value": "Digital-analogue cluster"
+              },
+              {
+                "label": "Navigation",
+                "value": "Tripper Pod turn-by-turn (Metro variant)"
+              },
+              {
+                "label": "Charging",
+                "value": "USB Type-C fast charging (Metro variant)"
+              }
+            ],
+            "title": "Features"
+          }
+        ],
+        "mileage": {
+          "note": "Royal Enfield's figure is for ideal conditions. Hill riding and a pillion bring it down a little.",
+          "range": "About 420 km a tank",
+          "tankL": 13,
+          "claimed": "36.2 km/l",
+          "realWorld": "32–36 km/l"
+        },
+        "sources": [
+          {
+            "url": "https://www.royalenfield.com/in/en/motorcycles/hunter-350/",
+            "label": "Royal Enfield: Hunter 350 specifications"
+          }
+        ],
+        "terrain": [
+          {
+            "note": "Short wheelbase, low seat and a light clutch. Easy to filter and park.",
+            "label": "City and traffic",
+            "score": 5
+          },
+          {
+            "note": "Plenty of low-down torque for the Mussoorie and Landour climbs; second gear carries you round most hairpins.",
+            "label": "Hill climbs and hairpins",
+            "score": 4
+          },
+          {
+            "note": "Settles at 80–90 km/h on the Rishikesh road.",
+            "label": "Highway",
+            "score": 4
+          },
+          {
+            "note": "160 mm of ground clearance and road tyres: take the rough stretches slowly.",
+            "label": "Broken roads and gravel",
+            "score": 2
+          },
+          {
+            "note": "Fine for city rides and Mussoorie; the pillion seat is compact for long days.",
+            "label": "Two up",
+            "score": 3
+          }
+        ],
+        "overview": "Royal Enfield's lightest, nimblest 350: the J-series single makes its torque low down, so it pulls cleanly out of hairpins without much gear-changing. The current model adds an assist-and-slip clutch for a lighter lever, an LED headlamp and a USB Type-C port. It is at home in city traffic and on the Mussoorie climb, and the most fuel-efficient motorcycle in the fleet.",
+        "modelYear": 2026,
+        "goodToKnow": [
+          "The low 790 mm seat suits most riders, including first-time Royal Enfield riders.",
+          "The assist-and-slip clutch keeps the lever light in stop-start traffic.",
+          "Dual-channel ABS: brake firmly in a straight line and the bike stays stable.",
+          "A 13-litre tank gives more than 400 km, enough for Mussoorie and back several times over."
+        ],
+        "highlights": [
+          {
+            "label": "Power",
+            "value": "20.2 bhp"
+          },
+          {
+            "label": "Torque",
+            "value": "27 Nm"
+          },
+          {
+            "label": "Mileage",
+            "value": "36.2 km/l"
+          },
+          {
+            "label": "Weight",
+            "value": "181 kg"
+          }
+        ]
+      },
+      "units": 0
+    },
+    {
+      "id": "e126abea-15d2-4cef-8143-e6979966a117",
+      "slug": "scram-440",
+      "name": "Royal Enfield Scram 440",
+      "category": "MOTORCYCLE",
+      "engineCc": 443,
+      "pricePerDayPaise": 179900,
+      "depositPaise": 600000,
+      "kmPerDay": 220,
+      "extraKmPaise": 700,
+      "images": [],
+      "specs": {
+        "fromUs": [],
+        "groups": [
+          {
+            "rows": [
+              {
+                "label": "Type",
+                "value": "Single cylinder, 4-stroke, SOHC, air-cooled, fuel injected"
+              },
+              {
+                "label": "Displacement",
+                "value": "443 cc"
+              },
+              {
+                "label": "Max power",
+                "value": "25.4 bhp (18.7 kW) at 6,250 rpm"
+              },
+              {
+                "label": "Max torque",
+                "value": "34 Nm at 4,000 rpm"
+              },
+              {
+                "label": "Gearbox",
+                "value": "6-speed"
+              },
+              {
+                "label": "Clutch",
+                "value": "Wet multi-plate"
+              }
+            ],
+            "title": "Engine"
+          },
+          {
+            "rows": [
+              {
+                "label": "Frame",
+                "value": "Half-duplex split cradle"
+              },
+              {
+                "label": "Front",
+                "value": "41 mm telescopic fork, 190 mm travel"
+              },
+              {
+                "label": "Rear",
+                "value": "Linkage monoshock, 180 mm travel"
+              }
+            ],
+            "title": "Chassis and suspension"
+          },
+          {
+            "rows": [
+              {
+                "label": "Front brake",
+                "value": "300 mm disc, twin-piston floating caliper"
+              },
+              {
+                "label": "Rear brake",
+                "value": "240 mm disc"
+              },
+              {
+                "label": "ABS",
+                "value": "Dual channel, switchable at the rear"
+              },
+              {
+                "label": "Tyres",
+                "value": "100/90-19 front, 120/90-17 rear, dual-purpose"
+              },
+              {
+                "label": "Wheels",
+                "value": "Spoke with tubes (Trail) or alloy, tubeless (Force)"
+              }
+            ],
+            "title": "Brakes and tyres"
+          },
+          {
+            "rows": [
+              {
+                "label": "Seat height",
+                "value": "795 mm"
+              },
+              {
+                "label": "Ground clearance",
+                "value": "200 mm"
+              },
+              {
+                "label": "Wheelbase",
+                "value": "1,460 mm"
+              },
+              {
+                "label": "Kerb weight",
+                "value": "196 kg (90% fuel and oil)"
+              },
+              {
+                "label": "Fuel tank",
+                "value": "15 litres"
+              }
+            ],
+            "title": "Size and weight"
+          },
+          {
+            "rows": [
+              {
+                "label": "Lights",
+                "value": "LED headlamp and tail lamp"
+              },
+              {
+                "label": "Instruments",
+                "value": "Digital-analogue cluster"
+              },
+              {
+                "label": "Charging",
+                "value": "USB Type-A"
+              },
+              {
+                "label": "Navigation",
+                "value": "Tripper Pod (optional accessory)"
+              }
+            ],
+            "title": "Features"
+          }
+        ],
+        "mileage": {
+          "note": "ARAI-certified figure from Royal Enfield. Real-world economy depends on load and how much climbing you do.",
+          "range": "About 420 km a tank",
+          "tankL": 15,
+          "claimed": "30.12 km/l (ARAI)",
+          "realWorld": "28–32 km/l"
+        },
+        "sources": [
+          {
+            "url": "https://www.royalenfield.com/in/en/motorcycles/scram-440/",
+            "label": "Royal Enfield: Scram 440 specifications"
+          }
+        ],
+        "terrain": [
+          {
+            "note": "Upright and easy to see over traffic; slightly heavier than the Hunter at walking pace.",
+            "label": "City and traffic",
+            "score": 4
+          },
+          {
+            "note": "Strong mid-range torque and six gears make the ghat road to Mussoorie and the climb to Lal Tibba relaxed.",
+            "label": "Hill climbs and hairpins",
+            "score": 5
+          },
+          {
+            "note": "Sixth gear keeps revs down at 80–90 km/h.",
+            "label": "Highway",
+            "score": 4
+          },
+          {
+            "note": "Long travel, a 19-inch front and dual-purpose tyres soak up the dirt and stony sections past Maldevta.",
+            "label": "Broken roads and gravel",
+            "score": 4
+          },
+          {
+            "note": "Long, flat seat and a stable chassis for rider and pillion.",
+            "label": "Two up",
+            "score": 4
+          }
+        ],
+        "overview": "A road-and-trail crossover built on the Himalayan platform: a 443 cc long-stroke single with a six-speed gearbox, a 19-inch front wheel, 190 mm of suspension travel and 200 mm of ground clearance. It is more comfortable than a street bike on broken hill roads and lighter to handle than a full adventure tourer. A good fit for the Mussoorie hills, the Maldevta valley and mixed-road weekends.",
+        "modelYear": 2026,
+        "goodToKnow": [
+          "The rear ABS can be switched off for loose gravel. Leave it on for normal roads.",
+          "At 795 mm the seat is low for a bike with this much suspension.",
+          "Spoke (Trail) variants run tubes: a puncture needs a repair, not a plug. Call the desk if it happens.",
+          "Six gears: use fourth to sixth on the open road to save fuel."
+        ],
+        "highlights": [
+          {
+            "label": "Power",
+            "value": "25.4 bhp"
+          },
+          {
+            "label": "Torque",
+            "value": "34 Nm"
+          },
+          {
+            "label": "Mileage",
+            "value": "30.1 km/l"
+          },
+          {
+            "label": "Ground clearance",
+            "value": "200 mm"
+          }
+        ]
+      },
+      "units": 0
+    },
+    {
+      "id": "7dcce5cb-c620-4af8-bf8f-0cba7d869e3d",
+      "slug": "himalayan-450",
+      "name": "Royal Enfield Himalayan 450",
+      "category": "ADVENTURE",
+      "engineCc": 452,
+      "pricePerDayPaise": 219900,
+      "depositPaise": 800000,
+      "kmPerDay": 250,
+      "extraKmPaise": 800,
+      "images": [],
+      "specs": {
+        "fromUs": [],
+        "groups": [
+          {
+            "rows": [
+              {
+                "label": "Type",
+                "value": "Single cylinder, liquid-cooled, DOHC, 4 valves, ride-by-wire"
+              },
+              {
+                "label": "Displacement",
+                "value": "452 cc"
+              },
+              {
+                "label": "Max power",
+                "value": "40.02 PS (29.44 kW) at 8,000 rpm"
+              },
+              {
+                "label": "Max torque",
+                "value": "40 Nm at 5,500 rpm"
+              },
+              {
+                "label": "Gearbox",
+                "value": "6-speed"
+              },
+              {
+                "label": "Clutch",
+                "value": "Wet multi-plate, slip and assist"
+              }
+            ],
+            "title": "Engine"
+          },
+          {
+            "rows": [
+              {
+                "label": "Frame",
+                "value": "Steel twin-spar tubular"
+              },
+              {
+                "label": "Front",
+                "value": "43 mm Showa upside-down fork, 200 mm travel"
+              },
+              {
+                "label": "Rear",
+                "value": "Linkage monoshock, 200 mm travel"
+              }
+            ],
+            "title": "Chassis and suspension"
+          },
+          {
+            "rows": [
+              {
+                "label": "Front brake",
+                "value": "320 mm disc, twin-piston caliper"
+              },
+              {
+                "label": "Rear brake",
+                "value": "270 mm disc"
+              },
+              {
+                "label": "ABS",
+                "value": "Dual channel, switchable"
+              },
+              {
+                "label": "Tyres",
+                "value": "90/90-21 front, 140/80-17 rear, spoke wheels"
+              }
+            ],
+            "title": "Brakes and tyres"
+          },
+          {
+            "rows": [
+              {
+                "label": "Seat height",
+                "value": "825–845 mm (adjustable)"
+              },
+              {
+                "label": "Ground clearance",
+                "value": "230 mm"
+              },
+              {
+                "label": "Wheelbase",
+                "value": "1,510 mm"
+              },
+              {
+                "label": "Kerb weight",
+                "value": "196 kg (90% fuel and oil)"
+              },
+              {
+                "label": "Fuel tank",
+                "value": "17 litres"
+              }
+            ],
+            "title": "Size and weight"
+          },
+          {
+            "rows": [
+              {
+                "label": "Display",
+                "value": "4-inch round TFT with Google Maps navigation and media controls"
+              },
+              {
+                "label": "Ride modes",
+                "value": "Selectable ride modes"
+              },
+              {
+                "label": "Charging",
+                "value": "USB Type-C"
+              },
+              {
+                "label": "Lights",
+                "value": "All-LED"
+              }
+            ],
+            "title": "Features"
+          }
+        ],
+        "mileage": {
+          "note": "Royal Enfield does not publish a figure for the Himalayan 450. Eco mode and steady riding give the upper end.",
+          "range": "About 450 km a tank",
+          "tankL": 17,
+          "claimed": null,
+          "realWorld": "25–30 km/l"
+        },
+        "sources": [
+          {
+            "url": "https://www.royalenfield.com/in/en/motorcycles/himalayan/",
+            "label": "Royal Enfield: Himalayan 450 specifications"
+          }
+        ],
+        "terrain": [
+          {
+            "note": "Tall and wide-barred. Manageable, but not where it shines.",
+            "label": "City and traffic",
+            "score": 3
+          },
+          {
+            "note": "Smooth power all the way to 8,000 rpm. The Mussoorie climb and the road on to Dhanaulti or Kempty are effortless.",
+            "label": "Hill climbs and hairpins",
+            "score": 5
+          },
+          {
+            "note": "Happy at 100 km/h with power in reserve; the best bike in the fleet for long days.",
+            "label": "Highway",
+            "score": 5
+          },
+          {
+            "note": "21-inch front, 200 mm of travel and 230 mm of clearance: built for the river-bed tracks past Maldevta.",
+            "label": "Broken roads and gravel",
+            "score": 5
+          },
+          {
+            "note": "Roomy for two, and comfortable on long days.",
+            "label": "Two up",
+            "score": 4
+          }
+        ],
+        "overview": "Royal Enfield's purpose-built adventure tourer: a liquid-cooled 452 cc Sherpa engine with ride-by-wire, 40 PS and a slip-and-assist clutch. It rides on 200 mm of Showa suspension travel at each end, a 21-inch front wheel and 230 mm of ground clearance. The round TFT shows Google Maps navigation. It is the bike for long days, rough roads and anything past Mussoorie into the higher hills.",
+        "modelYear": 2026,
+        "goodToKnow": [
+          "The seat is 825–845 mm. If you are on the shorter side, sit on it at pickup before you set off.",
+          "Pair the Royal Enfield app before the ride to get Google Maps on the dash.",
+          "Ride modes change throttle response; the softer mode is smoother in traffic and on wet roads.",
+          "Rear ABS can be switched off for gravel. Switch it back on for the road."
+        ],
+        "highlights": [
+          {
+            "label": "Power",
+            "value": "40 PS"
+          },
+          {
+            "label": "Torque",
+            "value": "40 Nm"
+          },
+          {
+            "label": "Mileage",
+            "value": "25–30 km/l"
+          },
+          {
+            "label": "Ground clearance",
+            "value": "230 mm"
+          }
+        ]
+      },
+      "units": 0
+    }
+  ],
+  "locations": [
+    {
+      "id": "57ef749e-c153-4593-890c-814de1730488",
+      "name": "Dehradun · ISBT",
+      "city": "Dehradun",
+      "address": "ISBT, Haridwar Road, Dehradun 248001",
+      "lat": null,
+      "lng": null,
+      "openHours": {
+        "mon-sun": "08:00-20:00"
+      }
+    },
+    {
+      "id": "ea9ebc81-d2d6-4da7-a68b-1e72b07c5ba4",
+      "name": "Dehradun · Railway Station",
+      "city": "Dehradun",
+      "address": "Railway Station Road, Dehradun 248001",
+      "lat": null,
+      "lng": null,
+      "openHours": {
+        "mon-sun": "08:00-20:00"
+      }
+    },
+    {
+      "id": "4783ed50-2b27-4a9c-808b-598345ee1acf",
+      "name": "Mussoorie · Library Chowk",
+      "city": "Mussoorie",
+      "address": "Library Chowk, Mall Road, Mussoorie 248179",
+      "lat": null,
+      "lng": null,
+      "openHours": {
+        "mon-sun": "08:00-20:00"
+      }
+    },
+    {
+      "id": "7a3d5364-1a97-4945-a8bf-9b7b845441da",
+      "name": "Rishikesh · Tapovan",
+      "city": "Rishikesh",
+      "address": "Tapovan, Rishikesh 249192",
+      "lat": null,
+      "lng": null,
+      "openHours": {
+        "mon-sun": "08:00-20:00"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "id": "bd05bc03-a5e6-4286-a1fb-381497db098e",
+      "slug": "dehradun-mussoorie",
+      "title": "Dehradun → Mussoorie",
+      "distanceKm": 35,
+      "bodyMd": "The classic Doon ride: 33 km from the Clock Tower to Library Chowk, climbing from about 640 m to just over 2,000 m. The first 10 km up Rajpur Road are city traffic; after the Mussoorie Diversion the road winds up through sal forest, past the Maggi points and their views over the whole valley, to the Kolhukhet barrier. The last 11 km are tight hairpins of ghat road.\n\nGive yourself the whole day: park in Mussoorie, walk the Mall, then ride up to Landour for Char Dukan, St Paul's Church and the Himalayan view from Lal Tibba. Kempty Falls is a 13–15 km detour beyond the town.",
+      "recommendedModels": [
+        "2d99e319-9afd-4dbd-bd99-5771c92a104f",
+        "e126abea-15d2-4cef-8143-e6979966a117"
+      ],
+      "rideTime": "1.5–2 h one way",
+      "bestTime": "October to June. On weekends leave the city before 8 AM.",
+      "difficulty": "moderate",
+      "bikeAdvice": "The Hunter 350 and Scram 440 both pull strongly from low revs through 33 km of climbing and hairpins, and are easy to turn in Landour's narrow lanes. The Scram's longer suspension is more comfortable over broken patches. The Activa 125 manages the climb solo at a gentle pace. With a pillion, take a motorcycle.",
+      "highlights": [
+        "Doon valley views from the Maggi points",
+        "11 km of hairpins above Kolhukhet",
+        "Mall Road, Gun Hill and Camel's Back Road",
+        "Char Dukan, St Paul's and Lal Tibba in Landour",
+        "Kempty Falls detour"
+      ],
+      "stops": [
+        {
+          "km": 0,
+          "kind": "start",
+          "name": "Clock Tower (Ghanta Ghar)",
+          "blurb": "Start in the centre of Dehradun and head north up Rajpur Road. Fill the tank in the city: there are few pumps once the climb starts.",
+          "photo": {
+            "url": "/static/guides/clock-tower.jpg",
+            "credit": "Aditya Oberai",
+            "source": "https://commons.wikimedia.org/wiki/File:The_Dehradun_Clock_Tower.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "way"
+        },
+        {
+          "km": 10,
+          "kind": "junction",
+          "name": "Mussoorie Diversion",
+          "blurb": "At the Pacific Mall junction on Rajpur Road, bear right for Mussoorie. The traffic thins and the climb begins through sal forest.",
+          "section": "way"
+        },
+        {
+          "km": 14,
+          "tip": "Park fully off the tarmac and well away from the bend.",
+          "kind": "viewpoint",
+          "name": "Maggi points",
+          "blurb": "From about 14 km out, stalls on the outer edge of the bends serve Maggi, bun-omelette and chai. Pull into one with a proper parking bay and look back over the whole Doon valley. After dark the city lights spread out below.",
+          "photo": {
+            "url": "/static/guides/doon-night.jpg",
+            "credit": "Faizking321",
+            "source": "https://commons.wikimedia.org/wiki/File:Dehradun_-_Night_Lights_-_A_View_from_Mussoorie.jpg",
+            "license": "CC BY-SA 3.0"
+          },
+          "section": "way"
+        },
+        {
+          "km": 18,
+          "kind": "junction",
+          "name": "Kolhukhet",
+          "blurb": "The municipal barrier for Mussoorie: keep UPI or change handy in case a toll is being collected. Above here the road narrows into tight hairpins for the last stretch.",
+          "section": "way"
+        },
+        {
+          "km": 26,
+          "tip": "Parking fills quickly on summer weekends.",
+          "kind": "waterfall",
+          "name": "Bhatta Falls",
+          "blurb": "About 7 km before Mussoorie, near Bhatta village: a small, family-friendly fall with pools, reached by a short ropeway or a walk from the road.",
+          "hours": "About 8 AM–5 PM",
+          "section": "way"
+        },
+        {
+          "km": 29,
+          "kind": "junction",
+          "name": "Kingcraig",
+          "blurb": "The fork at the edge of town. Left for Library Chowk, Gandhi Chowk and the road to Kempty Falls; right for Picture Palace, Kulri and Landour. Kingcraig has multi-level parking if you would rather walk.",
+          "photo": {
+            "url": "/static/guides/mussoorie-town.jpg",
+            "credit": "Pinakpani",
+            "source": "https://commons.wikimedia.org/wiki/File:Mussoorie_town,_a_hill_station_in_Dehradun_district_01.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "way"
+        },
+        {
+          "km": 33,
+          "kind": "end",
+          "name": "Mall Road, Mussoorie",
+          "blurb": "Mussoorie's promenade between Library Chowk and Picture Palace: shops, cafés and views down to Dehradun. Park and walk it.",
+          "hours": "Closed to vehicles 4:30–10:30 PM",
+          "photo": {
+            "url": "/static/guides/mall-road.jpg",
+            "credit": "Harshanh",
+            "source": "https://commons.wikimedia.org/wiki/File:Mall_Road,_Mussoorie_03.JPG",
+            "license": "CC BY-SA 3.0"
+          },
+          "section": "way"
+        },
+        {
+          "km": null,
+          "kind": "viewpoint",
+          "name": "Gun Hill",
+          "blurb": "A short ropeway from Mall Road climbs to one of Mussoorie's highest points, with views over the town and, on clear days, the snow peaks.",
+          "photo": {
+            "url": "/static/guides/gun-hill.jpg",
+            "credit": "Harshanh",
+            "source": "https://commons.wikimedia.org/wiki/File:Gun_hill,_Mussoorie_08.JPG",
+            "license": "CC BY-SA 3.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "walk",
+          "name": "Camel's Back Road",
+          "blurb": "A quiet 3 km road from Kulri to Library, named after a rock outcrop shaped like a camel's hump. Best on foot in the evening, when the sun sets over the hills.",
+          "photo": {
+            "url": "/static/guides/camels-back.jpg",
+            "credit": "Poojamangrolia",
+            "source": "https://commons.wikimedia.org/wiki/File:Mountains_(Camel_back_road,_Mussoorie,_Dehradun,_Uttarakhand,_India)_2013.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "tip": "Clearest October to February, before mid-morning.",
+          "kind": "viewpoint",
+          "name": "Lal Tibba, Landour",
+          "blurb": "At 2,275 m, the highest point in Landour. On a clear morning the line of snow peaks runs from Bandarpoonch and Swargarohini to Kedarnath and Badrinath.",
+          "photo": {
+            "url": "/static/guides/lal-tibba.jpg",
+            "credit": "SHUVADIP",
+            "source": "https://commons.wikimedia.org/wiki/File:View_of_the_Himalayan_range_from_The_Lal_Tibba,_Landour,_Mussourie.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "sight",
+          "name": "St Paul's Church",
+          "blurb": "A church from 1840 at Char Dukan in Landour, among cedars on the ridge.",
+          "photo": {
+            "url": "/static/guides/st-pauls.jpg",
+            "credit": "Paul Hamilton",
+            "source": "https://commons.wikimedia.org/wiki/File:St._Paul%27s_Church_Landour_exterior.jpg",
+            "license": "CC BY-SA 2.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "sight",
+          "name": "George Everest's House",
+          "blurb": "The restored home and laboratory of Sir George Everest on the Park Estate, west of Library Chowk, on an open ridge with wide views over the Doon valley.",
+          "photo": {
+            "url": "/static/guides/everest-house.jpg",
+            "credit": "Ps14061990",
+            "source": "https://commons.wikimedia.org/wiki/File:Park_Estate,_George_Everest,_Mussoorie.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "waterfall",
+          "name": "Kempty Falls",
+          "blurb": "13–15 km beyond Mussoorie on the Chakrata road: the best-known falls in the area, dropping in tiers into pools you can wade in. Very busy on summer weekends.",
+          "hours": "Daytime; timings vary, check locally",
+          "photo": {
+            "url": "/static/guides/kempty-falls.jpg",
+            "credit": "BestMan20",
+            "source": "https://commons.wikimedia.org/wiki/File:Kempty_Falls,_May_2024.jpg",
+            "license": "CC0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "walk",
+          "name": "Kipling Trail",
+          "blurb": "The old bridle path from Rajpur up to Mussoorie, about 9 km on foot, starting near Shahanshahi Ashram. Views over the Doon valley the whole way.",
+          "photo": {
+            "url": "/static/guides/kipling-trail.jpg",
+            "credit": "Daniel Romanson",
+            "source": "https://commons.wikimedia.org/wiki/File:View_of_Doon_Valley_from_Kipling_Trail_Uttarakhand_India.jpg",
+            "license": "CC0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "cafe",
+          "name": "Char Dukan",
+          "blurb": "The cluster of old shop-cafés by St Paul's Church in Landour: bun-omelette, pancakes, Maggi and hot chocolate.",
+          "hours": "About 9 AM–7 PM",
+          "photo": {
+            "url": "/static/guides/char-dukan.jpg",
+            "credit": "SMarndi",
+            "source": "https://commons.wikimedia.org/wiki/File:Landour_SM-16-2026-04-07.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "eat"
+        },
+        {
+          "km": null,
+          "kind": "cafe",
+          "name": "Landour Bakehouse",
+          "blurb": "A bakery café in an old Landour house, known for its apple pie and cakes.",
+          "hours": "About 8 AM–7 PM",
+          "section": "eat"
+        },
+        {
+          "km": null,
+          "kind": "food",
+          "name": "Prakash Store, Sisters Bazaar",
+          "blurb": "Landour's old provision store, famous for home-made peanut butter, jams and cheddar to take home.",
+          "section": "eat"
+        },
+        {
+          "km": null,
+          "kind": "cafe",
+          "name": "Kalsang, Mall Road",
+          "blurb": "Tibetan food on Mall Road: momos, thukpa and noodle soups for a warm-up after the ride.",
+          "section": "eat"
+        },
+        {
+          "km": null,
+          "kind": "cafe",
+          "name": "Chic Chocolate, Mall Road",
+          "blurb": "A long-running Mall Road café for coffee, hot chocolate and snacks.",
+          "section": "eat"
+        }
+      ],
+      "tips": [
+        "On weekends traffic backs up below Kolhukhet by mid-morning. Leave before 8 AM.",
+        "Mall Road is closed to vehicles from 4:30 to 10:30 PM. Park at Kingcraig or Library and walk.",
+        "December to February mornings can bring black ice in the shade near Landour and Lal Tibba. Ride slowly and stay off the brakes on ice.",
+        "Never overtake on blind bends. Sound the horn before each hairpin.",
+        "Landour runs one-way loops on busy weekends: follow the police signs.",
+        "Coming down, use a low gear and engine braking. On the Activa, brake in short, firm squeezes."
+      ],
+      "cover": {
+        "url": "/static/guides/camels-back.jpg",
+        "credit": "Poojamangrolia",
+        "source": "https://commons.wikimedia.org/wiki/File:Mountains_(Camel_back_road,_Mussoorie,_Dehradun,_Uttarakhand,_India)_2013.jpg",
+        "license": "CC BY-SA 4.0"
+      },
+      "mapImage": "/static/guides/maps/dehradun-mussoorie.jpg"
+    },
+    {
+      "id": "a981bbf2-e363-4541-850a-5b6dd40256f3",
+      "slug": "dehradun-rishikesh",
+      "title": "Dehradun → Rishikesh",
+      "distanceKm": 45,
+      "bodyMd": "An easy 45 km run south-east to the Ganga. Leave Dehradun on the Haridwar road through Harrawala and Doiwala. From there two good roads go on to Rishikesh: one past Jolly Grant airport and Ranipokhari, the other along the highway past Lachhiwala and Nepali Farm. Both run through sal forest on the edge of the Rajaji reserve and take about the same time.\n\nIn Rishikesh, park and walk: Ram Jhula, Triveni Ghat, the Beatles Ashram and the cafés of Tapovan are all close together. Time the ride back for the evening aarti at Triveni Ghat, or start home before dark.",
+      "recommendedModels": [
+        "16dcf4d0-0997-4eca-8846-1099a2c2c281",
+        "2d99e319-9afd-4dbd-bd99-5771c92a104f"
+      ],
+      "rideTime": "1.25–1.5 h one way",
+      "bestTime": "October to March. Arrive by 6 PM for the evening aarti.",
+      "difficulty": "easy",
+      "bikeAdvice": "Mostly flat, smooth highway with forest stretches. The Activa 125 is comfortable at 60–70 km/h, and the Hunter 350 cruises easily with a pillion. Rishikesh's riverside lanes are narrow and busy, and a lighter bike is easier to park near the ghats.",
+      "highlights": [
+        "Sal forest on the edge of the Rajaji reserve",
+        "Ganga aarti at Triveni Ghat",
+        "Ram Jhula and the Tapovan cafés",
+        "The Beatles Ashram murals",
+        "Neer Garh waterfall"
+      ],
+      "stops": [
+        {
+          "km": 0,
+          "kind": "start",
+          "name": "Clock Tower (Ghanta Ghar)",
+          "blurb": "Head south on the Haridwar road through Harrawala.",
+          "section": "way"
+        },
+        {
+          "km": 19,
+          "kind": "junction",
+          "name": "Doiwala",
+          "blurb": "A small market town and the last easy stop for water and snacks. Just beyond, the roads to Rishikesh divide: past Jolly Grant airport, or on along the highway past Lachhiwala.",
+          "section": "way"
+        },
+        {
+          "km": 22,
+          "kind": "sight",
+          "name": "Lachhiwala Nature Park",
+          "blurb": "A Forest Department park among sal trees, with streams, shaded paths and secure parking. A good halfway break on the highway route.",
+          "section": "way"
+        },
+        {
+          "km": 33,
+          "kind": "junction",
+          "name": "Nepali Farm",
+          "blurb": "Turn off the Haridwar highway here for Rishikesh.",
+          "section": "way"
+        },
+        {
+          "km": 45,
+          "kind": "end",
+          "name": "Triveni Ghat, Rishikesh",
+          "blurb": "The biggest ghat in Rishikesh, where the evening Ganga aarti fills the steps with lamps and chanting.",
+          "hours": "Aarti around 6–7 PM, earlier in winter",
+          "photo": {
+            "url": "/static/guides/triveni-aarti.jpg",
+            "credit": "Bhuvi Uniyal",
+            "source": "https://commons.wikimedia.org/wiki/File:Ganga_Arti_At_Triveni_Ghat_In_Rishikesh.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "way"
+        },
+        {
+          "km": null,
+          "kind": "sight",
+          "name": "Ram Jhula",
+          "blurb": "The iron suspension footbridge across the Ganga between Sivananda Nagar and Swarg Ashram. Park on your side of the river and walk across.",
+          "photo": {
+            "url": "/static/guides/ram-jhula.jpg",
+            "credit": "Paradise Chronicle",
+            "source": "https://commons.wikimedia.org/wiki/File:Ram_Jhula_footbridge_-_Rishikesh.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "tip": "Check locally which crossings are open, and park before you cross.",
+          "kind": "sight",
+          "name": "Tapovan and Bajrang Setu",
+          "blurb": "Laxman Jhula has been closed to traffic since 2019. Bajrang Setu, a new glass-deck bridge, has been built beside it. Tapovan, on the west bank, is Rishikesh's café and yoga quarter.",
+          "photo": {
+            "url": "/static/guides/tapovan.jpg",
+            "credit": "Roliwrites",
+            "source": "https://commons.wikimedia.org/wiki/File:Sunrise_in_Tapovan_(_near_Lakshman_Jhula,_Bajrang_Setu)_Rishikesh.jpg",
+            "license": "CC0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "sight",
+          "name": "Beatles Ashram (Chaurasi Kutia)",
+          "blurb": "The Maharishi's ashram where the Beatles stayed in 1968, now inside the Rajaji reserve: meditation huts in the forest and walls covered in murals.",
+          "hours": "About 10 AM–4 PM; ticketed",
+          "photo": {
+            "url": "/static/guides/beatles-ashram.jpg",
+            "credit": "Athulvis",
+            "source": "https://commons.wikimedia.org/wiki/File:Beatles_Ashram_01.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "waterfall",
+          "name": "Neer Garh Waterfall",
+          "blurb": "A short uphill walk from the Badrinath road above Tapovan to a chain of cascades and pools.",
+          "hours": "About 8 AM–6 PM; small entry fee",
+          "photo": {
+            "url": "/static/guides/neer-garh.jpg",
+            "credit": "Wittystef",
+            "source": "https://commons.wikimedia.org/wiki/File:Neer_Garh_Waterfall.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "walk",
+          "name": "Patna Waterfall",
+          "blurb": "A quieter fall near Tapovan, about 1.5 km on foot through forest.",
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "cafe",
+          "name": "Little Buddha Café",
+          "blurb": "A popular café near Laxman Jhula overlooking the river.",
+          "section": "eat"
+        },
+        {
+          "km": null,
+          "kind": "cafe",
+          "name": "Ganga View Café",
+          "blurb": "Laid-back café near Laxman Jhula: breakfast, coffee and a long look at the river.",
+          "section": "eat"
+        },
+        {
+          "km": null,
+          "kind": "cafe",
+          "name": "Beatles Café",
+          "blurb": "Beatles-themed café with Ganga views, a good stop on the way to or from the ashram.",
+          "section": "eat"
+        }
+      ],
+      "tips": [
+        "Meat and alcohol are not sold in Rishikesh, so plan meals around vegetarian cafés.",
+        "Elephants, deer and langurs cross the forest stretches, especially at dawn and dusk. Slow down and never stop close to wildlife.",
+        "The Haridwar highway gets heavy on weekends; set out early.",
+        "The forest stretches are unlit. Start home before dark or ride slowly with your headlamp on high beam where it is safe.",
+        "Prefer a quieter forest road? The Thano road from Raipur runs about 16 km through sal forest towards Bhogpur and Jolly Grant. It is slippery in rain."
+      ],
+      "cover": {
+        "url": "/static/guides/ram-jhula.jpg",
+        "credit": "Paradise Chronicle",
+        "source": "https://commons.wikimedia.org/wiki/File:Ram_Jhula_footbridge_-_Rishikesh.jpg",
+        "license": "CC BY-SA 4.0"
+      },
+      "mapImage": "/static/guides/maps/dehradun-rishikesh.jpg"
+    },
+    {
+      "id": "0eefeccc-f696-4113-8dd4-e4da617c89b2",
+      "slug": "sahastradhara-loop",
+      "title": "Sahastradhara loop",
+      "distanceKm": 16,
+      "bodyMd": "A short, easy ride north-east from the city along Sahastradhara Road, climbing gently to the sulphur springs 14 km out. Sahastradhara means \"thousand-fold spring\": water drips from mossy limestone ledges and caves into the stream, and many visitors bathe in it for its sulphur.\n\nMake a half-day loop of it: the springs in the morning, then back across town to Tapkeshwar's cave temple and the gorge at Robbers Cave.",
+      "recommendedModels": [
+        "16dcf4d0-0997-4eca-8846-1099a2c2c281"
+      ],
+      "rideTime": "About 40 min one way",
+      "bestTime": "Mornings, March to June and October to November.",
+      "difficulty": "easy",
+      "bikeAdvice": "A short, smooth city ride with a gentle climb at the end. The Activa 125 is ideal, and parking at the springs is easier on a scooter.",
+      "highlights": [
+        "Sulphur springs and dripping caves",
+        "Ropeway over the valley",
+        "Robbers Cave gorge walk",
+        "Tapkeshwar cave temple"
+      ],
+      "stops": [
+        {
+          "km": 0,
+          "kind": "start",
+          "name": "Clock Tower (Ghanta Ghar)",
+          "blurb": "Head north-east out of the centre towards Sahastradhara Road.",
+          "section": "way"
+        },
+        {
+          "km": 8,
+          "kind": "junction",
+          "name": "IT Park, Sahastradhara Road",
+          "blurb": "Past the IT Park the city thins out and the road climbs gently towards the hills. Tasalli, the rooftop café, is on this stretch: a good stop on the way back.",
+          "section": "way"
+        },
+        {
+          "km": 14,
+          "tip": "The rocks are slippery: wear footwear with grip.",
+          "kind": "end",
+          "name": "Sahastradhara",
+          "blurb": "Sulphur water drips from limestone caves and ledges into the stream below. There is a ropeway up the hill for the view, and stalls selling chai, Maggi and pakoras.",
+          "hours": "Roughly 8 AM–7 PM; check locally",
+          "photo": {
+            "url": "/static/guides/sahastradhara.jpg",
+            "credit": "Pinakpani",
+            "source": "https://commons.wikimedia.org/wiki/File:Sahasradhara_in_Dehradun_in_Uttrakhand_02.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "way"
+        },
+        {
+          "km": null,
+          "tip": "Wear sandals or shoes you do not mind getting wet.",
+          "kind": "walk",
+          "name": "Robbers Cave (Guchhupani)",
+          "blurb": "A narrow limestone gorge north of the city where a stream runs through a cave. You walk up the stream bed in ankle- to knee-deep water.",
+          "photo": {
+            "url": "/static/guides/robbers-cave.jpg",
+            "credit": "Daniel Romanson",
+            "source": "https://commons.wikimedia.org/wiki/File:Amazing_view_of_Robber_Cave_Dehradun_Uttarakhand_India.jpg",
+            "license": "CC0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "temple",
+          "name": "Tapkeshwar Mahadev",
+          "blurb": "A cave temple on a stream bank in Garhi Cantt, where water drips onto the Shivling from the rock above.",
+          "photo": {
+            "url": "/static/guides/tapkeshwar.jpg",
+            "credit": "Jassimehra",
+            "source": "https://commons.wikimedia.org/wiki/File:Shiv_tapkeshwar_temple.jpg",
+            "license": "CC BY-SA 3.0"
+          },
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "cafe",
+          "name": "Tasalli The Rooftop Café",
+          "blurb": "A rooftop café on Sahastradhara Road (opposite the Electricity Office, Rishi Nagar) with views over the hills.",
+          "section": "eat"
+        },
+        {
+          "km": null,
+          "kind": "food",
+          "name": "Stalls at the springs",
+          "blurb": "Chai, Maggi, corn and pakoras by the water. Simple, and exactly right after a dip.",
+          "section": "eat"
+        }
+      ],
+      "tips": [
+        "Go early: the springs are crowded after 11 AM on weekends.",
+        "In the monsoon (July to September) the stream can rise fast after rain in the hills. Stay out if the water is brown or rising.",
+        "Carry a change of clothes if you plan to get into the water."
+      ],
+      "cover": {
+        "url": "/static/guides/sahastradhara.jpg",
+        "credit": "Pinakpani",
+        "source": "https://commons.wikimedia.org/wiki/File:Sahasradhara_in_Dehradun_in_Uttrakhand_02.jpg",
+        "license": "CC BY-SA 4.0"
+      },
+      "mapImage": "/static/guides/maps/sahastradhara-loop.jpg"
+    },
+    {
+      "id": "cefc88d7-fe57-4ba2-9589-167ae9e3fac7",
+      "slug": "maldevta",
+      "title": "Maldevta & beyond",
+      "distanceKm": 20,
+      "bodyMd": "East out of the city through Raipur, onto the quiet, narrow Maldevta road and down to the Song river, which rises on the Mussoorie ridge. Maldevta, about 20 km out in Shripur, is a picnic spot in the forest with a temple up a flight of steps and clear pools in the dry months.\n\nBeyond it the tarmac gets narrower, and the stony river beds and dirt tracks of the valley are popular with trail riders. Experienced riders can follow the road as it climbs after a small bridge over the Song towards Kaddukhal, Surkanda Devi and Dhanaulti. That is a full day out and back.",
+      "recommendedModels": [
+        "e126abea-15d2-4cef-8143-e6979966a117",
+        "7dcce5cb-c620-4af8-bf8f-0cba7d869e3d"
+      ],
+      "rideTime": "About 45 min to Maldevta",
+      "bestTime": "October to June, in daylight. Avoid the monsoon.",
+      "difficulty": "challenging",
+      "bikeAdvice": "The tarmac to Maldevta is fine on any bike. The river beds, dirt tracks and broken road beyond are where the Scram 440 and Himalayan 450 earn their place: long-travel suspension, big front wheels and plenty of ground clearance.",
+      "highlights": [
+        "The Song river and its stony beds",
+        "Forest picnic spot and temple at Maldevta",
+        "Dirt tracks for trail riding",
+        "Climb towards Kaddukhal and Dhanaulti"
+      ],
+      "stops": [
+        {
+          "km": 0,
+          "kind": "start",
+          "name": "Clock Tower (Ghanta Ghar)",
+          "blurb": "Leave the city eastwards on Raipur Road.",
+          "section": "way"
+        },
+        {
+          "km": 10,
+          "kind": "food",
+          "name": "Raipur",
+          "blurb": "The last market on the way out. Buy water and snacks here: there is no food at Maldevta.",
+          "section": "way"
+        },
+        {
+          "km": 17,
+          "kind": "viewpoint",
+          "name": "The Song river",
+          "blurb": "The road drops to the Song: wide, stony beds and clear water in the dry months, forest on both banks.",
+          "photo": {
+            "url": "/static/guides/song-river.jpg",
+            "credit": "NN10",
+            "source": "https://commons.wikimedia.org/wiki/File:Song_River,_Raipur.jpg",
+            "license": "CC BY-SA 4.0"
+          },
+          "section": "way"
+        },
+        {
+          "km": 20,
+          "kind": "end",
+          "name": "Maldevta",
+          "blurb": "A forest picnic spot on the river in Shripur, with the Maldevta temple up a flight of steps and pools for a dip in summer.",
+          "hours": "About 10 AM–6 PM. Leave before dark.",
+          "section": "way"
+        },
+        {
+          "km": null,
+          "kind": "viewpoint",
+          "name": "River-bed and dirt tracks",
+          "blurb": "Stony river beds and dirt tracks along the valley floor, popular with trail riders. Only on the Scram 440 or Himalayan 450, and never when the river is up.",
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "walk",
+          "name": "Kumalda and the valley villages",
+          "blurb": "Small villages on terraced slopes above Maldevta. Park and walk the lanes for a slower look at the valley.",
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "sight",
+          "name": "On to Kaddukhal and Dhanaulti",
+          "blurb": "The road keeps climbing towards Kaddukhal, the base for Surkanda Devi temple, and on to Dhanaulti about 8 km further. A full-day ride for experienced riders; check road conditions first.",
+          "section": "explore"
+        },
+        {
+          "km": null,
+          "kind": "food",
+          "name": "Raipur market",
+          "blurb": "The last stop for snacks, water and chai before Maldevta. Pack a lunch here.",
+          "section": "eat"
+        }
+      ],
+      "tips": [
+        "There are no food stalls at Maldevta. Carry water and a packed lunch.",
+        "Stay out of the river in the monsoon: the Song rises fast after rain upstream, and cloudbursts have damaged village roads in this valley.",
+        "Wild animals pass through after dark. Do not camp alone, and leave before sunset.",
+        "On gravel, stand on the pegs, keep the speed low and look ahead. On the Scram and Himalayan, switch off rear ABS only on loose surfaces.",
+        "Take your litter home: plastic left by picnickers is choking the river bed."
+      ],
+      "cover": {
+        "url": "/static/guides/song-river.jpg",
+        "credit": "NN10",
+        "source": "https://commons.wikimedia.org/wiki/File:Song_River,_Raipur.jpg",
+        "license": "CC BY-SA 4.0"
+      },
+      "mapImage": "/static/guides/maps/maldevta.jpg"
+    }
+  ]
+}

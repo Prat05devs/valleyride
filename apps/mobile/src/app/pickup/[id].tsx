@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Glass } from '@/components/Glass';
 import { Icon } from '@/components/Icon';
 import { SignaturePad, type SignaturePadHandle } from '@/components/SignaturePad';
-import { BackButton, Button, Card, Chip, ErrorText, Line, Loading, Notice, Row, T } from '@/components/ui';
+import { BackButton, Button, Card, Chip, ErrorText, Line, LoadError, Loading, Notice, Row, T } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
 import { shortName } from '@/lib/bikes';
 import { useBooking, useHandover, useModels } from '@/lib/data';
@@ -23,9 +23,9 @@ export default function Pickup() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { user } = useSession();
-  const { booking } = useBooking(id);
+  const { booking, error: bookingError, reload: reloadBooking } = useBooking(id);
   const { byId } = useModels();
-  const { handover, reload } = useHandover(id);
+  const { handover, error: handoverError, reload } = useHandover(id);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const pad = useRef<SignaturePadHandle>(null);
   const [signed, setSigned] = useState(false);
@@ -41,6 +41,7 @@ export default function Pickup() {
 
   const model = booking && byId(booking.vehicleModelId);
   const p = handover?.pickup;
+  if (bookingError || handoverError) return <LoadError error={(bookingError || handoverError)!} onRetry={() => { void reloadBooking(); void reload(); }} />;
   if (!booking || !handover) return <Loading />;
   if (!p) return <Centered text="Staff will record the bike with you at the desk first. Then you can sign here." />;
   if (p.signedAt) return <Centered text="This ride has already started." />;
@@ -76,7 +77,7 @@ export default function Pickup() {
   const allChecked = CHECKS.every((c) => checks[c] !== false);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.canvas }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.canvas }} behavior="padding">
       <ScrollView contentContainerStyle={{ padding: 20, paddingTop: insets.top + 8, paddingBottom: 190, gap: 14 }} keyboardShouldPersistTaps="handled" scrollEnabled={step !== 1 || !signed}>
         <Row>
           <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} style={styles.back}><Icon name="back" /></Pressable>
@@ -94,7 +95,7 @@ export default function Pickup() {
               <Line label="" value={fmtDateTime(booking.endAt)} />
               <Line label="Included" value={`${booking.kmIncluded} km${model ? ` · then ₹${model.extraKmPaise / 100}/km` : ''}`} />
               <Line label="Deposit" value={`${inr(booking.depositPaise)}, refundable`} />
-              {model && <Line label="Late return" value={`${inr(lateFeePerHourPaise(model.pricePerDayPaise))} per hour + GST`} />}
+              {model && <Line label="Late return" value={`${inr(lateFeePerHourPaise(model.pricePerDayPaise))} per hour incl. GST`} />}
               <T v="label" style={{ lineHeight: 20 }}>Damage found at return is charged from the deposit after inspection. Helmets for rider and pillion are compulsory.</T>
             </Card>
             <Card style={{ gap: 10 }}>
@@ -105,7 +106,7 @@ export default function Pickup() {
               <SignaturePad ref={pad} onChange={(empty) => setSigned(!empty)} />
               {!signed && <T v="label" style={{ textAlign: 'center' }}>Sign here with your finger</T>}
             </Card>
-            <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} onPress={() => setAccepted(!accepted)} style={styles.accept}>
+            <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: accepted }} aria-checked={accepted} onPress={() => setAccepted(!accepted)} style={styles.accept}>
               <View style={[styles.box, accepted && { backgroundColor: colors.ink, borderColor: colors.ink }]}>{accepted && <Icon name="check" size={16} color={colors.surface} strokeWidth={2} />}</View>
               <T style={{ flex: 1 }}>I have read the agreement and accept its terms, including the cancellation policy.</T>
             </Pressable>
@@ -133,7 +134,7 @@ export default function Pickup() {
               {CHECKS.map((c) => {
                 const on = checks[c] !== false;
                 return (
-                  <Pressable key={c} accessibilityRole="checkbox" accessibilityState={{ checked: on }} onPress={() => setChecks((s) => ({ ...s, [c]: !on }))} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Pressable key={c} accessibilityRole="checkbox" accessibilityState={{ checked: on }} aria-checked={on} onPress={() => setChecks((s) => ({ ...s, [c]: !on }))} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <View style={[styles.box, on && { backgroundColor: colors.ink, borderColor: colors.ink }]}>{on && <Icon name="check" size={16} color={colors.surface} strokeWidth={2} />}</View>
                     <T style={{ flex: 1 }}>{c}</T>
                   </Pressable>

@@ -19,7 +19,9 @@ export const quoteRequestSchema = withRentalWindow(
 );
 export type QuoteRequestInput = z.infer<typeof quoteRequestSchema>;
 
-export const createBookingSchema = quoteRequestSchema;
+export const createBookingSchema = quoteRequestSchema.safeExtend({
+  expectedPayNowPaise: z.number().int().nonnegative().optional(),
+});
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 
 export const cancelBookingSchema = z.object({

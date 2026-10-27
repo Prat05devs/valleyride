@@ -5,7 +5,9 @@
       "environment": "preview",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.valleyride.in",
-        "EXPO_PUBLIC_WEB_URL": "https://valleyride.in"
+        "EXPO_PUBLIC_WEB_URL": "https://valleyride.in",
+        "EXPO_PUBLIC_DESK_PHONE": "+917055333321",
+        "EXPO_PUBLIC_SUPPORT_WHATSAPP": "+917055333321"
       },
       "android": { "buildType": "apk" }
     },
@@ -14,7 +16,9 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.valleyride.in",
-        "EXPO_PUBLIC_WEB_URL": "https://valleyride.in"
+        "EXPO_PUBLIC_WEB_URL": "https://valleyride.in",
+        "EXPO_PUBLIC_DESK_PHONE": "+917055333321",
+        "EXPO_PUBLIC_SUPPORT_WHATSAPP": "+917055333321"
       }
     }
   }

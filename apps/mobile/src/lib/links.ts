@@ -1,13 +1,11 @@
 import type { LocationDTO } from '@valleyride/shared';
-import { Linking, Platform } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
-/** Opens Apple Maps on iOS and Google Maps elsewhere, by coordinates when the location has them. */
+/** Google Maps universal directions use the booking's configured coordinates or address. */
 export function openDirections(loc: LocationDTO) {
   const q = loc.lat != null && loc.lng != null ? `${loc.lat},${loc.lng}` : `${loc.name}, ${loc.address}`;
-  const url = Platform.OS === 'ios'
-    ? `http://maps.apple.com/?daddr=${encodeURIComponent(q)}`
-    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`;
-  return Linking.openURL(url);
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}&travelmode=driving`;
+  return Linking.openURL(url).catch(() => { Alert.alert('Pickup and return directions', `${loc.name}\n${loc.address}\nOpen Google Maps and search this address, or call the desk from your trip.`); });
 }
 
 const gcal = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -18,6 +16,9 @@ export function addToCalendar(o: { title: string; start: string; end: string; lo
     + `&dates=${gcal(new Date(o.start))}/${gcal(new Date(o.end))}&location=${encodeURIComponent(o.location)}&details=${encodeURIComponent(o.details)}`;
   return Linking.openURL(url);
 }
+
+/** Credit and source links come from editable content, so only https opens (never intent:, tel: or app schemes). */
+export const openWebLink = (url: string) => (/^https:\/\//i.test(url) ? Linking.openURL(url).catch(() => {}) : undefined);
 
 export const call = (phone: string) => Linking.openURL(`tel:${phone}`);
 export const whatsapp = (phone: string, text = '') => Linking.openURL(`https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`);

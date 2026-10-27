@@ -1,10 +1,10 @@
 import { DOCUMENT_LABEL, type CustomerDocumentDTO } from '@valleyride/shared';
 import { Image } from 'expo-image';
 import { useCallback, useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
-import { BackButton, Button, Card, Chip, ErrorText, Notice, Row, T, Tag } from '@/components/ui';
+import { BackButton, Button, Card, Chip, ErrorText, Loading, Notice, Row, T, Tag } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
 import { pickPhoto, uploadKyc, type PickedFile } from '@/lib/upload';
 import { colors, fonts } from '@/theme';
@@ -20,19 +20,26 @@ const STATUS: Record<CustomerDocumentDTO['status'], { label: string; tone: 'fiel
 export default function Documents() {
   const insets = useSafeAreaInsets();
   const [docs, setDocs] = useState<CustomerDocumentDTO[] | null>(null);
-  const load = useCallback(() => api.get<CustomerDocumentDTO[]>('/kyc/documents').then(setDocs).catch(() => setDocs([])), []);
+  const [error, setError] = useState<string | null>(null);
+  const load = useCallback(async () => {
+    setError(null);
+    try { setDocs(await api.get<CustomerDocumentDTO[]>('/kyc/documents')); }
+    catch { setError('Could not check your documents. Please try again.'); }
+  }, []);
   useEffect(() => { load(); }, [load]);
   const latest = (t: DocType) => docs?.find((d) => d.type === t);
   const id = latest('AADHAAR') ?? latest('PASSPORT');
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.canvas }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.canvas }} behavior="padding">
       <ScrollView contentContainerStyle={{ padding: 20, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 30, gap: 14 }} keyboardShouldPersistTaps="handled">
         <Row><BackButton /><T v="title">Documents</T></Row>
         <T style={{ color: colors.muted }}>We check these before your first pickup. Bring the originals too.</T>
-        <DocCard title="Driving licence" types={['DL']} current={latest('DL')} onSaved={load} />
-        <DocCard title="ID proof" types={['AADHAAR', 'PASSPORT']} current={id} onSaved={load} />
-        <Notice tone="field" icon="lock" text="Files are stored privately and only our staff can open them. For Aadhaar we keep only the last 4 digits." />
+        {error ? <><ErrorText error={error} /><Button label="Try again" onPress={load} /></> : docs === null ? <Loading /> : <>
+          <DocCard title="Driving licence" types={['DL']} current={latest('DL')} onSaved={load} />
+          <DocCard title="ID proof" types={['AADHAAR', 'PASSPORT']} current={id} onSaved={load} />
+        </>}
+        <Notice tone="field" icon="lock" text="Files are private and available to authorised staff. Typed ID numbers are masked; photos may show the full number. Use a masked Aadhaar if you upload Aadhaar." />
       </ScrollView>
     </KeyboardAvoidingView>
   );

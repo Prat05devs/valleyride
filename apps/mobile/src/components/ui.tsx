@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import { colors, fonts, radius, type } from '@/theme';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { colors, fonts, radius, tight, type } from '@/theme';
 import { Icon, type IconName } from './Icon';
 
 type Variant = keyof typeof type;
@@ -23,6 +23,7 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: !!off, busy: !!loading }}
+      disabled={!!off}
       onPress={off ? undefined : onPress}
       style={({ pressed }) => [styles.btn, { height: h, backgroundColor: off && variant === 'primary' ? colors.disabled : bg, transform: [{ scale: pressed ? 0.98 : 1 }] }, style]}
     >
@@ -58,9 +59,9 @@ export function Card({ children, style, onPress }: { children: ReactNode; style?
 export function Chip({ label, selected, onPress, tone = 'light' }: { label: string; selected?: boolean; onPress?: () => void; tone?: 'light' | 'field' }) {
   const idle = tone === 'field' ? colors.field : colors.surface;
   return (
-    <Pressable accessibilityRole="button" accessibilityState={{ selected: !!selected }} onPress={onPress}
+    <Pressable accessibilityRole="button" accessibilityState={{ selected: !!selected }} {...(Platform.OS === 'web' ? { 'aria-pressed': !!selected } : {})} onPress={onPress}
       style={[styles.chip, { backgroundColor: selected ? colors.ink : idle }]}>
-      <Text style={{ fontFamily: fonts.regular, fontSize: 15, color: selected ? colors.surface : colors.ink }}>{label}</Text>
+      <Text style={{ ...tight, fontFamily: fonts.regular, fontSize: 15, color: selected ? colors.surface : colors.ink }}>{label}</Text>
     </Pressable>
   );
 }
@@ -69,7 +70,7 @@ export function Chip({ label, selected, onPress, tone = 'light' }: { label: stri
 export function Tag({ label, tone = 'field' }: { label: string; tone?: 'field' | 'ink' | 'orange' }) {
   const bg = { field: colors.field, ink: colors.ink, orange: colors.orangeTint }[tone];
   const fg = { field: colors.ink, ink: colors.surface, orange: colors.orangeInk }[tone];
-  return <View style={[styles.tag, { backgroundColor: bg }]}><Text style={{ fontFamily: fonts.regular, fontSize: 14, color: fg }}>{label}</Text></View>;
+  return <View style={[styles.tag, { backgroundColor: bg }]}><Text style={{ ...tight, fontFamily: fonts.regular, fontSize: 14, color: fg }}>{label}</Text></View>;
 }
 
 export function Row({ children, style, gap = 12 }: { children: ReactNode; style?: StyleProp<ViewStyle>; gap?: number }) {
@@ -144,6 +145,11 @@ export function Offline({ onRetry }: { onRetry: () => void }) {
 
 export function Loading() {
   return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 }}><ActivityIndicator color={colors.ink} /></View>;
+}
+
+/** A failed fetch must leave the user a way to recover or go back. */
+export function LoadError({ error, onRetry }: { error: string; onRetry: () => void }) {
+  return <View style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 16, backgroundColor: colors.canvas }}><BackButton /><ErrorText error={error} /><Button label="Try again" onPress={onRetry} /></View>;
 }
 
 const styles = StyleSheet.create({

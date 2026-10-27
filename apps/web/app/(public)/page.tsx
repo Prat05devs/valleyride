@@ -39,7 +39,7 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto flex max-w-[1280px] flex-col gap-7 px-4 pt-24 sm:px-6">
-        <Heading title="Pick your bike" sub={`${units} bikes across ${countWord(models.length)} models. Prices per day, before GST.`} href="/fleet" cta="See the full fleet" />
+        <Heading title="Pick your bike" sub={`${units} bikes across ${countWord(models.length)} models. Prices per day include 18% GST.`} href="/fleet" cta="See the full fleet" />
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-4">
           {models.map((m) => (
             <Link key={m.id} href={`/fleet/${m.slug}`} className="flex flex-col gap-3 rounded-sheet bg-surface px-[22px] pb-6 pt-5 transition-transform hover:-translate-y-0.5">

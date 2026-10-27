@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { QueryTypes } from 'sequelize';
-import { quote } from '@valleyride/shared';
+import { quote, splitInclusiveGst } from '@valleyride/shared';
 import { app, ids, loginAs, loginWith, newKey, request, signWebhook, TEST_PASSWORD, window } from './helpers';
 import { sequelize } from '../../src/db';
 import { closeQueues } from '../../src/jobs/queue';
@@ -83,7 +83,8 @@ describe('public catalogue', () => {
     const res = await request(app).post('/api/v1/quotes').send(body).expect(200);
     const expected = quote({ pricePerDayPaise: 119_900, depositPaise: 500_000, kmPerDay: 200 }, new Date(w.startAt), new Date(w.endAt), { oneWay: true });
     expect(res.body.data.payNowPaise).toBe(expected.payNowPaise);
-    expect(res.body.data.feesPaise).toBe(40_000);
+    expect(res.body.data.feesInclGstPaise).toBe(40_000);
+    expect(res.body.data.feesPaise).toBe(splitInclusiveGst(40_000).netPaise);
   });
 
   it('POST /investor/calculate gives the illustrative EMI', async () => {
@@ -159,20 +160,22 @@ describe('booking engine', () => {
     expect(mine.body.data.map((b: any) => b.id)).toContain(booking.id);
   });
 
-  it('never double-books: 6 parallel requests for the 5 Himalayans give 5 holds and one 409', async () => {
+  it('never double-books: 6 parallel requests for the one Himalayan at this hub give one hold and five conflicts', async () => {
     const agent = await loginAs('+919800000012');
     const w = window(80);
     const results = await Promise.all(Array.from({ length: 6 }, () =>
       agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('himalayan-450', w))));
     const statuses = results.map((r) => r.status).sort();
-    expect(statuses).toEqual([201, 201, 201, 201, 201, 409]);
+    expect(statuses).toEqual([201, 409, 409, 409, 409, 409]);
     const conflict = results.find((r) => r.status === 409)!;
     expect(conflict.body.error.code).toBe('NO_AVAILABILITY');
     const vehicles = new Set(results.filter((r) => r.status === 201).map((r) => r.body.data.booking.id));
-    expect(vehicles.size).toBe(5);
+    expect(vehicles.size).toBe(1);
 
     const avail = await request(app).get('/api/v1/availability').query(w).expect(200);
-    expect(avail.body.data.find((r: any) => r.model_id === fixture.model['himalayan-450'])).toBeUndefined();
+    expect(avail.body.data.find((r: any) => r.model_id === fixture.model['himalayan-450']).free).toBe(4);
+    const hub = await request(app).get('/api/v1/availability').query({ ...w, pickup: fixture.locations[0] }).expect(200);
+    expect(hub.body.data.find((r: any) => r.model_id === fixture.model['himalayan-450']).free).toBe(0);
   });
 
   it('the exclusion constraint rejects an overlapping row even when written directly', async () => {
@@ -352,16 +355,16 @@ describe('pickup and return', () => {
     const started = await agent.post(`/api/v1/bookings/${booking.id}/start`).send(start).expect(200);
     expect(started.body.data.status).toBe('ONGOING');
 
-    // 657 km ridden, returned on time: 57 km × ₹6 = ₹342 + 18% GST = ₹403.56 out of the ₹5,000 deposit.
+    // 657 km ridden, returned on time: 57 km × ₹6 = ₹342 including 18% GST out of the ₹5,000 deposit.
     const ret = await staff.post(`/api/v1/admin/bookings/${booking.id}/return`).set('Idempotency-Key', newKey())
       .send({ odometerKm: 1712, returnedAt: w.endAt, checklist: { helmetsReturned: true, documentsReturned: true } }).expect(201);
-    expect(ret.body.data.charges).toMatchObject({ kmRidden: 657, extraKm: 57, extraKmPaise: 34_200, taxPaise: 6_156, lateFeePaise: 0, refundPaise: 459_644 });
+    expect(ret.body.data.charges).toMatchObject({ kmRidden: 657, extraKm: 57, extraKmPaise: 28_983, taxPaise: 5_217, lateFeePaise: 0, refundPaise: 465_800 });
     expect(ret.body.data.booking.status).toBe('DEPOSIT_SETTLED'); // the fake Razorpay processes refunds at once
 
     const inv = await agent.get(`/api/v1/bookings/${booking.id}/invoice`).expect(200);
     expect(inv.body.data.final).toBe(true);
-    expect(inv.body.data.totalPaise).toBe(booking.totalPaise - booking.depositPaise + 34_200 + 6_156);
-    expect(inv.body.data.cgstPaise + inv.body.data.sgstPaise).toBe(booking.taxPaise + 6_156);
+    expect(inv.body.data.totalPaise).toBe(booking.totalPaise - booking.depositPaise + 34_200);
+    expect(inv.body.data.cgstPaise + inv.body.data.sgstPaise).toBe(booking.taxPaise + 5_217);
 
     await agent.put(`/api/v1/bookings/${booking.id}/review`).send({ rating: 5, tags: ['Clean bike'], comment: 'Smooth pickup' }).expect(200);
     const review = await agent.get(`/api/v1/bookings/${booking.id}/review`).expect(200);
@@ -377,7 +380,7 @@ describe('pickup and return', () => {
     const returnedAt = new Date(new Date(w.endAt).getTime() + 90 * 60_000).toISOString(); // 1.5 h late → 2 hours
     const ret = await staff.post(`/api/v1/admin/bookings/${booking.id}/return`).set('Idempotency-Key', newKey())
       .send({ odometerKm: 150, returnedAt, checklist: { helmetsReturned: true, documentsReturned: true } }).expect(201);
-    expect(ret.body.data.charges).toMatchObject({ lateHours: 2, lateFeePaise: 2 * Math.round(64_900 / 8), extraKm: 0 });
+    expect(ret.body.data.charges).toMatchObject({ lateHours: 2, lateFeePaise: splitInclusiveGst(2 * Math.round(64_900 / 8)).netPaise, extraKm: 0 });
   });
 });
 
@@ -625,7 +628,7 @@ describe('pricing rules', () => {
     expect(held.body.data.booking).toMatchObject({ totalPaise: expected.payNowPaise, tierPct: 10 });
     await admin.delete(`/api/v1/admin/pricing-rules/${season.body.data.id}`).expect(204);
     const after = await request(app).post('/api/v1/quotes').send(bookingBody('hunter-350', w)).expect(200);
-    expect(after.body.data.rentalPaise).toBe(3 * 119_900);
+    expect(after.body.data.rentalInclGstPaise).toBe(3 * 119_900);
   });
 
   it('rejects a pickup in the past', async () => {
@@ -772,7 +775,7 @@ describe('Checkout callback', () => {
 
   it('does not confirm a captured payment with the wrong amount or currency', async () => {
     const agent = await loginAs('+919800000141');
-    const created = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', window(251))).expect(201);
+    const created = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', window(254))).expect(201);
     const { booking, razorpayOrderId } = created.body.data;
     for (const details of [{ amount: booking.totalPaise - 1, currency: 'INR' }, { amount: booking.totalPaise, currency: 'USD' }]) {
       const event = { event: 'payment.captured', payload: { payment: { entity: { id: 'pay_mismatch', order_id: razorpayOrderId, status: 'captured', ...details } } } };
@@ -882,5 +885,131 @@ describe('password guessing and staff resets', () => {
   it('answers 413, not 500, for a body over the size limit', async () => {
     const res = await request(app).post('/api/v1/quotes').set('Content-Type', 'application/json').send(JSON.stringify({ pad: 'x'.repeat(1_100_000) })).expect(413);
     expect(res.body.error.code).toBe('BAD_REQUEST');
+  });
+});
+
+describe('complete booking contract regressions', () => {
+  it('charges the listed one-day ₹649 including GST, plus only the ₹2,000 deposit', async () => {
+    const agent = await loginAs('+919800000201');
+    const input = bookingBody('activa-125', window(400, 24));
+    const q = (await request(app).post('/api/v1/quotes').send(input).expect(200)).body.data;
+    expect(q).toMatchObject({ totalPaise: 64_900, payNowPaise: 264_900, pricesIncludeGst: true });
+    expect(q.rentalPaise - q.discountPaise + q.feesPaise + q.taxPaise).toBe(64_900);
+    const changed = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send({ ...input, expectedPayNowPaise: 276_582 }).expect(409);
+    expect(changed.body.error.code).toBe('QUOTE_CHANGED');
+    const held = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send({ ...input, expectedPayNowPaise: q.payNowPaise }).expect(201);
+    expect(held.body.data.booking.totalPaise).toBe(264_900);
+  });
+
+  it('allows an admin to book their own ride while preserving booking ownership', async () => {
+    const admin = await adminAgent('+919800000202');
+    const held = await admin.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('activa-125', window(404, 24))).expect(201);
+    const stranger = await loginAs('+919800000203');
+    await stranger.get(`/api/v1/bookings/${held.body.data.booking.id}`).expect(404);
+    await stranger.post(`/api/v1/bookings/${held.body.data.booking.id}/cancel`).set('Idempotency-Key', newKey()).send({}).expect(404);
+  });
+
+  it('keeps a booking attempt durable after losing its Redis response and rejects changed dates', async () => {
+    const { getRedis } = await import('../../src/jobs/queue');
+    const agent = await loginAs('+919800000204');
+    const key = newKey(), input = bookingBody('activa-125', window(408, 24));
+    const first = await agent.post('/api/v1/bookings').set('Idempotency-Key', key).send(input).expect(201);
+    const keys = await getRedis().keys(`idem:*:${key}`); if (keys.length) await getRedis().del(...keys);
+    const again = await agent.post('/api/v1/bookings').set('Idempotency-Key', key).send(input).expect(201);
+    expect(again.body.data.booking.id).toBe(first.body.data.booking.id);
+    expect(again.body.data.razorpayOrderId).toBe(first.body.data.razorpayOrderId);
+    const mismatch = await agent.post('/api/v1/bookings').set('Idempotency-Key', key).send({ ...input, ...window(409, 24) }).expect(409);
+    expect(mismatch.body.error.code).toBe('IDEMPOTENCY_MISMATCH');
+    const [counts] = await sequelize.query<any>('SELECT COUNT(*)::int AS n FROM payments WHERE booking_id = :id', { replacements: { id: first.body.data.booking.id }, type: QueryTypes.SELECT });
+    expect(counts.n).toBe(1);
+  });
+
+  it('rejects inactive hubs and pickup or return outside published desk hours', async () => {
+    const input = bookingBody('activa-125', window(412, 24));
+    const closed = { ...input, startAt: new Date(Date.parse(input.startAt) + 13 * 3_600_000).toISOString(), endAt: new Date(Date.parse(input.endAt) + 13 * 3_600_000).toISOString() };
+    expect((await request(app).post('/api/v1/quotes').send(closed).expect(422)).body.error.code).toBe('DESK_CLOSED');
+    await sequelize.query('UPDATE locations SET is_active = false WHERE id = :id', { replacements: { id: fixture.locations[0] } });
+    try { expect((await request(app).get('/api/v1/availability').query({ ...window(412), pickup: fixture.locations[0] }).expect(422)).body.error.code).toBe('LOCATION_UNAVAILABLE'); }
+    finally { await sequelize.query('UPDATE locations SET is_active = true WHERE id = :id', { replacements: { id: fixture.locations[0] } }); }
+  });
+
+  it('never allocates a bike from a different physical hub', async () => {
+    const agent = await loginAs('+919800000205');
+    const w = window(416, 24);
+    const first = await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', w)).expect(201);
+    expect((await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', w)).expect(409)).body.error.code).toBe('NO_AVAILABILITY');
+    const [v] = await sequelize.query<any>('SELECT COALESCE(v.current_location_id, v.home_location_id) AS hub FROM vehicles v JOIN bookings b ON b.vehicle_id = v.id WHERE b.id = :id', { replacements: { id: first.body.data.booking.id }, type: QueryTypes.SELECT });
+    expect(v.hub).toBe(fixture.locations[0]);
+  });
+
+  it('rejects a one-way trip that would strand the next reserved pickup', async () => {
+    const agent = await loginAs('+919800000206');
+    await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('hunter-350', window(422, 24))).expect(201);
+    const earlier = { ...bookingBody('hunter-350', window(420, 24)), returnLocationId: fixture.locations[1] };
+    expect((await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(earlier).expect(409)).body.error.code).toBe('NO_AVAILABILITY');
+  });
+
+  it('refunds a capture after the hold deadline even before the expiry worker runs', async () => {
+    const agent = await loginAs('+919800000207');
+    const { booking, razorpayOrderId } = (await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('activa-125', window(426, 24))).expect(201)).body.data;
+    await sequelize.query("UPDATE bookings SET hold_expires_at = now() - interval '1 second' WHERE id = :id", { replacements: { id: booking.id } });
+    await capture(razorpayOrderId, booking.totalPaise);
+    expect((await agent.get(`/api/v1/bookings/${booking.id}`)).body.data.status).not.toBe('CONFIRMED');
+    const refunds = await sequelize.query<any>("SELECT amount_paise, status FROM payments WHERE booking_id = :id AND kind = 'REFUND'", { replacements: { id: booking.id }, type: QueryTypes.SELECT });
+    expect(refunds).toEqual([{ amount_paise: 264_900, status: 'REFUNDED' }]);
+  });
+
+  it('refunds the superseded coupon order and confirms only the reviewed replacement amount', async () => {
+    const admin = await adminAgent('+919800000208');
+    await admin.post('/api/v1/admin/coupons').send({ code: 'FLOW10', percentOff: 10 }).expect(201);
+    const agent = await loginAs('+919800000209');
+    const { booking, razorpayOrderId } = (await agent.post('/api/v1/bookings').set('Idempotency-Key', newKey()).send(bookingBody('activa-125', window(430, 24))).expect(201)).body.data;
+    const revised = (await agent.post(`/api/v1/bookings/${booking.id}/coupon`).set('Idempotency-Key', newKey()).send({ code: 'FLOW10' }).expect(200)).body.data;
+    expect(revised.booking.totalPaise).toBe(258_410);
+    await capture(razorpayOrderId, booking.totalPaise);
+    expect((await agent.get(`/api/v1/bookings/${booking.id}`)).body.data.status).toBe('PENDING_PAYMENT');
+    await capture(revised.razorpayOrderId, revised.booking.totalPaise);
+    expect((await agent.get(`/api/v1/bookings/${booking.id}`)).body.data.status).toBe('CONFIRMED');
+  });
+
+  it('replays an applied extension after losing Redis without creating another payment', async () => {
+    const { getRedis } = await import('../../src/jobs/queue');
+    const { agent, booking } = await confirmedBooking('+919800000210', 'activa-125', window(434, 24));
+    const key = newKey(), endAt = new Date(Date.parse(booking.endAt) + 86_400_000).toISOString();
+    const first = (await agent.post(`/api/v1/bookings/${booking.id}/extend`).set('Idempotency-Key', key).send({ endAt }).expect(201)).body.data;
+    await capture(first.razorpayOrderId, first.payPaise);
+    const keys = await getRedis().keys(`idem:*:${key}`); if (keys.length) await getRedis().del(...keys);
+    const again = (await agent.post(`/api/v1/bookings/${booking.id}/extend`).set('Idempotency-Key', key).send({ endAt }).expect(201)).body.data;
+    expect(again.booking.endAt).toBe(endAt); expect(again.razorpayOrderId).toBeNull();
+    const [count] = await sequelize.query<any>("SELECT COUNT(*)::int AS n FROM payments WHERE booking_id = :id AND kind = 'EXTRA'", { replacements: { id: booking.id }, type: QueryTypes.SELECT });
+    expect(count.n).toBe(1);
+  });
+});
+
+describe('physical fleet operations', () => {
+  it('records current hub separately and audits a relocation, restricted to admins', async () => {
+    const admin = await adminAgent('+919800000211');
+    const customer = await loginAs('+919800000212');
+    const created = (await admin.post('/api/v1/admin/vehicles').send({ vehicleModelId: fixture.model['activa-125'], registrationNo: 'UK07ZZ9911', homeLocationId: fixture.locations[0], odometerKm: 10 }).expect(201)).body.data;
+    await customer.patch(`/api/v1/admin/vehicles/${created.id}/location`).send({ locationId: fixture.locations[1], reason: 'Physical transfer' }).expect(403);
+    const moved = (await admin.patch(`/api/v1/admin/vehicles/${created.id}/location`).send({ locationId: fixture.locations[1], reason: 'Transferred to station desk' }).expect(200)).body.data;
+    expect(moved.home.id).toBe(fixture.locations[0]); expect(moved.current.id).toBe(fixture.locations[1]);
+    const [audit] = await sequelize.query<any>("SELECT action FROM audit_logs WHERE entity_id = :id AND action = 'vehicle.relocated'", { replacements: { id: created.id }, type: QueryTypes.SELECT });
+    expect(audit.action).toBe('vehicle.relocated');
+  });
+
+  it('blocks relocation of a reserved unit and does not free an overdue ongoing bike', async () => {
+    const { agent, booking } = await confirmedBooking('+919800000213', 'hunter-350', window(440, 24));
+    const admin = await adminAgent('+919800000214');
+    const [row] = await sequelize.query<any>('SELECT vehicle_id FROM bookings WHERE id = :id', { replacements: { id: booking.id }, type: QueryTypes.SELECT });
+    expect((await admin.patch(`/api/v1/admin/vehicles/${row.vehicle_id}/location`).send({ locationId: fixture.locations[1], reason: 'Would break pickup' }).expect(409)).body.error.code).toBe('VEHICLE_RESERVED');
+    await sequelize.query("UPDATE bookings SET status = 'ONGOING', start_at = now() - interval '2 days', end_at = now() - interval '1 day' WHERE id = :id", { replacements: { id: booking.id } });
+    try {
+      const availability = (await request(app).get('/api/v1/availability').query({ ...window(444, 24), pickup: fixture.locations[0] }).expect(200)).body.data;
+      expect(availability.find((r: any) => r.model_id === fixture.model['hunter-350']).free).toBe(0);
+      const fleet = (await admin.get('/api/v1/admin/vehicles').expect(200)).body.data;
+      expect(fleet.find((v: any) => v.id === row.vehicle_id).onRide.bookingId).toBe(booking.id);
+    } finally { await sequelize.query("UPDATE bookings SET status = 'CANCELLED' WHERE id = :id", { replacements: { id: booking.id } }); }
+    await agent.get(`/api/v1/bookings/${booking.id}`).expect(200);
   });
 });

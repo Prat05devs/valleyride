@@ -22,6 +22,7 @@ export function useBooking(id: string | undefined, opts: { pollMs?: number; keep
   const [error, setError] = useState<string | null>(null);
   const reload = useCallback(async () => {
     if (!id) return;
+    setError(null);
     try { setBooking(await api.get<BookingDTO>(`/bookings/${id}`)); setError(null); }
     catch (e) { setError(e instanceof Error ? e.message : 'Could not load the booking'); }
   }, [id]);
@@ -76,12 +77,15 @@ export interface HandoverView {
 
 export function useHandover(id: string | undefined, enabled = true) {
   const [data, setData] = useState<HandoverView | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const reload = useCallback(async () => {
     if (!id || !enabled) return;
-    try { setData(await api.get<HandoverView>(`/bookings/${id}/handover`)); } catch { /* shown as not recorded yet */ }
+    setError(null);
+    try { setData(await api.get<HandoverView>(`/bookings/${id}/handover`)); setError(null); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Could not load the inspection. Try again.'); }
   }, [id, enabled]);
   useEffect(() => { reload(); }, [reload]);
-  return { handover: data, reload };
+  return { handover: data, error, reload };
 }
 
 /** "2 days 18 h", "5 h 20 min", "Overdue 1 h". */

@@ -6,9 +6,8 @@ const { withAndroidManifest } = require('expo/config-plugins');
  * Production builds leave it unset and use https://api.valleyride.in.
  */
 module.exports = function withTestCleartext(config) {
-  if (process.env.ANDROID_ALLOW_CLEARTEXT !== '1') return config;
   return withAndroidManifest(config, (c) => {
-    c.modResults.manifest.application[0].$['android:usesCleartextTraffic'] = 'true';
+    c.modResults.manifest.application[0].$['android:usesCleartextTraffic'] = process.env.ANDROID_ALLOW_CLEARTEXT === '1' ? 'true' : 'false';
     return c;
   });
 };

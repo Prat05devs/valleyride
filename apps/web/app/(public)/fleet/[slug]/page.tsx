@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -65,7 +66,7 @@ export default async function VehicleModelPage({ params }: { params: Promise<{ s
               </div>
             )}
           </div>
-          <BookPanel model={m} locations={locations} />
+          <Suspense fallback={<div>Loading booking options…</div>}><BookPanel model={m} locations={locations} /></Suspense>
         </div>
       </main>
     </div>

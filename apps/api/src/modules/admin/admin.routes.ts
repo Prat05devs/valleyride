@@ -20,6 +20,7 @@ adminRouter.get('/admin/dashboard', ...staff, ctrl.dashboard);
 adminRouter.get('/admin/vehicles', ...staff, ctrl.vehicles);
 adminRouter.get('/admin/vehicles/:id', ...staff, validate({ params: idParams }), ctrl.vehicle);
 adminRouter.post('/admin/vehicles', ...admin, validate({ body: createVehicleSchema }), ctrl.createVehicle);
+adminRouter.patch('/admin/vehicles/:id/location', ...admin, validate({ params: idParams, body: z.object({ locationId: uuid, reason: z.string().trim().min(3).max(300) }) }), ctrl.relocateVehicle);
 adminRouter.patch('/admin/vehicles/:id/status', ...staff, validate({ params: idParams, body: vehicleStatusSchema }), ctrl.setVehicleStatus);
 adminRouter.post('/admin/vehicles/:id/maintenance', ...staff, validate({ params: idParams, body: maintenanceSchema }), ctrl.logMaintenance);
 adminRouter.post('/admin/vehicles/:id/documents', ...staff, validate({ params: idParams, body: vehicleDocumentSchema }), ctrl.addVehicleDocument);

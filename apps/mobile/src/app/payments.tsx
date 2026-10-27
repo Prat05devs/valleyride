@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
-import { BackButton, Card, Loading, Row, T } from '@/components/ui';
+import { BackButton, Button, Card, ErrorText, Loading, Row, T } from '@/components/ui';
 import { api } from '@/lib/api';
 import { fmtDate, inr } from '@/lib/format';
 import { colors, fonts } from '@/theme';
@@ -14,12 +14,15 @@ interface Held { bookingId: string; bookingCode: string; bike: string; depositPa
 export default function Payments() {
   const insets = useSafeAreaInsets();
   const [data, setData] = useState<{ lines: Line[]; depositsHeld: Held[] } | null>(null);
-  useEffect(() => { api.get<typeof data>('/me/payments').then(setData).catch(() => setData({ lines: [], depositsHeld: [] })); }, []);
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => { setError(null); api.get<typeof data>('/me/payments').then(setData).catch(() => setError('Could not load payments and refunds. Please try again.')); }, [attempt]);
 
   return (
     <ScrollView style={{ backgroundColor: colors.canvas }} contentContainerStyle={{ padding: 20, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 30, gap: 14 }}>
       <Row><BackButton /><T v="title">Payments &amp; refunds</T></Row>
-      {!data ? <Loading /> : (
+      {error && <><ErrorText error={error} /><Button label="Try again" onPress={() => setAttempt((n) => n + 1)} /></>}
+      {!data ? (!error && <Loading />) : (
         <>
           {data.depositsHeld.map((h) => (
             <Card key={h.bookingId} style={{ backgroundColor: colors.dark, gap: 4 }} onPress={() => router.push({ pathname: '/trip/[id]', params: { id: h.bookingId } })}>

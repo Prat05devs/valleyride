@@ -6,6 +6,7 @@ export class Vehicle extends Model<InferAttributes<Vehicle>, InferCreationAttrib
   declare vehicleModelId: string;
   declare registrationNo: string;
   declare homeLocationId: string;
+  declare currentLocationId: CreationOptional<string | null>;
   declare status: CreationOptional<VehicleStatus>;
   declare odometerKm: CreationOptional<number>;
   declare purchasedOn: string | null;
@@ -16,6 +17,7 @@ export class Vehicle extends Model<InferAttributes<Vehicle>, InferCreationAttrib
       vehicleModelId: { type: DataTypes.UUID, allowNull: false },
       registrationNo: { type: DataTypes.STRING(20), allowNull: false, unique: true },
       homeLocationId: { type: DataTypes.UUID, allowNull: false },
+      currentLocationId: { type: DataTypes.UUID, allowNull: true },
       status:         { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
       odometerKm:     { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       purchasedOn:    { type: DataTypes.DATEONLY },
@@ -25,6 +27,7 @@ export class Vehicle extends Model<InferAttributes<Vehicle>, InferCreationAttrib
   static associate(models: any) {
     Vehicle.belongsTo(models.VehicleModel, { foreignKey: 'vehicleModelId', as: 'model' });
     Vehicle.belongsTo(models.Location, { foreignKey: 'homeLocationId', as: 'homeLocation' });
+    Vehicle.belongsTo(models.Location, { foreignKey: 'currentLocationId', as: 'currentLocation' });
     Vehicle.hasMany(models.Booking, { foreignKey: 'vehicleId', as: 'bookings' });
     Vehicle.hasMany(models.VehicleDocument, { foreignKey: 'vehicleId', as: 'documents' });
     Vehicle.hasMany(models.MaintenanceRecord, { foreignKey: 'vehicleId', as: 'maintenance' });

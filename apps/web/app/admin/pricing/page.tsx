@@ -30,7 +30,7 @@ export default function PricingPage() {
   if (rules.error) return <><PageTitle title="Pricing" /><p className="rounded-sheet bg-surface p-6">{(rules.error as Error).message}</p></>;
   return (
     <>
-      <PageTitle title="Pricing" sub="Day prices, long-rental tiers and seasons. Applies to new quotes straight away; existing bookings keep their price." />
+      <PageTitle title="Pricing" sub="Day and extra-km prices include 18% GST. Long-rental tiers and seasons. Applies to new quotes straight away; existing bookings keep their price." />
       {error && <p role="alert" className="m-0 rounded-[20px] bg-orange-tint px-4 py-3 text-sm text-orange-ink">{error}</p>}
       <Panel title="Day prices" className="overflow-x-auto">
         <table className="w-full min-w-[720px] border-collapse text-[15px]">

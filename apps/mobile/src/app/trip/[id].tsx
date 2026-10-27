@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapArt } from '@/components/art';
 import { Glass } from '@/components/Glass';
 import { Icon, type IconName } from '@/components/Icon';
-import { BackButton, Button, Card, Divider, Line, Loading, Notice, Row, T, Tag } from '@/components/ui';
+import { BackButton, Button, Card, Divider, Line, LoadError, Loading, Notice, Row, T, Tag } from '@/components/ui';
 import { api } from '@/lib/api';
 import { bikePhoto, PHOTOS_HERO, shortName } from '@/lib/bikes';
 import { DESK_PHONE } from '@/lib/contact';
@@ -20,7 +20,7 @@ import { colors, fonts } from '@/theme';
 
 export default function TripDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { booking, reload } = useBooking(id);
+  const { booking, error, reload } = useBooking(id);
   const { byId } = useModels();
   const { locations } = useTrip();
   const live = !!booking && ['ONGOING', 'COMPLETED', 'DEPOSIT_SETTLED', 'CONFIRMED'].includes(booking.status);
@@ -28,7 +28,7 @@ export default function TripDetail() {
   const [refreshing, setRefreshing] = useState(false);
   useFocusEffect(useCallback(() => { reload(); reloadHandover(); }, [reload, reloadHandover]));
 
-  if (!booking) return <Loading />;
+  if (!booking) return error ? <LoadError error={error} onRetry={reload} /> : <Loading />;
   const model = byId(booking.vehicleModelId);
   const pickup = locations.find((l) => l.id === booking.pickupLocationId);
   const ret = locations.find((l) => l.id === booking.returnLocationId) ?? pickup;
@@ -263,9 +263,9 @@ function Completed({ booking, model, ret, handover, refresh }: P) {
         <Card style={{ gap: 12, paddingHorizontal: 20 }}>
           <T style={{ fontSize: 18 }}>Deposit</T>
           <Line label="Deposit held" value={inr(booking.depositPaise, { decimals: 'always' })} />
-          <Line label="Extra km" sub={c.extraKm ? `${c.extraKm} km over ${booking.kmIncluded}${model ? ` × ₹${model.extraKmPaise / 100}` : ''}, plus GST` : undefined}
+          <Line label="Extra km" sub={c.extraKm ? `${c.extraKm} km over ${booking.kmIncluded}${model ? ` × ₹${model.extraKmPaise / 100}` : ''}, including GST` : undefined}
             value={minus(c.extraKmPaise + c.extraKmTaxPaise)} />
-          <Line label="Late return" sub={c.lateHours ? `${c.lateHours} h, plus GST` : undefined} value={minus(c.lateFeePaise + c.lateFeeTaxPaise)} />
+          <Line label="Late return" sub={c.lateHours ? `${c.lateHours} h, including GST` : undefined} value={minus(c.lateFeePaise + c.lateFeeTaxPaise)} />
           {c.damagePaise > 0 && <Line label="Damage" value={minus(c.damagePaise)} />}
           <Divider />
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>

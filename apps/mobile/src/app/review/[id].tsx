@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { Button, Chip, ErrorText, IconButton, T } from '@/components/ui';
@@ -49,7 +49,7 @@ export default function Review() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.canvas }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.canvas }} behavior="padding">
       <ScrollView contentContainerStyle={{ padding: 20, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 30, gap: 18 }} keyboardShouldPersistTaps="handled">
         <View style={{ alignSelf: 'flex-end' }}><IconButton icon="x" label="Close" onPress={() => router.back()} /></View>
         <View style={{ alignItems: 'center', gap: 6 }}>
@@ -58,7 +58,7 @@ export default function Review() {
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8 }} accessibilityRole="radiogroup">
           {[1, 2, 3, 4, 5].map((n) => (
-            <Pressable key={n} accessibilityRole="radio" accessibilityLabel={`${n} ${n === 1 ? 'star' : 'stars'}`} accessibilityState={{ checked: n === rating }} onPress={() => setRating(n)} hitSlop={4}>
+            <Pressable key={n} accessibilityRole="radio" accessibilityLabel={`${n} ${n === 1 ? 'star' : 'stars'}`} accessibilityState={{ checked: n === rating }} aria-checked={n === rating} onPress={() => setRating(n)} hitSlop={4}>
               <Svg width={44} height={44} viewBox="0 0 24 24">
                 <Path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" fill={n <= rating ? colors.orange : 'none'} stroke={n <= rating ? colors.orange : colors.disabled} strokeWidth={1.5} strokeLinejoin="round" />
               </Svg>

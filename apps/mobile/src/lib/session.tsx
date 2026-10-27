@@ -29,10 +29,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setReady(false); // a retry shows the loader, not a redirect to login, until /me answers
     try {
       if (await tokens.access()) setUser(await api.get<SessionUser>('/me'));
+      else setUser(null);
       setOffline(false);
     } catch (e) {
       // Only a rejected session logs the rider out; a network error keeps the tokens for when the signal is back.
-      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) { await tokens.clear(); setOffline(false); }
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) { await tokens.clear(); setUser(null); setOffline(false); }
       else setOffline(true);
     } finally {
       setReady(true);

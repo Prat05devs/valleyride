@@ -51,7 +51,21 @@ function assertPaymentAmount(entity: RazorpayPaymentEntity, amount: number) {
 async function openOrder(booking: Booking, values: { kind: 'RENTAL' | 'EXTRA'; amountPaise: number; idempotencyKey: string; raw: object | null },
   receipt: string, notes: Record<string, string>) {
   const razorpay = getRazorpay(); // 503 PAYMENTS_UNAVAILABLE before anything is written
-  const payment = await Payment.create({ bookingId: booking.id, ...values, providerOrderId: null, providerPaymentId: null });
+  const previous = await Payment.findOne({ where: { idempotencyKey: values.idempotencyKey } });
+  if (previous) {
+    if (previous.bookingId !== booking.id || previous.kind !== values.kind || Number(previous.amountPaise) !== values.amountPaise || JSON.stringify((previous.raw as { extension?: PendingExtension } | null)?.extension ?? null) !== JSON.stringify((values.raw as { extension?: PendingExtension } | null)?.extension ?? null)) {
+      throw new AppError(409, 'IDEMPOTENCY_MISMATCH', 'This payment attempt belongs to another operation.');
+    }
+    if (previous.providerOrderId) return { id: previous.providerOrderId, amount: Number(previous.amountPaise) };
+    const updated = previous.get('updatedAt') as Date;
+    if (previous.status !== 'FAILED' && updated.getTime() > Date.now() - 120_000) {
+      throw new AppError(409, 'IDEMPOTENCY_IN_PROGRESS', 'The payment order is still being prepared. Check this booking again.');
+    }
+  }
+  // A crashed process may have left the row before obtaining an order. Reuse that row;
+  // an unreturned provider order cannot be paid by the client, and duplicate captures are refunded.
+  const payment = previous ?? await Payment.create({ bookingId: booking.id, ...values, providerOrderId: null, providerPaymentId: null });
+  if (previous) await payment.update({ status: 'CREATED' });
   try {
     const order = await razorpay.orders.create({ amount: values.amountPaise, currency: 'INR', receipt, notes });
     await payment.update({ providerOrderId: order.id });
@@ -157,6 +171,7 @@ export const paymentService = {
       }
       if (payment.status === 'CAPTURED') return null;
       assertPaymentAmount(entity, Number(payment.amountPaise));
+      const superseded = !!(payment.raw as { superseded?: string } | null)?.superseded;
       const pending = (payment.raw as { extension?: PendingExtension } | null)?.extension;
       await payment.update({ status: 'CAPTURED', providerPaymentId: entity.id, raw: pending ? { extension: pending, capture: raw } : raw }, { transaction: t });
       await audit(null, { action: 'payment.captured', entity: 'booking', entityId: payment.bookingId,
@@ -168,7 +183,10 @@ export const paymentService = {
 
       const booking = await Booking.findByPk(payment.bookingId, { lock: t.LOCK.UPDATE, transaction: t });
       if (!booking) return null;
-      if (booking.status !== 'PENDING_PAYMENT') {
+      if (superseded || booking.status !== 'PENDING_PAYMENT' || !booking.holdExpiresAt || booking.holdExpiresAt <= new Date() || Number(booking.totalPaise) !== entity.amount) {
+        if (booking.status === 'PENDING_PAYMENT' && (!booking.holdExpiresAt || booking.holdExpiresAt <= new Date())) {
+          await booking.update({ status: 'EXPIRED', holdExpiresAt: null }, { transaction: t });
+        }
         logger.warn({ bookingId: booking.id, status: booking.status }, 'payment captured for a booking that is no longer pending; refunding');
         return { refund: payment };
       }

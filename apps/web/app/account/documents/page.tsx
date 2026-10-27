@@ -14,15 +14,17 @@ type DocType = 'DL' | 'AADHAAR' | 'PASSPORT';
 const ACCEPT = ['image/jpeg', 'image/png', 'image/heic', 'application/pdf'];
 
 export default function DocumentsPage() {
-  const { data } = useQuery({ queryKey: ['kyc'], queryFn: () => api.get<CustomerDocumentDTO[]>('/kyc/documents') });
+  const { data, isError, isLoading, refetch } = useQuery({ queryKey: ['kyc'], queryFn: () => api.get<CustomerDocumentDTO[]>('/kyc/documents') });
   return (
     <>
       <div><h1 className="m-0 text-[40px] font-normal tracking-[-0.6px]">Documents</h1><p className="mt-1.5 text-[17px] text-muted">We check these before your first pickup. Bring the originals too.</p></div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] gap-4">
+      {isError && <p role="alert">Could not check your documents. <button type="button" className="underline" onClick={() => void refetch()}>Try again</button></p>}
+      {isLoading && <p role="status">Loading documents…</p>}
+      {data && <div className="grid grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] gap-4">
         <DocCard title="Driving licence" types={['DL']} current={data?.find((d) => d.type === 'DL')} />
         <DocCard title="ID proof" types={['AADHAAR', 'PASSPORT']} current={data?.find((d) => d.type !== 'DL')} />
-      </div>
-      <div className="flex items-center gap-3 rounded-card bg-surface px-[22px] py-[18px] text-[15px] text-muted"><Icon name="lock" />Files are stored privately in India and only our staff can open them. For Aadhaar we keep only the last 4 digits.</div>
+      </div>}
+      <div className="flex items-center gap-3 rounded-card bg-surface px-[22px] py-[18px] text-[15px] text-muted"><Icon name="lock" />Files are private and available to authorised staff. Typed ID numbers are masked; photos may show the full number. Use a masked Aadhaar if you upload Aadhaar.</div>
     </>
   );
 }

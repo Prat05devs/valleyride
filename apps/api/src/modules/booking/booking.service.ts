@@ -10,32 +10,30 @@ import { bookingJobs } from './booking.jobs';
 import { isOverlap, newBookingCode } from './booking.utils';
 import { assertTransition, EXTENDABLE } from './booking.state';
 import { assertPaymentsAvailable } from '../payment/razorpay.client';
+import { createHash } from 'node:crypto';
+import { INVENTORY_WINDOW } from './inventory-window';
+import { assertDeskWindow } from './booking-window';
 
 const HOLD_MINUTES = 15;
 
 export const bookingService = {
   /** Free units per model for a window, as used by GET /availability. */
-  async availability(startAt: Date, endAt: Date) {
+  async availability(startAt: Date, endAt: Date, pickup?: string, returnTo?: string) {
+    if (pickup) await assertDeskWindow(startAt, endAt, pickup, returnTo);
     return sequelize.query<{ model_id: string; free: number }>(`
       SELECT v.vehicle_model_id AS model_id, COUNT(*)::int AS free
       FROM vehicles v
-      WHERE v.status = 'ACTIVE'
-        AND NOT EXISTS (
-          SELECT 1 FROM bookings b
-          WHERE b.vehicle_id = v.id
-            AND b.status IN (:active)
-            AND tstzrange(b.start_at, b.end_at, '[)') && tstzrange(:startAt, :endAt, '[)')
-        )
+      WHERE ${INVENTORY_WINDOW}
       GROUP BY v.vehicle_model_id`,
-      { replacements: { startAt, endAt, active: ACTIVE_STATUSES }, type: QueryTypes.SELECT });
+      { replacements: { startAt, endAt, pickup: pickup ?? null, returnTo: returnTo ?? pickup ?? null, active: ACTIVE_STATUSES }, type: QueryTypes.SELECT });
   },
 
   /**
-   * GET /availability?startAt&endAt&pickup: free units per model (fleet-wide, as in the prototype) and, when a pickup
+   * GET /availability?startAt&endAt&pickup: units at the requested hub, and, when a pickup
    * point is given, the priced quote, so the results page shows exactly what checkout will charge.
    */
   async availabilityWithQuotes(startAt: Date, endAt: Date, pickup?: string, ret?: string) {
-    const free = await this.availability(startAt, endAt);
+    const free = await this.availability(startAt, endAt, pickup, ret);
     if (!pickup) return free;
     const models = await VehicleModel.findAll();
     return Promise.all(models.map(async (m) => ({
@@ -48,12 +46,31 @@ export const bookingService = {
   /** Holds one vehicle for 15 min and returns a Razorpay order to pay. */
   async create(userId: string, input: CreateBookingInput, idempotencyKey: string) {
     assertPaymentsAvailable();
-    const model = await VehicleModel.findByPk(input.vehicleModelId, { rejectOnEmpty: true });
+    const requestHash = createHash('sha256').update(JSON.stringify({
+      model: input.vehicleModelId, pickup: input.pickupLocationId, returnTo: input.returnLocationId,
+      start: input.startAt.toISOString(), end: input.endAt.toISOString(), coupon: input.couponCode ?? null,
+      expected: input.expectedPayNowPaise ?? null,
+    })).digest('hex');
+    const previous = await Booking.findOne({ where: { userId, clientRequestKey: idempotencyKey } });
+    if (previous) {
+      if (previous.clientRequestHash !== requestHash) throw new AppError(409, 'IDEMPOTENCY_MISMATCH', 'This attempt belongs to a different booking. Review the trip again.');
+      if (['EXPIRED', 'CANCELLED'].includes(previous.status) || (previous.status === 'PENDING_PAYMENT' && (!previous.holdExpiresAt || previous.holdExpiresAt <= new Date()))) {
+        throw new AppError(409, 'HOLD_EXPIRED', 'This booking attempt has ended. Check availability and review the trip again.');
+      }
+      const scopedKey = createHash('sha256').update(`${userId}:rental:${previous.id}:${idempotencyKey}`).digest('hex');
+      return { booking: previous, order: await paymentService.createOrder(previous, scopedKey) };
+    }
+    await assertDeskWindow(input.startAt, input.endAt, input.pickupLocationId, input.returnLocationId);
+    const model = await VehicleModel.findByPk(input.vehicleModelId);
+    if (!model) throw new AppError(404, 'NOT_FOUND', 'Vehicle model not found');
     const coupon = input.couponCode ? await Coupon.findValid(input.couponCode) : null;
     const q = await pricingService.quoteModel(model, input.startAt, input.endAt, {
       oneWay: input.pickupLocationId !== input.returnLocationId,
       couponPct: coupon?.percentOff ?? 0,
     });
+    if (input.expectedPayNowPaise !== undefined && input.expectedPayNowPaise !== q.payNowPaise) {
+      throw new AppError(409, 'QUOTE_CHANGED', 'The price changed. Please review the updated total before paying.');
+    }
 
     // A parallel request can commit a booking on the unit this one just read as free; the exclusion constraint then
     // rejects the insert. Picking again finds the next free unit, so a rider only sees "fully booked" when it is true.
@@ -63,15 +80,11 @@ export const bookingService = {
         // Pick the least-used free vehicle and lock it. SKIP LOCKED lets parallel requests pick different units.
         const [vehicle] = await sequelize.query<{ id: string }>(`
           SELECT v.id FROM vehicles v
-          WHERE v.vehicle_model_id = :modelId AND v.status = 'ACTIVE'
-            AND NOT EXISTS (
-              SELECT 1 FROM bookings b
-              WHERE b.vehicle_id = v.id AND b.status IN (:active)
-                AND tstzrange(b.start_at, b.end_at, '[)') && tstzrange(:startAt, :endAt, '[)'))
+          WHERE v.vehicle_model_id = :modelId AND ${INVENTORY_WINDOW}
           ORDER BY v.odometer_km ASC
           LIMIT 1
           FOR UPDATE OF v SKIP LOCKED`,
-          { replacements: { modelId: model.id, startAt: input.startAt, endAt: input.endAt, active: ACTIVE_STATUSES },
+          { replacements: { modelId: model.id, startAt: input.startAt, endAt: input.endAt, pickup: input.pickupLocationId, returnTo: input.returnLocationId, active: ACTIVE_STATUSES },
             type: QueryTypes.SELECT, transaction: t });
 
         if (!vehicle) throw new AppError(409, 'NO_AVAILABILITY', 'This model is fully booked for the selected time.');
@@ -97,6 +110,8 @@ export const bookingService = {
           totalPaise: q.payNowPaise,
           couponCode: coupon?.code ?? null,
           tierPct: q.tierPct,
+          clientRequestKey: idempotencyKey,
+          clientRequestHash: requestHash,
         }, { transaction: t });
       }));
 
@@ -104,9 +119,10 @@ export const bookingService = {
     // released at once instead of blocking the bike for 15 minutes.
     await bookingJobs.scheduleHoldExpiry(booking.id, HOLD_MINUTES);
     try {
-      return { booking, order: await paymentService.createOrder(booking, idempotencyKey) };
+      const scopedKey = createHash('sha256').update(`${userId}:rental:${booking.id}:${idempotencyKey}`).digest('hex');
+      return { booking, order: await paymentService.createOrder(booking, scopedKey) };
     } catch (err) {
-      await booking.update({ status: 'EXPIRED', holdExpiresAt: null });
+      await booking.update({ status: 'EXPIRED', holdExpiresAt: null, clientRequestKey: null, clientRequestHash: null });
       throw err;
     }
   },
@@ -135,7 +151,7 @@ export const bookingService = {
         oneWay: booking.pickupLocationId !== booking.returnLocationId, couponPct: coupon?.percentOff ?? 0,
       });
       await booking.update({
-        couponCode: coupon?.code ?? null, discountPaise: q.discountPaise, taxPaise: q.taxPaise, totalPaise: q.payNowPaise, tierPct: q.tierPct,
+        couponCode: coupon?.code ?? null, rentalPaise: q.rentalPaise, feesPaise: q.feesPaise, discountPaise: q.discountPaise, taxPaise: q.taxPaise, totalPaise: q.payNowPaise, tierPct: q.tierPct,
       }, { transaction: t });
       await Payment.update({ status: 'FAILED', raw: { superseded: 'coupon' } }, { where: { bookingId: id, kind: 'RENTAL', status: 'CREATED' }, transaction: t });
       return { booking, changed: true };
@@ -189,6 +205,7 @@ export const bookingService = {
     const booking = await this.getOne(userId, id);
     if (!EXTENDABLE.includes(booking.status)) throw new AppError(409, 'INVALID_TRANSITION', 'This booking can no longer be extended.');
     if (endAt <= booking.endAt) throw new AppError(422, 'VALIDATION', 'The new return time must be after the current one.');
+    await assertDeskWindow(booking.startAt, endAt, booking.pickupLocationId, booking.returnLocationId);
     const model = await VehicleModel.findByPk(booking.vehicleModelId, { rejectOnEmpty: true });
     const coupon = booking.couponCode ? await Coupon.findOne({ where: { code: booking.couponCode } }) : null;
     const q = await pricingService.quoteModel(model, booking.startAt, endAt, {
@@ -213,6 +230,17 @@ export const bookingService = {
    * When the longer trip costs no more (a longer duration tier), it is applied straight away with no charge.
    */
   async extend(userId: string, id: string, endAt: Date, idempotencyKey: string) {
+    const scopedKey = createHash('sha256').update(`${userId}:extension:${id}:${idempotencyKey}`).digest('hex');
+    const previous = await Payment.findOne({ where: { bookingId: id, kind: 'EXTRA', idempotencyKey: scopedKey } });
+    if (previous) {
+      const booking = await this.getOne(userId, id);
+      const extension = (previous.raw as { extension?: PendingExtension } | null)?.extension;
+      if (!extension || extension.endAt !== endAt.toISOString()) throw new AppError(409, 'IDEMPOTENCY_MISMATCH', 'This attempt belongs to a different extension.');
+      if (booking.endAt >= endAt) return { booking, razorpayOrderId: null, payPaise: 0 };
+      if (!EXTENDABLE.includes(booking.status)) throw new AppError(409, 'INVALID_TRANSITION', 'This trip can no longer be extended.');
+      const order = await paymentService.createExtensionOrder(booking, Number(previous.amountPaise), extension, scopedKey);
+      return { booking, razorpayOrderId: order.id, payPaise: Number(previous.amountPaise) };
+    }
     const p = await this.extendPreview(userId, id, endAt);
     if (!p.available) throw new AppError(409, 'NO_AVAILABILITY', 'Your bike is booked by someone else for that time.');
     if (p.payPaise === 0) {
@@ -220,7 +248,7 @@ export const bookingService = {
       if (!applied) throw new AppError(409, 'NO_AVAILABILITY', 'Your bike is booked by someone else for that time.');
       return { booking: await p.booking.reload(), razorpayOrderId: null, payPaise: 0 };
     }
-    const order = await paymentService.createExtensionOrder(p.booking, p.payPaise, p.extension, idempotencyKey);
+    const order = await paymentService.createExtensionOrder(p.booking, p.payPaise, p.extension, scopedKey);
     return { booking: p.booking, razorpayOrderId: order.id as string, payPaise: p.payPaise };
   },
 };

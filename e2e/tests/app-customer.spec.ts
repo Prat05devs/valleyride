@@ -55,6 +55,8 @@ test.describe('rider app', () => {
     await seen(page, 'Hunter 350').click();
     await expect(seen(page, /free on your dates/)).toBeVisible();
     await tap(page, 'Book now').click();
+    await expect(tap(page, 'Continue to review')).toBeVisible();
+    await tap(page, 'Continue to review').click();
 
     await expect(seen(page, 'Price details')).toBeVisible();
     await tap(page, /^Pay ₹/).click();
@@ -104,6 +106,8 @@ test.describe('rider app', () => {
     await expect(seen(page, 'Hello, Diya')).toBeVisible();
     await page.goto('/bike/activa-125');
     await tap(page, 'Book now').click();
+    await expect(tap(page, 'Continue to review')).toBeVisible();
+    await tap(page, 'Continue to review').click();
     await tap(page, /^Pay ₹/).click();
     await tap(page, 'Simulate a declined payment').click();
     await expect(seen(page, "Payment didn't go through")).toBeVisible();

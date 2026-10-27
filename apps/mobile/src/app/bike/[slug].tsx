@@ -8,11 +8,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Glass } from '@/components/Glass';
 import { ModelSpecs } from '@/components/guide';
 import { Icon, type IconName } from '@/components/Icon';
-import { BackButton, Button, Card, Loading, Row, T, Tag } from '@/components/ui';
+import { BackButton, Button, Card, Chip, ErrorText, Line, LoadError, Loading, Row, T, Tag } from '@/components/ui';
 import { api } from '@/lib/api';
 import { bikePhoto, BIKE_COPY, brandOf, shortName } from '@/lib/bikes';
 import { fmtDate, fmtTime, inr } from '@/lib/format';
 import { useTrip } from '@/lib/trip';
+import { offerWindow } from '@/lib/date-selection';
 import { colors, fonts } from '@/theme';
 
 export default function Bike() {
@@ -22,7 +23,11 @@ export default function Bike() {
   const [m, setM] = useState<VehicleModelDTO | null>(null);
   const [free, setFree] = useState<number | null>(null);
   const [q, setQ] = useState<Quote | null>(null);
-  const tiers = useTiers();
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const [pricing, setPricing] = useState(true);
+  const fallbackTiers = useTiers();
+  const tiers = q?.durationTiers ?? fallbackTiers;
   const [routes, setRoutes] = useState<RouteGuideDTO[]>([]);
   useEffect(() => { api.get<RouteGuideDTO[]>('/routes').then(setRoutes).catch(() => {}); }, []);
 
@@ -30,27 +35,33 @@ export default function Bike() {
     // Quotes require a pickup location. Ignore results from an earlier search or route.
     if (!t.pickupId) return;
     let active = true;
-    setQ(null);
+    setError(null);
+    setPricing(true);
+    setFree(null);
     api.get<VehicleModelDTO>(`/vehicle-models/${slug}`).then((model) => {
       if (!active) return;
       setM(model);
       const qs = `startAt=${encodeURIComponent(t.startAt.toISOString())}&endAt=${encodeURIComponent(t.endAt.toISOString())}${t.pickupId ? `&pickup=${t.pickupId}` : ''}${t.oneWay && t.returnId ? `&return=${t.returnId}` : ''}`;
-      api.get<AvailabilityDTO[]>(`/availability?${qs}`).then((av) => {
+      return api.get<AvailabilityDTO[]>(`/availability?${qs}`).then((av) => {
         if (!active) return;
         const row = av.find((a) => a.model_id === model.id);
-        setFree(row?.free ?? 0); setQ(row?.quote ?? null); // the API prices it, pricing_rules included
-      }).catch(() => {});
-    }).catch(() => {});
+        if (!row?.quote) throw new Error('Could not price these dates. Try another date range.');
+        setFree(row.free); setQ(row.quote); // the API prices it, pricing_rules included
+      });
+    }).catch((e) => { if (active) setError(e instanceof Error ? e.message : 'Could not load this bike'); })
+      .finally(() => { if (active) setPricing(false); });
     return () => { active = false; };
-  }, [slug, t.startAt, t.endAt, t.pickupId, t.returnId, t.oneWay]);
+  }, [slug, t.startAt, t.endAt, t.pickupId, t.returnId, t.oneWay, attempt]);
 
+  if (t.locationError && !t.pickupId) return <LoadError error={t.locationError} onRetry={t.reloadLocations} />;
+  if (error) return <View style={{ flex: 1, padding: 20, paddingTop: insets.top + 8, gap: 16 }}><BackButton /><ErrorText error={error} /><Button label="Try again" onPress={() => setAttempt((n) => n + 1)} /><Button label="Change dates" variant="secondary" onPress={() => router.push({ pathname: '/search', params: { mode: 'edit', ...(m ? { modelId: m.id, slug: m.slug } : {}) } })} /></View>;
   if (!m || !q) return <Loading />;
   const extraKm = inr(m.extraKmPaise);
   const tiles: [IconName, string, string][] = [['gauge', `${m.kmPerDay} km`, 'per day included'], ['route', `${extraKm}/km`, 'after that'], ['shield', inr(m.depositPaise), 'refundable deposit']];
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
         <View style={[styles.stage, { paddingTop: insets.top + 8 }]}>
           <Row style={{ justifyContent: 'space-between' }}>
             <BackButton bg={colors.field} />
@@ -74,24 +85,32 @@ export default function Bike() {
           </View>
           <Card style={{ gap: 12 }}>
             <T style={{ fontSize: 18 }}>Longer rides cost less</T>
+            <T v="label">Choose an offer to update your return date. The discount is included in the price.</T>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {[...tiers].reverse().map((tier) => <Tag key={tier.minDays} tone={q.tierPct === tier.pct ? 'ink' : 'field'} label={`${tier.minDays}+ days · ${tier.pct}% off`} />)}
+              {[...tiers].reverse().map((tier) => <Chip key={tier.minDays} tone="field" selected={!pricing && q.tierPct === tier.pct} label={`${tier.minDays}+ days · ${tier.pct}% off`} onPress={() => t.set(offerWindow(t.startAt, tier.minDays))} />)}
             </View>
           </Card>
-          <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }} onPress={() => router.push('/search')}>
+          <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }} onPress={() => router.push({ pathname: '/search', params: { mode: 'edit', modelId: m.id, slug: m.slug } })}>
             <View style={styles.tileIcon}><Icon name="calendar" size={20} /></View>
             <View style={{ flex: 1 }}>
-              <T>{fmtDate(t.startAt)}, {fmtTime(t.startAt)} → {fmtDate(t.endAt)}</T>
+              <T>{fmtDate(t.startAt)}, {fmtTime(t.startAt)} → {fmtDate(t.endAt)}, {fmtTime(t.endAt)}</T>
               <T v="label">{t.oneWay ? `${t.pickup?.name} → ${t.returnPoint?.name}` : `Pickup and return at ${t.pickup?.name}`}</T>
             </View>
             <T style={{ textDecorationLine: 'underline', fontSize: 15 }}>Change</T>
+          </Card>
+          <Card style={{ gap: 10 }}>
+            <T style={{ fontSize: 18 }}>What you pay</T>
+            <Line label={`Rental · ${q.days} ${q.days === 1 ? 'day' : 'days'} · incl. GST`} value={inr(q.totalPaise, { decimals: 'always' })} />
+            <Line label="Refundable deposit" value={inr(q.depositPaise, { decimals: 'always' })} />
+            <Line label="Total due now" value={inr(q.payNowPaise, { decimals: 'always' })} strong />
+            <T v="label">18% GST is already included. The deposit is returned after the return inspection.</T>
           </Card>
           {m.specs && <ModelSpecs name={shortName(m.name)} specs={m.specs} routes={routes.filter((r) => r.recommendedModels.includes(m.id))} />}
         </View>
       </ScrollView>
       <Glass radius={0} style={[styles.bar, { paddingBottom: insets.bottom + 14 }]}>
-        <View style={{ flex: 1 }}><Text style={{ fontFamily: fonts.medium, fontSize: 24 }}>{inr(q.totalPaise, { decimals: 'never' })}</Text><T v="label">for {q.days} {q.days === 1 ? 'day' : 'days'} · incl. GST</T></View>
-        <Button label="Book now" style={{ width: 176 }} disabled={!free} onPress={() => router.push({ pathname: '/checkout', params: { modelId: m.id, slug: m.slug } })} />
+        <View style={{ flex: 1 }}><T v="label">Total due now</T><Text style={{ fontFamily: fonts.medium, fontSize: 24 }}>{pricing ? 'Updating…' : inr(q.payNowPaise, { decimals: 'always' })}</Text><T v="label">{pricing ? 'Checking your dates' : `${q.days} ${q.days === 1 ? 'day' : 'days'} · includes ${inr(q.depositPaise)} deposit`}</T></View>
+        <Button label="Book now" style={{ width: 166 }} disabled={pricing} onPress={() => router.push({ pathname: '/search', params: { mode: 'book', modelId: m.id, slug: m.slug } })} />
       </Glass>
     </View>
   );

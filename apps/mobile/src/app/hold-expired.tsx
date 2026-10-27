@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
@@ -12,11 +13,13 @@ import { colors } from '@/theme';
 export default function HoldExpired() {
   const { bookingId, paid } = useLocalSearchParams<{ bookingId: string; paid?: string }>();
   const insets = useSafeAreaInsets();
-  const { booking } = useBooking(bookingId);
+  const { booking, error, reload } = useBooking(bookingId);
   const { byId } = useModels();
   const trip = useTrip();
   const model = booking && byId(booking.vehicleModelId);
   const where = trip.locations.find((l) => l.id === booking?.pickupLocationId) ?? trip.pickup;
+
+  useEffect(() => { if (booking?.status === 'CONFIRMED') router.replace({ pathname: '/confirmed/[id]', params: { id: booking.id } }); }, [booking]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas, padding: 20, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 20, gap: 16 }}>
@@ -26,7 +29,7 @@ export default function HoldExpired() {
         <T v="hero">Your hold ended</T>
         <T style={{ color: colors.muted, textAlign: 'center', lineHeight: 22 }}>
           We keep a bike for 15 minutes while you pay. The time ran out, so the {model ? shortName(model.name) : 'bike'} was released.
-          {paid ? ' Your payment arrived after that, so we are refunding the full amount to the UPI or card you paid with; refunds usually take 5–7 working days.' : " You weren't charged."}
+          {paid ? ' Your payment arrived after that, so we are refunding the full amount to the UPI or card you paid with; refunds usually take 5–7 working days.' : " Check Trips for the payment status before paying again."}
         </T>
       </View>
       <Card style={{ gap: 4 }}>
@@ -34,6 +37,7 @@ export default function HoldExpired() {
         <T style={{ fontSize: 17 }}>{booking ? `${fmtDateTime(booking.startAt)} → ${fmtDate(booking.endAt)}` : `${fmtDateTime(trip.startAt)} → ${fmtDate(trip.endAt)}`}</T>
         {where && <T v="label">{where.name}</T>}
       </Card>
+      {error && <Button label="Check booking status again" variant="secondary" onPress={reload} />}
       <View style={{ flex: 1 }} />
       <Button label="Check availability again" onPress={() => {
         if (booking) trip.set({ pickupId: booking.pickupLocationId, returnId: booking.returnLocationId === booking.pickupLocationId ? null : booking.returnLocationId, startAt: new Date(booking.startAt), endAt: new Date(booking.endAt) });

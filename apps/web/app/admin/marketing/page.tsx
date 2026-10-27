@@ -10,7 +10,7 @@ import { formatDay } from '@/lib/format';
 
 interface Coupon { code: string; percentOff: number; maxUses: number | null; used: number; validTill: string | null; partner: string | null }
 
-/** Partner and referral coupons (admin only). Coupons apply after the long-rental discount, before GST. */
+/** Partner and referral coupons (admin only). Coupons apply after the long-rental discount, on GST-inclusive rates. */
 export default function CouponsPage() {
   const qc = useQueryClient();
   const { data, error: loadError } = useQuery({ queryKey: ['admin', 'coupons'], queryFn: () => api.get<Coupon[]>('/admin/coupons') });
@@ -31,7 +31,7 @@ export default function CouponsPage() {
   if (loadError) return <><PageTitle title="Coupons" /><p className="rounded-sheet bg-surface p-6">{(loadError as Error).message}</p></>;
   return (
     <>
-      <PageTitle title="Coupons" sub="Coupons apply after the long-rental discount, before GST · admin only" />
+      <PageTitle title="Coupons" sub="Coupons apply after the long-rental discount, on GST-inclusive rates · admin only" />
       <div className="flex flex-wrap items-start gap-4">
         <section className="min-w-0 flex-[999_1_460px] overflow-x-auto rounded-sheet bg-surface p-5">
           <table className="w-full min-w-[520px] border-collapse text-[15px]">
@@ -60,7 +60,7 @@ export default function CouponsPage() {
           <label className="label">Partner (optional)<Input placeholder="Hostel, café or tour operator" value={f.partner} onChange={(e) => setF({ ...f, partner: e.target.value })} /></label>
           {error && <p role="alert" className="m-0 text-sm text-orange-ink">{error}</p>}
           <Button type="submit" disabled={f.code.length < 4}>Create coupon</Button>
-          <span className="text-[13px] text-muted">Example: on a 3-day Hunter 350, {f.pct || 0}% off saves the rider ₹{(example / 100).toFixed(2)} before GST.</span>
+          <span className="text-[13px] text-muted">Example: on a 3-day Hunter 350, {f.pct || 0}% off saves the rider ₹{(example / 100).toFixed(2)} on GST-inclusive rates.</span>
         </form>
       </div>
     </>

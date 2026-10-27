@@ -34,7 +34,7 @@ export function Results({ results, search, summary, tierHint }: {
   async function select(r: Result) {
     setBusy(r.model.id); setError(null);
     try {
-      const id = await holdBike({ modelId: r.model.id, ...search });
+      const id = await holdBike({ modelId: r.model.id, ...search, expectedPayNowPaise: r.quote.payNowPaise });
       if (id) router.push(`/checkout/${id}`);
     } catch (e) { setError(e instanceof ApiError ? e.message : 'Could not hold the bike'); setBusy(null); }
   }

@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Glass } from '@/components/Glass';
 import { Icon } from '@/components/Icon';
-import { BackButton, Button, Card, Divider, ErrorText, Line, Loading, Notice, Row, T } from '@/components/ui';
+import { BackButton, Button, Card, Divider, ErrorText, Line, LoadError, Loading, Notice, Row, T } from '@/components/ui';
 import { api, ApiError, newIdempotencyKey } from '@/lib/api';
 import { shortName } from '@/lib/bikes';
 import { tierNote, useTiers } from '@/lib/copy';
@@ -20,13 +20,13 @@ export default function Extend() {
   const tiers = useTiers();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const { booking } = useBooking(id);
+  const { booking, error: bookingError, reload } = useBooking(id);
   const { byId } = useModels();
   const [add, setAdd] = useState(1);
   const [previews, setPreviews] = useState<Record<number, Preview | 'error'>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const key = useRef(newIdempotencyKey());
+  const attempt = useRef({ endAt: '', key: newIdempotencyKey() });
 
   const endFor = (b: BookingDTO, n: number) => new Date(new Date(b.endAt).getTime() + n * 86_400_000);
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function Extend() {
     });
   }, [booking]);
 
-  if (!booking) return <Loading />;
+  if (!booking) return bookingError ? <LoadError error={bookingError} onRetry={reload} /> : <Loading />;
   const model = byId(booking.vehicleModelId);
   const p = previews[add];
   const ready = p && p !== 'error' ? p : null;
@@ -46,13 +46,13 @@ export default function Extend() {
 
   async function extend() {
     if (!booking || !ready) return;
+    if (attempt.current.endAt !== newEnd.toISOString()) attempt.current = { endAt: newEnd.toISOString(), key: newIdempotencyKey() };
     setBusy(true); setError(null);
     try {
-      const res = await api.post<{ booking: BookingDTO; razorpayOrderId: string | null; payPaise: number }>(`/bookings/${booking.id}/extend`, { endAt: newEnd.toISOString() }, { idempotencyKey: key.current });
+      const res = await api.post<{ booking: BookingDTO; razorpayOrderId: string | null; payPaise: number }>(`/bookings/${booking.id}/extend`, { endAt: newEnd.toISOString() }, { idempotencyKey: attempt.current.key });
       if (!res.razorpayOrderId) { router.back(); return; }
       router.replace({ pathname: '/pay', params: { bookingId: booking.id, orderId: res.razorpayOrderId, amount: String(res.payPaise), code: booking.code, hold: '', prevEnd: booking.endAt } });
     } catch (e) {
-      key.current = newIdempotencyKey();
       setError(e instanceof ApiError ? e.message : 'Could not extend');
     } finally { setBusy(false); }
   }
@@ -80,7 +80,7 @@ export default function Extend() {
             );
           })}
         </View>
-        {ready && <Notice icon="ticket" text={tierNote(ready.quote.days, tiers)} />}
+        {ready && <Notice icon="ticket" text={tierNote(ready.quote.days, ready.quote.durationTiers ?? tiers)} />}
         <Card style={{ gap: 12, padding: 20 }}>
           <T style={{ fontSize: 18 }}>What changes</T>
           {!p ? <Loading /> : p === 'error' ? <ErrorText error="Could not price these dates." /> : (

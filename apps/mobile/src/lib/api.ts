@@ -22,7 +22,7 @@ const web = {
 };
 export const kv = {
   get: (k: string) => (Platform.OS === 'web' ? Promise.resolve(web.get(k)) : SecureStore.getItemAsync(k)),
-  set: (k: string, v: string) => (Platform.OS === 'web' ? Promise.resolve(web.set(k, v)) : SecureStore.setItemAsync(k, v)),
+  set: (k: string, v: string) => (Platform.OS === 'web' ? Promise.resolve(web.set(k, v)) : SecureStore.setItemAsync(k, v, { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY })),
   del: (k: string) => (Platform.OS === 'web' ? Promise.resolve(web.del(k)) : SecureStore.deleteItemAsync(k)),
 };
 

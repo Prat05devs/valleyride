@@ -1,16 +1,17 @@
 import type { Photo, RouteGuideDTO, VehicleSpecs } from '@valleyride/shared';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/components/Icon';
 import { Card, Line, T, Tag } from '@/components/ui';
+import { openWebLink } from '@/lib/links';
 import { colors, fonts } from '@/theme';
 
 /** "Photo: author, licence", linking to the original: the credit Creative Commons photos need. */
 export function PhotoCredit({ photo, light }: { photo: Photo; light?: boolean }) {
   const color = light ? 'rgba(255,255,255,0.75)' : colors.muted;
   return (
-    <Text style={{ fontFamily: fonts.regular, fontSize: 12, color }} onPress={photo.source ? () => Linking.openURL(photo.source!) : undefined} accessibilityRole={photo.source ? 'link' : 'text'}>
+    <Text style={{ fontFamily: fonts.regular, fontSize: 12, color }} onPress={photo.source ? () => openWebLink(photo.source!) : undefined} accessibilityRole={photo.source ? 'link' : 'text'}>
       Photo: <Text style={photo.source ? { textDecorationLine: 'underline' } : undefined}>{photo.credit}</Text>{photo.license ? `, ${photo.license}` : ''}
     </Text>
   );
@@ -41,7 +42,7 @@ function SpecGroup({ title, rows, open: initial }: { title: string; rows: { labe
   const [open, setOpen] = useState(initial);
   return (
     <View style={{ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line, paddingTop: 12 }}>
-      <Pressable onPress={() => setOpen(!open)} accessibilityRole="button" accessibilityState={{ expanded: open }} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 }}>
+      <Pressable onPress={() => setOpen(!open)} accessibilityRole="button" accessibilityState={{ expanded: open }} aria-expanded={open} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 }}>
         <T style={{ fontSize: 17 }}>{title}</T>
         <Icon name={open ? 'chevronDown' : 'chevronRight'} size={18} />
       </Pressable>
@@ -126,7 +127,7 @@ export function ModelSpecs({ name, specs, routes }: { name: string; specs: Vehic
       {specs.sources.length > 0 && (
         <T v="label" style={{ paddingHorizontal: 4, lineHeight: 20 }}>
           Specifications from {specs.sources.map((s, i) => (
-            <Text key={s.url} style={{ textDecorationLine: 'underline' }} onPress={() => Linking.openURL(s.url)}>{i > 0 ? ', ' : ''}{s.label}</Text>
+            <Text key={s.url} style={{ textDecorationLine: 'underline' }} onPress={() => openWebLink(s.url)}>{i > 0 ? ', ' : ''}{s.label}</Text>
           ))}. Figures can differ slightly by variant.
         </T>
       )}

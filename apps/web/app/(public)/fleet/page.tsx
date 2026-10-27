@@ -36,7 +36,7 @@ export default async function FleetPage() {
               </tbody>
             </table>
           </div>
-          <p className="m-0 text-sm text-muted">Prices before 18% GST. Longer rentals: 10% off from 3 days, 20% from 7, 35% from 28.</p>
+          <p className="m-0 text-sm text-muted">Prices include 18% GST. Longer rentals: 10% off from 3 days, 20% from 7, 35% from 28.</p>
         </section>
       </main>
     </div>

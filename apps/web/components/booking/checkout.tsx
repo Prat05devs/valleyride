@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api, ApiError } from '@/lib/api-client';
 import { bikePhoto } from '@/lib/bikes';
-import { formatDate, formatDateTime, formatMinus, formatPaise } from '@/lib/format';
+import { formatDateTime, formatMinus, formatPaise } from '@/lib/format';
 import { isMockOrder, openCheckout } from '@/lib/razorpay';
 import { newIdempotencyKey } from '@/lib/hold';
 import { useMe } from '@/lib/use-me';
@@ -59,14 +59,14 @@ export function Checkout({ bookingId }: { bookingId: string }) {
   );
   if (expired) return (
     <Panel title="Your hold ended">
-      <p className="text-lg text-muted">We keep a bike for 15 minutes while you pay. The time ran out, so the {model?.name ?? 'bike'} was released. You weren&apos;t charged.</p>
+      <p className="text-lg text-muted">We keep a bike for 15 minutes while you pay. The time ran out, so the {model?.name ?? 'bike'} was released. Check My bookings for the payment status before trying again.</p>
       <Link href="/book" className="inline-flex h-[50px] items-center rounded-full bg-ink px-6 text-surface">Check availability again</Link>
     </Panel>
   );
   if (stage !== 'review') return (
     <Panel title={stage === 'confirming' ? 'Confirming your payment' : 'Still confirming'}>
       <p className="text-lg text-muted">{stage === 'confirming' ? 'This usually takes a few seconds. Please keep this page open.'
-        : 'Razorpay has your payment and we are waiting for its confirmation. Your trip will show as Confirmed in My bookings as soon as it arrives.'}</p>
+        : 'We are checking the payment status with Razorpay. Your trip will show as Confirmed in My bookings as soon as it arrives.'}</p>
       {stage === 'slow' && <Link href="/account/bookings" className="inline-flex h-[50px] items-center rounded-full bg-ink px-6 text-surface">Go to My bookings</Link>}
     </Panel>
   );
@@ -155,16 +155,16 @@ export function Checkout({ bookingId }: { bookingId: string }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {model && <img src={bikePhoto(model.slug)} alt={model.name} className="h-[72px] w-[104px] object-contain" />}
             </span>
-            <span><span className="block text-[19px]">{model?.name}</span><span className="text-sm text-muted">{formatDateTime(b.startAt)} → {formatDate(b.endAt)} · {pickup?.name}{ret && ret.id !== pickup?.id ? ` → ${ret.name}` : ''}</span></span>
+            <span><span className="block text-[19px]">{model?.name}</span><span className="text-sm text-muted">{formatDateTime(b.startAt)} → {formatDateTime(b.endAt)} · {pickup?.name}{ret && ret.id !== pickup?.id ? ` → ${ret.name}` : ''}</span></span>
           </div>
           <div className="h-px bg-line" />
           <div className="flex flex-col gap-2.5 text-base">
-            <Row label={`Rental · ${b.billableDays} ${b.billableDays === 1 ? 'day' : 'days'}${model ? ` × ${formatPaise(model.pricePerDayPaise)}` : ''}`} value={formatPaise(b.rentalPaise, true)} />
+            <Row label={`Taxable rental · ${b.billableDays} ${b.billableDays === 1 ? 'day' : 'days'}`} value={formatPaise(b.rentalPaise, true)} />
             {tierOff > 0 && <Row label={`Long-rental discount · ${tierPct}%`} value={formatMinus(tierOff)} />}
             {b.couponCode && <Row label={`Coupon ${b.couponCode}`} value={formatMinus(b.discountPaise - tierOff)} />}
-            {b.feesPaise > 0 && <Row label="One-way fee" value={formatPaise(b.feesPaise, true)} />}
-            <Row label="GST · 18%" value={formatPaise(b.taxPaise, true)} />
-            <Row label="Rental total" value={formatPaise(rental, true)} strong />
+            {b.feesPaise > 0 && <Row label="Taxable one-way fee" value={formatPaise(b.feesPaise, true)} />}
+            <Row label="GST component · 18%" value={formatPaise(b.taxPaise, true)} />
+            <Row label="Rental total · incl. GST" value={formatPaise(rental, true)} strong />
             <Row label="Refundable deposit" value={formatPaise(b.depositPaise, true)} />
             <div className="h-px bg-line" />
             <div className="flex items-baseline justify-between"><span className="text-[19px]">Pay now</span><span className="text-[30px] font-medium">{formatPaise(b.totalPaise, true)}</span></div>

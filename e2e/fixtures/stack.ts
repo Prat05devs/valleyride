@@ -4,7 +4,10 @@ import type { APIRequestContext, Page } from '@playwright/test';
 
 export const API = process.env.E2E_API ?? 'http://localhost:4000/api/v1';
 const redis = new IORedis(process.env.E2E_REDIS ?? 'redis://localhost:6379');
-const db = new pg.Pool({ connectionString: process.env.E2E_DB ?? 'postgres://valley:valley@localhost:5432/valleyride' });
+const databaseUrl = process.env.E2E_DB ?? 'postgres://valley:valley@localhost:5432/valleyride_test';
+const target = new URL(databaseUrl);
+if (!['localhost', '127.0.0.1', '[::1]'].includes(target.hostname) || !target.pathname.endsWith('_test')) throw new Error('E2E mutations require an isolated local *_test database.');
+const db = new pg.Pool({ connectionString: databaseUrl });
 
 /** A fresh +91 number per run, so login rate limits and old bookings never collide. Recorded for cleanup. */
 export const newPhone = () => {

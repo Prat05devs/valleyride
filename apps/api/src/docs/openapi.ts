@@ -68,6 +68,7 @@ export const OPERATIONS: Op[] = [
   ['get', '/admin/vehicles', 'staff', 'Fleet list with documents and status'],
   ['get', '/admin/vehicles/:id', 'staff', 'Vehicle detail, maintenance and bookings'],
   ['post', '/admin/vehicles', 'admin', 'Add a vehicle', { body: S.createVehicleSchema }],
+  ['patch', '/admin/vehicles/:id/location', 'admin', 'Record a physical hub transfer; active reservations block relocation', { body: z.object({ locationId: S.uuid, reason: z.string().min(3).max(300) }) }],
   ['patch', '/admin/vehicles/:id/status', 'staff', 'Mark ACTIVE, MAINT or RETIRED', { body: S.vehicleStatusSchema }],
   ['post', '/admin/vehicles/:id/maintenance', 'staff', 'Log (or schedule) a service or repair', { body: S.maintenanceSchema }],
   ['post', '/admin/vehicles/:id/documents', 'staff', 'Record RC, insurance, permit or PUC', { body: S.vehicleDocumentSchema }],

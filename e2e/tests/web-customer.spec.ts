@@ -30,7 +30,7 @@ test.describe('customer on the website', () => {
     await inputs.nth(0).fill(w.from);
     await inputs.nth(1).fill(w.to);
     await expect(page.getByText(/free on your dates/)).toBeVisible();
-    await page.getByRole('button', { name: 'Book now' }).click();
+    await page.getByRole('button', { name: 'Continue to review' }).click();
     await expect(page).toHaveURL(/\/checkout\//);
     await expect(page.getByText('Bike held for')).toBeVisible();
 

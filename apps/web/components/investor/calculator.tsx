@@ -23,8 +23,8 @@ export function Calculator() {
   const [structure, setStructure] = useState<'amortizing' | 'interest_only'>('amortizing');
   const [input, setInput] = useState({ amount, rate, months, structure });
   useEffect(() => { const h = setTimeout(() => setInput({ amount, rate, months, structure }), 250); return () => clearTimeout(h); }, [amount, rate, months, structure]);
-  const valid = input.amount >= 1000 && input.amount <= 10_00_00_000 && input.rate >= 0 && input.rate <= 50;
-  const { data } = useQuery({
+  const valid = Number.isFinite(input.amount) && input.amount >= 10000 && input.amount <= 10_00_00_000 && input.rate >= 0 && input.rate <= 50 && input.months >= 6 && input.months <= 36;
+  const { data, isFetching, isError, refetch } = useQuery({
     queryKey: ['calc', input], enabled: valid, placeholderData: (prev) => prev,
     queryFn: () => api.post<Result>('/investor/calculate', { principalPaise: Math.round(input.amount * 100), annualRatePct: input.rate, months: input.months, structure: input.structure, startDate: START }),
   });
@@ -47,12 +47,15 @@ export function Calculator() {
             ))}
           </fieldset>
           <span className="text-sm text-muted">Agreement start date: 1 Nov 2026 (illustration)</span>
+          {!valid && <p role="alert" className="m-0 text-sm text-orange-ink">Enter an amount from ₹10,000 to ₹10 crore and a rate from 0% to 50%.</p>}
+          {isError && <p role="alert" className="m-0 text-sm text-orange-ink">Could not calculate this illustration. <button type="button" className="underline" onClick={() => void refetch()}>Try again</button></p>}
         </form>
 
         <section aria-label="Illustration" className="flex min-w-0 flex-[2_1_560px] flex-col gap-4">
           <div className="flex flex-col gap-1.5 rounded-[36px] bg-dark p-7 text-surface">
             <span className="text-[15px] text-white/80">{structure === 'amortizing' ? 'Illustrative monthly instalment' : 'Illustrative monthly interest'}</span>
-            <span className="text-[56px] font-medium tracking-[-1px]">{data ? inr(data.monthlyPaymentPaise) : '—'}</span>
+            <span className="text-[56px] font-medium tracking-[-1px]">{valid && data && !isFetching && !isError ? inr(data.monthlyPaymentPaise) : '—'}</span>
+            {isFetching && <span role="status">Updating illustration…</span>}
             <span className="text-[15px] text-white/80">Illustration only, before any fees or taxes</span>
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(180px,100%),1fr))] gap-3">

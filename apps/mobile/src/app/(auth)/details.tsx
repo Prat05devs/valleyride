@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ErrorText, Notice, T } from '@/components/ui';
 import { ApiError } from '@/lib/api';
@@ -24,7 +24,7 @@ export default function Details() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       {/* Scrolls so both buttons stay reachable on short phones and with the keyboard open. */}
       <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 20, gap: 22 }} keyboardShouldPersistTaps="handled">
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>

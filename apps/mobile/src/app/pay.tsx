@@ -28,11 +28,11 @@ export default function Pay() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<'captured' | 'failed' | 'checkout' | null>(null);
   const hold = useCountdown(p.hold || null);
-  const mock = p.orderId?.startsWith('order_mock_');
+  const mock = __DEV__ && p.orderId?.startsWith('order_mock_');
   const amount = Number(p.amount);
 
   const extension = !!p.prevEnd;
-  const { booking, reload } = useBooking(p.bookingId, {
+  const { booking, reload, error: bookingError } = useBooking(p.bookingId, {
     pollMs: stage === 'checkout' ? 0 : 2000,
     keepPolling: (b) => (extension ? b.endAt === p.prevEnd : b.status === 'PENDING_PAYMENT'),
   });
@@ -122,8 +122,9 @@ export default function Pay() {
         <T style={{ textAlign: 'center', color: colors.muted }}>
           {stage === 'confirming'
             ? 'This usually takes a few seconds. Please keep the app open.'
-            : 'Razorpay has your payment and we are waiting for its confirmation. Your trip will show as Confirmed in Trips as soon as it arrives.'}
+            : 'We are checking the payment status with Razorpay. Your trip will show as Confirmed in Trips as soon as it arrives.'}
         </T>
+        {stage === 'slow' && <Button label="Check again" variant="secondary" onPress={reload} />}
         {stage === 'slow' && <Button label="Go to Trips" onPress={() => router.replace('/(tabs)/trips')} style={{ alignSelf: 'stretch' }} />}
       </View>
     );
@@ -141,13 +142,14 @@ export default function Pay() {
           <Card style={{ gap: 12, padding: 20 }}>
             <T style={{ fontSize: 18 }}>Test payment</T>
             <T v="label">Razorpay keys aren't set, so the API is in mock mode. These buttons run the same capture code as the Razorpay webhook.</T>
-            <Button label="Simulate a successful payment" loading={busy === 'captured'} disabled={!!busy} onPress={() => simulate('captured')} />
-            <Button label="Simulate a declined payment" variant="secondary" loading={busy === 'failed'} disabled={!!busy} onPress={() => simulate('failed')} />
+            <Button label="Simulate a successful payment" loading={busy === 'captured'} disabled={!!busy || !booking || !!bookingError} onPress={() => simulate('captured')} />
+            <Button label="Simulate a declined payment" variant="secondary" loading={busy === 'failed'} disabled={!!busy || !booking || !!bookingError} onPress={() => simulate('failed')} />
           </Card>
         ) : (
-          <Button label={`Pay ${inr(amount, { decimals: 'always' })}`} loading={busy === 'checkout'} disabled={!!busy} onPress={pay} />
+          <Button label={`Pay ${inr(amount, { decimals: 'always' })}`} loading={busy === 'checkout'} disabled={!!busy || !booking || !!bookingError} onPress={pay} />
         )}
-        <ErrorText error={error} />
+        <ErrorText error={bookingError ?? error} />
+        {bookingError && <Button label="Check booking again" onPress={reload} />}
       </View>
     );
 }

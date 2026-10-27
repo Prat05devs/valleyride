@@ -18,7 +18,9 @@ import { cn } from '@/lib/utils';
 export default function FleetAdminPage() {
   const qc = useQueryClient();
   const { data: me } = useMe();
-  const { data } = useFleet();
+  const { data, isError, refetch } = useFleet();
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [savingStatus, setSavingStatus] = useState<string | null>(null);
   const [model, setModel] = useState('all');
   const [q, setQ] = useState('');
   const [adding, setAdding] = useState(false);
@@ -27,18 +29,25 @@ export default function FleetAdminPage() {
   const rows = useMemo(() => all.filter((v) => (model === 'all' || v.model.id === model) && v.registrationNo.toLowerCase().replace(/\s/g, '').includes(q.toLowerCase().replace(/\s/g, ''))), [all, model, q]);
   const out = all.filter((v) => v.onRide).length;
   const maint = all.filter((v) => v.status === 'MAINT').length;
+  const available = all.filter((v) => v.status === 'ACTIVE' && !v.onRide).length;
 
   async function setStatus(id: string, status: string) {
-    const r = await api.patch<{ affectedBookings: { code: string }[] }>(`/admin/vehicles/${id}/status`, { status });
-    if (r.affectedBookings.length) alert(`This bike has ${r.affectedBookings.length} upcoming booking(s): ${r.affectedBookings.map((b) => b.code).join(', ')}. Move the riders to another unit.`);
-    qc.invalidateQueries({ queryKey: ['admin'] });
+    setStatusError(null); setSavingStatus(id);
+    try {
+      const r = await api.patch<{ affectedBookings: { code: string }[] }>(`/admin/vehicles/${id}/status`, { status });
+      if (r.affectedBookings.length) alert(`This bike has ${r.affectedBookings.length} upcoming booking(s): ${r.affectedBookings.map((b) => b.code).join(', ')}. Move the riders to another unit.`);
+      await qc.invalidateQueries({ queryKey: ['admin'] });
+    } catch (e) { setStatusError(e instanceof ApiError ? e.message : 'Could not update the vehicle status. Please try again.'); }
+    finally { setSavingStatus(null); }
   }
 
   return (
     <>
-      <PageTitle title="Fleet" sub={`${out} on a ride · ${all.length - out - maint} available · ${maint} in maintenance`}>
+      <PageTitle title="Fleet" sub={`${out} on a ride · ${available} available · ${maint} in maintenance`}>
         {me?.role === 'admin' && <Button onClick={() => setAdding(!adding)}><Icon name="plus" size={18} />Add vehicle</Button>}
       </PageTitle>
+      {isError && <p role="alert">Could not load the fleet. <button type="button" className="underline" onClick={() => void refetch()}>Try again</button></p>}
+      {statusError && <p role="alert" className="text-sm text-orange-ink">{statusError}</p>}
       {adding && <AddVehicle onDone={() => { setAdding(false); qc.invalidateQueries({ queryKey: ['admin', 'vehicles'] }); }} />}
       <div className="flex flex-wrap items-center gap-2.5">
         <div role="group" aria-label="Model" className="flex flex-wrap gap-1 rounded-full bg-surface p-[5px]">
@@ -61,14 +70,14 @@ export default function FleetAdminPage() {
                   <tr key={v.id} className="border-t border-line">
                     <td className="px-4 py-3"><Link href={`/admin/fleet/${v.id}`} className="font-medium tracking-[0.5px] underline decoration-[#D5D8DC]">{v.registrationNo}</Link></td>
                     <td className="px-4 py-3">{shortName(v.model.name)}</td>
-                    <td className="px-4 py-3 text-muted">{v.home.name}</td>
+                    <td className="px-4 py-3 text-muted">{v.current?.name ?? v.home.name}<span className="block text-xs">Home: {v.home.name}</span></td>
                     <td className="px-4 py-3"><span className={cn('inline-flex h-7 items-center whitespace-nowrap rounded-full px-2.5 text-[13px]', v.status === 'MAINT' ? 'bg-orange-tint text-orange-ink' : v.onRide ? 'bg-ink text-surface' : 'bg-field')}>
                       {v.status === 'MAINT' ? 'Maintenance' : v.status === 'RETIRED' ? 'Retired' : v.onRide ? 'On a ride' : 'Available'}</span></td>
                     <td className="px-4 py-3 text-right">{v.odometerKm.toLocaleString('en-IN')} km</td>
                     <td className={cn('px-4 py-3', soon || missing.length ? 'text-orange-ink' : 'text-muted')}>
                       {soon ? `${docLabel[soon.type]?.split(' ')[0]} ${soon.daysLeft! < 0 ? 'expired' : 'expires'} ${formatDay(soon.expiresOn!)}` : missing.length ? `${missing.length} missing` : 'All valid'}</td>
                     <td className="px-4 py-2"><label className="sr-only" htmlFor={`st-${v.id}`}>Status for {v.registrationNo}</label>
-                      <select id={`st-${v.id}`} value={v.status} onChange={(e) => setStatus(v.id, e.target.value)} className="h-10 rounded-full border-0 bg-field px-3 text-sm">
+                      <select id={`st-${v.id}`} value={v.status} disabled={savingStatus === v.id} onChange={(e) => setStatus(v.id, e.target.value)} className="h-10 rounded-full border-0 bg-field px-3 text-sm">
                         <option value="ACTIVE">Active</option><option value="MAINT">Maintenance</option><option value="RETIRED">Retired</option></select></td>
                   </tr>
                 );
@@ -86,12 +95,14 @@ function AddVehicle({ onDone }: { onDone: () => void }) {
   const locations = useQuery({ queryKey: ['locations'], queryFn: () => api.get<LocationDTO[]>('/locations') });
   const [f, setF] = useState({ vehicleModelId: '', registrationNo: '', homeLocationId: '', odometerKm: '0', purchasedOn: '' });
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   async function save() {
-    setError(null);
+    setError(null); setBusy(true);
     try {
       await api.post('/admin/vehicles', { vehicleModelId: f.vehicleModelId || models.data?.[0]?.id, registrationNo: f.registrationNo, homeLocationId: f.homeLocationId || locations.data?.[0]?.id, odometerKm: Number(f.odometerKm || 0), purchasedOn: f.purchasedOn || undefined });
       onDone();
     } catch (e) { setError(e instanceof ApiError ? (e.details ? 'Check the registration (like UK07 RE 4205).' : e.message) : 'Could not add'); }
+    finally { setBusy(false); }
   }
   return (
     <Panel title="Add vehicle">
@@ -103,7 +114,7 @@ function AddVehicle({ onDone }: { onDone: () => void }) {
         <label className="label">Bought on<Input type="date" value={f.purchasedOn} onChange={(e) => setF({ ...f, purchasedOn: e.target.value })} /></label>
       </div>
       {error && <p role="alert" className="m-0 text-sm text-orange-ink">{error}</p>}
-      <Button className="self-start" disabled={!f.registrationNo} onClick={save}>Add to fleet</Button>
+      <Button className="self-start" disabled={busy || !f.registrationNo.trim() || !models.data?.length || !locations.data?.length} onClick={save}>{busy ? 'Adding…' : 'Add to fleet'}</Button>
     </Panel>
   );
 }

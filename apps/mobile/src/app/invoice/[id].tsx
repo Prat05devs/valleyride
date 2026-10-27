@@ -16,7 +16,7 @@ interface Invoice {
 }
 
 const money = (p: number) => (p < 0 ? '−' : '') + inr(Math.abs(p), { decimals: 'always' });
-const placeholder = (v: string | null, label: string) => v ?? `[${label}]`;
+
 
 export default function InvoiceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,7 +29,7 @@ export default function InvoiceScreen() {
   if (!inv) return <Loading />;
 
   const text = [
-    `${inv.seller.name} · Tax invoice ${inv.number}`, `Booking ${inv.bookingCode} · ${fmtDate(inv.issuedAt)}`,
+    `${inv.seller.name} · ${inv.seller.gstin ? 'Tax invoice' : 'Booking receipt'} ${inv.number}`, `Booking ${inv.bookingCode} · ${fmtDate(inv.issuedAt)}`,
     ...inv.lines.map((l) => `${l.label}: ${money(l.amountPaise)}`),
     `Taxable value: ${money(inv.taxablePaise)}`, `CGST ${inv.gstPct / 2}%: ${money(inv.cgstPaise)}`, `SGST ${inv.gstPct / 2}%: ${money(inv.sgstPaise)}`,
     `Total: ${money(inv.totalPaise)}`,
@@ -40,15 +40,15 @@ export default function InvoiceScreen() {
       <Row><BackButton /><T v="title">Invoice</T></Row>
       <Card style={{ gap: 16, padding: 20 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View><T style={{ fontSize: 18 }}>{inv.seller.name}</T><T v="label">GSTIN {placeholder(inv.seller.gstin, 'your GSTIN')}</T></View>
-          <View style={{ alignItems: 'flex-end' }}><T v="label">{inv.final ? 'Tax invoice' : 'Booking invoice'}</T><T style={{ letterSpacing: 0.5 }}>{inv.number}</T></View>
+          <View><T style={{ fontSize: 18 }}>{inv.seller.name}</T>{inv.seller.gstin && <T v="label">GSTIN {inv.seller.gstin}</T>}</View>
+          <View style={{ alignItems: 'flex-end' }}><T v="label">{inv.seller.gstin ? 'Tax invoice' : 'Booking receipt'}</T><T style={{ letterSpacing: 0.5 }}>{inv.number}</T></View>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View><T v="label">Billed to</T><T>{inv.billedTo.name ?? '—'}</T><T v="label">{inv.billedTo.phone}</T></View>
           <View style={{ alignItems: 'flex-end' }}><T v="label">Booking</T><T>{inv.bookingCode}</T><T v="label">Issued {fmtDate(inv.issuedAt)}</T></View>
         </View>
         <Divider />
-        <Line label={`Item · SAC ${placeholder(inv.seller.sac, 'code')}`} value="Amount" muted />
+        <Line label={`Item${inv.seller.sac ? ` · SAC ${inv.seller.sac}` : ''}`} value="Amount" muted />
         {inv.lines.map((l) => <Line key={l.label} label={l.label} value={money(l.amountPaise)} />)}
         <Divider />
         <Line label="Taxable value" value={money(inv.taxablePaise)} />
@@ -57,7 +57,7 @@ export default function InvoiceScreen() {
         <Divider />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}><T style={{ fontSize: 18 }}>Total</T><T style={{ fontFamily: fonts.medium, fontSize: 24 }}>{money(inv.totalPaise)}</T></View>
         <T v="label" style={{ lineHeight: 20 }}>
-          The {inr(inv.depositPaise)} refundable deposit is not part of this invoice.{inv.final ? '' : ' Extra km and late fees, if any, are added after the return.'} {placeholder(inv.seller.address, 'Registered business address')}
+          The {inr(inv.depositPaise)} refundable deposit is not part of this invoice.{inv.final ? '' : ' Extra km and late fees, if any, are added after the return.'} {inv.seller.address}
         </T>
       </Card>
       <Row gap={10}>

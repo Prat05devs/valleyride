@@ -16,14 +16,15 @@ const REASONS = ['Plans changed', 'Weather', 'Found another ride', 'Something el
 export default function Cancel() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const { booking } = useBooking(id);
+  const { booking, error: bookingError, reload } = useBooking(id);
   const { byId } = useModels();
   const [preview, setPreview] = useState<{ cancellable: boolean; refund: CancellationRefund | null } | null>(null);
   const [reason, setReason] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const key = useRef(newIdempotencyKey()); // same key on a retry, so a refund is never sent twice
-  useEffect(() => { api.get<typeof preview>(`/bookings/${id}/cancel`).then(setPreview).catch((e) => setError(e.message)); }, [id]);
+  useEffect(() => { setError(null); api.get<typeof preview>(`/bookings/${id}/cancel`).then(setPreview).catch((e) => setError(e.message)); }, [id, attempt]);
 
   const close = () => router.back();
   async function confirm() {
@@ -42,7 +43,7 @@ export default function Cancel() {
       <Pressable accessibilityLabel="Close" onPress={close} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.45)' }]} />
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
         <View style={styles.grabber} />
-        {!booking || !preview ? <Loading /> : (
+        {!booking || !preview ? (error || bookingError ? <><ErrorText error={error || bookingError} /><Button label="Try again" onPress={() => { void reload(); setAttempt((n) => n + 1); }} /><Button label="Back" variant="ghost" onPress={close} /></> : <Loading />) : (
           <>
             <T v="title">{hold ? 'Release this hold?' : 'Cancel this booking?'}</T>
             <T style={{ color: colors.muted }}>{model ? `${shortName(model.name)} · ` : ''}{fmtDateTime(booking.startAt)}. The bike goes back on sale straight away.</T>
