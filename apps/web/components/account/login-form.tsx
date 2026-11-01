@@ -81,7 +81,7 @@ export function LoginForm() {
         )}
       </form>
       {error && <p role="alert" className="m-0 rounded-[20px] bg-orange-tint px-4 py-3 text-sm text-orange-ink">{error}</p>}
-      <p className="m-0 text-sm leading-[1.45] text-muted">By continuing you agree to the <Link href="/terms" className="text-ink underline">rental terms</Link> and <Link href="/terms" className="text-ink underline">privacy policy</Link>.</p>
+      <p className="m-0 text-sm leading-[1.45] text-muted">By continuing you agree to the <Link href="/terms" className="text-ink underline">rental terms</Link> and <Link href="/privacy" className="text-ink underline">privacy policy</Link>.</p>
     </div>
   );
 }

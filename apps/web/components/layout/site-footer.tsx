@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import type { LocationDTO } from '@valleyride/shared';
 import { api } from '@/lib/api-client';
-
-const WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP;
-const EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL;
+import { PHONE_DISPLAY, POLICY_LINKS, SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/legal';
 
 export async function SiteFooter() {
   const locations = await api.get<LocationDTO[]>('/locations', { next: { revalidate: 3600 } }).catch(() => [] as LocationDTO[]);
@@ -26,15 +24,17 @@ export async function SiteFooter() {
         <Link href="/fleet" className="text-muted hover:text-ink">Fleet and prices</Link>
         <Link href="/routes" className="text-muted hover:text-ink">Routes</Link>
         <Link href="/invest" className="text-muted hover:text-ink">Valley Ride Capital</Link>
-        <Link href="/terms" className="text-muted hover:text-ink">Rental terms</Link>
       </div>
-      {(WHATSAPP || EMAIL) && (
-        <div className="flex flex-col gap-2">
-          <span className="font-medium">Contact</span>
-          {WHATSAPP && <a href={`https://wa.me/${WHATSAPP.replace(/\D/g, '')}`} className="text-muted hover:text-ink">WhatsApp {WHATSAPP}</a>}
-          {EMAIL && <a href={`mailto:${EMAIL}`} className="text-muted hover:text-ink">{EMAIL}</a>}
-        </div>
-      )}
+      <div className="flex flex-col gap-2">
+        <span className="font-medium">Policies</span>
+        {POLICY_LINKS.filter((l) => l.href !== '/contact').map((l) => <Link key={l.href} href={l.href} className="text-muted hover:text-ink">{l.label}</Link>)}
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="font-medium">Contact</span>
+        <a href={WHATSAPP_URL} className="text-muted hover:text-ink">WhatsApp {PHONE_DISPLAY}</a>
+        {SUPPORT_EMAIL && <a href={`mailto:${SUPPORT_EMAIL}`} className="text-muted hover:text-ink">{SUPPORT_EMAIL}</a>}
+        <Link href="/contact" className="text-muted hover:text-ink">Contact and support</Link>
+      </div>
     </footer>
   );
 }

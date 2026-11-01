@@ -26,8 +26,9 @@ export default function Terms() {
         </Card>
       ))}
       <View style={{ gap: 8 }}>
-        <T v="label" style={{ textAlign: 'center' }}>Prices, rates and terms are illustrative until reviewed for launch.</T>
-        <Button label="Full terms on the website" variant="secondary" onPress={() => Linking.openURL(`${WEB_URL}/terms`)} />
+        <Button label="Full rental terms" variant="secondary" onPress={() => Linking.openURL(`${WEB_URL}/terms`)} />
+        <Button label="Privacy policy" variant="secondary" onPress={() => Linking.openURL(`${WEB_URL}/privacy`)} />
+        <Button label="Delete my account" variant="ghost" onPress={() => Linking.openURL(`${WEB_URL}/delete-account`)} />
       </View>
     </ScrollView>
   );
