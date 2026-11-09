@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { investWhatsAppUrl, PHONE_DISPLAY } from '@/lib/legal';
 import { cn } from '@/lib/utils';
 
 /**
@@ -46,6 +47,8 @@ export function Calculator() {
             <div className="rounded-card bg-field p-4"><dt className="text-muted">Fixed lock-in</dt><dd className="m-0 mt-1 text-lg font-medium">{LOCK_IN_MONTHS} months</dd></div>
           </dl>
           <p className="m-0 text-sm text-muted">Only these two amounts are offered. The lock-in is fixed: the principal cannot be withdrawn before {LOCK_IN_MONTHS} months.</p>
+          <a href={investWhatsAppUrl(principal)} target="_blank" rel="noreferrer" className="flex min-h-14 items-center justify-center rounded-full bg-ink px-6 text-center text-[17px] text-surface">Invest {lakh(principal)}: message us on WhatsApp</a>
+          <p className="m-0 text-sm text-muted">Our team replies with the agreement and the bank details for the transfer. Call or WhatsApp {PHONE_DISPLAY}.</p>
         </section>
 
         <section aria-label="Your returns" className="flex min-w-0 flex-[2_1_560px] flex-col gap-4">

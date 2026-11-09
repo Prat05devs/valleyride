@@ -17,3 +17,20 @@ export const POLICY_LINKS = [
   { href: '/delete-account', label: 'Delete your account' },
   { href: '/contact', label: 'Contact and support' },
 ] as const;
+
+/**
+ * WhatsApp link for Valley Ride Capital enquiries, with the message pre-filled so the team sees at once that
+ * this is an investor asking about the plans and the bank details for the transfer.
+ */
+export function investWhatsAppUrl(planRupees?: number) {
+  const plan = planRupees ? `the ₹${(planRupees / 100_000).toLocaleString('en-IN')} lakh plan` : 'the ₹1 lakh or ₹2.5 lakh plan';
+  const text = [
+    'Hello Valley Ride team,',
+    `I would like to invest with Valley Ride Capital in ${plan} (20% a year, interest paid monthly, principal back after the 18-month lock-in).`,
+    'Please share the investment details and the bank details for the transfer.',
+    '',
+    'Name:',
+    'City:',
+  ].join('\n');
+  return `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
+}
