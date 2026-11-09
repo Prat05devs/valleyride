@@ -4,7 +4,7 @@ import type { MetadataRoute } from 'next';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Valley Ride', short_name: 'Valley Ride',
-    description: 'Scooter and motorcycle rentals in Dehradun, Mussoorie and Rishikesh.',
+    description: 'Bike and scooty rental in Dehradun: Activa 125 and Royal Enfield bikes for Mussoorie, Rishikesh and Uttarakhand rides.',
     start_url: '/', display: 'standalone', background_color: '#ECEEF0', theme_color: '#000000',
     icons: [{ src: '/images/logo.jpg', sizes: '512x512', type: 'image/jpeg', purpose: 'any' }],
   };

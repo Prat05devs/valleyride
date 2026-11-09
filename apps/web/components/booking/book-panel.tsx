@@ -55,7 +55,7 @@ export function BookPanel({ model, locations }: { model: VehicleModelDTO; locati
   const control = 'min-w-0 border-0 bg-transparent text-[15px] text-ink outline-none';
   return (
     <aside aria-label={`Book the ${shortName(model.name)}`} className="flex min-w-0 flex-[1_1_380px] flex-col gap-[18px] rounded-[40px] bg-surface p-7 lg:sticky lg:top-6">
-      <div><div className="text-[15px] text-muted">{brandOf(model.name)} · {BIKE_COPY[model.slug]?.tag}</div><h1 className="mt-1 text-[40px] font-normal tracking-[-0.6px]">{shortName(model.name)}</h1></div>
+      <div><div className="text-[15px] text-muted">{brandOf(model.name)} · {BIKE_COPY[model.slug]?.tag}</div><h1 className="mt-1 text-[40px] font-normal tracking-[-0.6px]">{shortName(model.name)}<span className="block text-lg tracking-normal text-muted">on rent in Dehradun</span></h1></div>
       <div className="flex items-baseline gap-1.5"><span className="text-4xl font-medium">{formatPaise(model.pricePerDayPaise)}</span><span className="text-base text-muted">/day incl. 18% GST</span></div>
       <div className="flex flex-col gap-2">
         <span className="text-base">Longer rides cost less</span>

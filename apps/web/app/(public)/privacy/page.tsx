@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { LegalPage, List, Section } from '@/components/legal/legal-page';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Privacy policy',
   description: 'What personal data Valley Ride collects in its app and website, why, who it is shared with, and your rights.',
-};
+  path: '/privacy',
+});
 
 /** Describes what the API, website and app actually store; keep in step with the models and integrations. */
 export default function PrivacyPage() {

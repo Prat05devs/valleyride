@@ -1,23 +1,31 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import type { RouteGuideDTO, VehicleModelDTO } from '@valleyride/shared';
 import { RouteArt } from '@/components/brand/art';
 import { PhotoHero } from '@/components/layout/photo-hero';
-import { api, mediaUrl } from '@/lib/api-client';
+import { mediaUrl } from '@/lib/api-client';
+import { RelatedLinks, SEO_LINKS } from '@/components/seo/blocks';
+import { breadcrumbJsonLd, getModelsSafe, getRoutesSafe, JsonLd, pageMetadata } from '@/lib/seo';
 import { shortName } from '@/lib/bikes';
 import { countWord } from '@/lib/format';
 import { ROUTE_META } from '@/lib/routes';
 
 export const revalidate = 3600;
-export const metadata: Metadata = { title: 'Ride routes from Dehradun', description: 'Mussoorie, Rishikesh, Sahastradhara and Maldevta: distances, ride times and the right bike for each.' };
+export const metadata: Metadata = pageMetadata({
+  title: 'Bike Routes from Dehradun: Mussoorie, Rishikesh, Sahastradhara | Valley Ride',
+  absoluteTitle: true,
+  description: 'Ride guides from Dehradun to Mussoorie, Rishikesh, Sahastradhara and Maldevta by bike: distance, ride time, stops, cafés, road tips and the right bike for each.',
+  path: '/routes',
+  keywords: ['Dehradun to Mussoorie by bike', 'Dehradun to Rishikesh by bike', 'Sahastradhara by bike', 'Maldevta bike ride', 'bike routes Dehradun'],
+});
 
 export default async function RoutesPage() {
-  const [routes, models] = await Promise.all([api.get<RouteGuideDTO[]>('/routes'), api.get<VehicleModelDTO[]>('/vehicle-models')]);
+  const [routes, models] = await Promise.all([getRoutesSafe(), getModelsSafe()]);
   return (
     <div className="pb-20">
+      <JsonLd data={breadcrumbJsonLd([{ name: 'Routes', path: '/routes' }])} />
       <PhotoHero active="routes" photo="welcome">
         <h1 className="m-0 max-w-[720px] text-[clamp(40px,5vw,64px)] font-normal tracking-[-1.2px]">Ride the hills from Dehradun</h1>
-        <p className="m-0 max-w-[560px] text-[19px] leading-normal text-white/85">{countWord(routes.length).replace(/^./, (c) => c.toUpperCase())} routes our riders love, with distances, ride times and the right bike for each.</p>
+        <p className="m-0 max-w-[560px] text-[19px] leading-normal text-white/85">{routes.length ? `${countWord(routes.length).replace(/^./, (c) => c.toUpperCase())} routes` : 'Routes'} our riders love, from Dehradun to Mussoorie, Rishikesh and the springs at Sahastradhara, with distances, ride times and the right bike for each.</p>
       </PhotoHero>
       <main className="mx-auto grid max-w-[1280px] grid-cols-[repeat(auto-fit,minmax(min(560px,100%),1fr))] gap-4 px-4 pt-14 sm:px-6">
         {routes.map((r) => {
@@ -43,6 +51,7 @@ export default async function RoutesPage() {
             </Link>
           );
         })}
+        <div className="col-span-full pt-2"><RelatedLinks links={[SEO_LINKS.places, SEO_LINKS.bikes, SEO_LINKS.enfield, SEO_LINKS.scooty]} /></div>
       </main>
     </div>
   );

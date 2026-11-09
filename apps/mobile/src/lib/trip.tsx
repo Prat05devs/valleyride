@@ -34,7 +34,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     api.get<LocationDTO[]>('/locations').then((ls) => {
       setLocations(ls);
       if (!ls.length) setLocationError('No pickup points are available. Please contact support.');
-      setState((s) => ({ ...s, pickupId: s.pickupId ?? ls.find((l) => l.name.includes('ISBT'))?.id ?? ls[0]?.id ?? null }));
+      setState((s) => ({ ...s, pickupId: s.pickupId ?? ls.find((l) => l.name.includes('Dorm Hub'))?.id ?? ls[0]?.id ?? null }));
     }).catch(() => setLocationError('Could not load pickup points. Please try again.'));
   }, []);
   useEffect(reloadLocations, [reloadLocations]);

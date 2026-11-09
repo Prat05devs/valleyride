@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import { ADDRESS_LINE, BUSINESS, pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { formatOpenHours, type LocationDTO } from '@valleyride/shared';
 import { LegalPage, List, Section } from '@/components/legal/legal-page';
 import { api } from '@/lib/api-client';
 import { DESK_HOURS, PHONE_DISPLAY, SUPPORT_EMAIL, TEL_URL, WHATSAPP_URL } from '@/lib/legal';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Contact and support',
-  description: 'Reach Valley Ride by phone or WhatsApp, find our pickup points, and get help with bookings, payments and the app.',
-};
+  description: 'Reach Valley Ride by phone or WhatsApp, find our pickup point at Dorm Hub, Sahastradhara Road, Dehradun, and get help with bookings, payments and the app.',
+  path: '/contact',
+});
 
 /** The support URL for the App Store and Google Play listings. */
 export default async function ContactPage() {
@@ -29,11 +31,12 @@ export default async function ContactPage() {
         {SUPPORT_EMAIL && <p>Email: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></p>}
       </Section>
 
-      {locations.length > 0 && (
-        <Section title="Pickup points">
-          <List items={locations.map((l) => <><strong>{l.name}</strong>. {l.address}{formatOpenHours(l.openHours) ? `. ${formatOpenHours(l.openHours)}` : ''}</>)} />
-        </Section>
-      )}
+      <Section title={locations.length > 1 ? 'Pickup points' : 'Pickup point'}>
+        {locations.length > 0
+          ? <List items={locations.map((l) => <><strong>{l.name}</strong>. {l.address}{formatOpenHours(l.openHours) ? `. ${formatOpenHours(l.openHours)}` : ''}</>)} />
+          : <p><strong>Dorm Hub, Dehradun</strong>. {ADDRESS_LINE}. {BUSINESS.pickup.hours.label}.</p>}
+        <p><a href={BUSINESS.pickup.mapUrl} target="_blank" rel="noreferrer">Open in Google Maps</a></p>
+      </Section>
 
       <Section title="Quick help">
         <List items={[

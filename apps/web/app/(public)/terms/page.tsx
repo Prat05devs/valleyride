@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { FULL_REFUND_HOURS, LATE_REFUND_PCT } from '@valleyride/shared';
 import { LegalPage, List, Section } from '@/components/legal/legal-page';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Rental terms',
   description: 'The terms for renting a scooter or motorcycle from Valley Ride through the app or valleyride.in.',
-};
+  path: '/terms',
+});
 
 /** The rental agreement in plain language; numbers come from the shared policy used by the API and app. */
 export default function TermsPage() {
@@ -48,7 +50,7 @@ export default function TermsPage() {
       </Section>
 
       <Section title="Return and late return">
-        <p>Return the vehicle to the return point by the end time on your booking. Returning to a different pickup point costs ₹400, shown when you book. Late returns are charged per started hour at one eighth of the bike&apos;s day price, including GST. If you need more time, extend the trip in the app before the end time. An extension depends on the bike being free.</p>
+        <p>Return the vehicle to the point you collected it from by the end time on your booking. Late returns are charged per started hour at one eighth of the bike&apos;s day price, including GST. If you need more time, extend the trip in the app before the end time. An extension depends on the bike being free.</p>
       </Section>
 
       <Section title="Deposit, damage, accidents and theft">

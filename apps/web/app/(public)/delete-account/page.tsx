@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { LegalPage, List, Section } from '@/components/legal/legal-page';
 import { PHONE_DISPLAY, WHATSAPP_URL } from '@/lib/legal';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Delete your Valley Ride account',
   description: 'How to delete your Valley Ride account and personal data, and what we keep by law.',
-};
+  path: '/delete-account',
+});
 
 /** The account-deletion URL for the Google Play data safety form. */
 export default function DeleteAccountPage() {

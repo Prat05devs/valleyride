@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { LocationDTO, RouteGuideDTO, VehicleModelDTO } from '@valleyride/shared';
+import type { LocationDTO } from '@valleyride/shared';
 import { RouteArt } from '@/components/brand/art';
 import { SearchForm } from '@/components/booking/search-form';
 import { SiteHeader } from '@/components/layout/site-header';
@@ -7,51 +7,74 @@ import { api, mediaUrl } from '@/lib/api-client';
 import { BIKE_COPY, bikePhoto, shortName } from '@/lib/bikes';
 import { countWord, formatPaise } from '@/lib/format';
 import { ROUTE_META, routeLine } from '@/lib/routes';
+import { FaqList, PickupCard, RelatedLinks, SEO_LINKS } from '@/components/seo/blocks';
+import { faqJsonLd, getModelsSafe, getRoutesSafe, JsonLd, pageMetadata } from '@/lib/seo';
+import { generalFaqs } from '@/lib/seo-content';
 import { defaultWindow } from '@/lib/when';
 
 export const revalidate = 300;
+
+export const metadata = pageMetadata({
+  title: 'Bike & Scooty on Rent in Dehradun | Valley Ride',
+  absoluteTitle: true,
+  description: 'Rent a scooty or Royal Enfield in Dehradun: Activa 125, Hunter 350, Scram 440 and Himalayan 450 for Mussoorie, Rishikesh and Uttarakhand rides. Pickup at Dorm Hub, Sahastradhara Road. GST included.',
+  path: '/',
+  keywords: ['bike on rent in Dehradun', 'scooty on rent in Dehradun', 'bike rental Dehradun', 'Royal Enfield on rent Dehradun', 'Activa on rent Dehradun', 'bike rent for Mussoorie', 'two wheeler rental Dehradun', 'Valley Ride'],
+});
+
+/** Static, so the page keeps useful, indexable content even while the API is unavailable. */
+const NEARBY = [
+  ['Sahastradhara', 'About 6 km from Dorm Hub', '/routes/sahastradhara-loop'],
+  ['Mussoorie and Landour', '33–35 km · 1.5–2 h', '/routes/dehradun-mussoorie'],
+  ['Kempty Falls', 'About 48 km via Mussoorie', '/places-to-visit-near-dehradun#kempty-falls'],
+  ['Rishikesh', 'About 45 km · 1.25–1.5 h', '/routes/dehradun-rishikesh'],
+  ['Dhanaulti', 'About 60 km via Mussoorie', '/places-to-visit-near-dehradun#dhanaulti'],
+  ['Chakrata', 'About 90 km via Kalsi', '/places-to-visit-near-dehradun#chakrata'],
+] as const;
 
 const CATEGORY = { SCOOTER: 'Scooter', MOTORCYCLE: 'Motorcycle', ADVENTURE: 'Adventure' } as const;
 
 export default async function HomePage() {
   const [models, locations, routes] = await Promise.all([
-    api.get<VehicleModelDTO[]>('/vehicle-models', { next: { revalidate: 300 } }),
-    api.get<LocationDTO[]>('/locations', { next: { revalidate: 3600 } }),
-    api.get<RouteGuideDTO[]>('/routes', { next: { revalidate: 3600 } }).catch(() => [] as RouteGuideDTO[]),
+    getModelsSafe(),
+    api.get<LocationDTO[]>('/locations', { next: { revalidate: 3600 } }).catch(() => [] as LocationDTO[]),
+    getRoutesSafe(),
   ]);
   const units = models.reduce((s, m) => s + (m.units ?? 0), 0);
+  const faqs = generalFaqs(models).filter((_, i) => [0, 1, 2, 4, 7, 13].includes(i));
 
   return (
     <div>
+      <JsonLd data={faqJsonLd(faqs)} />
       <section className="relative min-h-[760px] overflow-hidden rounded-b-[48px] bg-hero text-surface">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/photo-cover.jpg" alt="A Honda Activa and three Royal Enfields on a Himalayan road" className="absolute inset-0 h-full w-full object-cover object-[center_55%]" />
+        <img src="/images/photo-cover.jpg" alt="A Honda Activa scooty and three Royal Enfield bikes for rent in Dehradun, on a Himalayan road" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover object-[center_55%]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.62)_0%,rgba(0,0,0,0.28)_45%,rgba(0,0,0,0.7)_100%)]" />
         <SiteHeader variant="dark" />
         <div className="relative mx-auto flex max-w-[1280px] flex-col gap-9 px-4 pb-14 pt-[72px] sm:px-6">
           <div className="flex max-w-[720px] flex-col gap-4">
             <span className="text-base text-white/85">Dehradun · Mussoorie · Rishikesh</span>
-            <h1 className="m-0 text-[clamp(40px,6vw,72px)] font-normal leading-[1.02] tracking-[-1.5px]">Find your ride into the Himalayas</h1>
-            <p className="m-0 max-w-[600px] text-xl leading-normal text-white/85">Scooters for the city, Royal Enfields for the mountains. Real-time availability and transparent pricing, with deposits refunded on return.</p>
+            <h1 className="m-0 text-[clamp(40px,6vw,72px)] font-normal leading-[1.02] tracking-[-1.5px]">Rent a bike in Dehradun. Ride into the Himalayas.</h1>
+            <p className="m-0 max-w-[600px] text-xl leading-normal text-white/85">Scooty for the city, Royal Enfields for the mountains. Pick up at Dorm Hub, Sahastradhara Road, with live availability, prices including GST and your deposit refunded on return.</p>
           </div>
           <SearchForm locations={locations} initial={{ pickup: locations[0]?.id ?? '', returnTo: '', ...defaultWindow() }} />
         </div>
       </section>
 
-      <section className="mx-auto flex max-w-[1280px] flex-col gap-7 px-4 pt-24 sm:px-6">
-        <Heading title="Pick your bike" sub={`${units} bikes across ${countWord(models.length)} models. Prices per day include 18% GST.`} href="/fleet" cta="See the full fleet" />
+      {models.length > 0 && <section className="mx-auto flex max-w-[1280px] flex-col gap-7 px-4 pt-24 sm:px-6">
+        <Heading title="Bikes and scooty on rent" sub={`${units} bikes across ${countWord(models.length)} models. Prices per day include 18% GST.`} href="/fleet" cta="See the full fleet" />
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-4">
           {models.map((m) => (
             <Link key={m.id} href={`/fleet/${m.slug}`} className="flex flex-col gap-3 rounded-sheet bg-surface px-[22px] pb-6 pt-5 transition-transform hover:-translate-y-0.5">
               <span className="inline-flex h-[30px] items-center self-start rounded-full bg-field px-3 text-sm">{CATEGORY[m.category]} · {BIKE_COPY[m.slug]?.tag}</span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={bikePhoto(m.slug)} alt={m.name} className="h-[190px] w-full object-contain" />
+              <img src={bikePhoto(m.slug)} alt={`${m.name} on rent in Dehradun`} loading="lazy" className="h-[190px] w-full object-contain" />
               <div className="flex items-baseline justify-between"><span className="text-[22px]">{shortName(m.name)}</span><span className="text-2xl font-medium">{formatPaise(m.pricePerDayPaise)}<span className="text-[15px] font-normal text-muted">/day</span></span></div>
               <span className="text-[15px] text-muted">{m.kmPerDay} km/day · {formatPaise(m.depositPaise)} deposit</span>
             </Link>
           ))}
         </div>
-      </section>
+      </section>}
 
       <section className="mx-auto max-w-[1280px] px-4 pt-24 sm:px-6">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-8 rounded-[40px] bg-dark p-8 text-surface sm:p-12">
@@ -71,7 +94,7 @@ export default async function HomePage() {
 
       {routes.length > 0 && (
         <section className="mx-auto flex max-w-[1280px] flex-col gap-7 px-4 pt-24 sm:px-6">
-          <Heading title="Popular routes" sub="Rides our team knows well, with the right bike for each." href="/routes" cta="All route guides" />
+          <Heading title="Popular rides from Dehradun" sub="Route guides our team knows well, with the right bike for each." href="/routes" cta="All route guides" />
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-4">
             {routes.map((r) => (
               <Link key={r.id} href={`/routes/${r.slug}`} className="flex flex-col gap-2 rounded-card bg-surface px-5 pb-[22px] pt-[18px]">
@@ -89,12 +112,27 @@ export default async function HomePage() {
 
       <section className="mx-auto max-w-[1280px] px-4 pt-24 sm:px-6">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] items-start gap-6 rounded-[40px] bg-surface p-8 sm:p-10">
-          <div className="flex flex-col gap-2"><h2 className="m-0 text-[32px] font-normal tracking-[-0.4px]">Clear pricing</h2><p className="m-0 text-base leading-normal text-muted">What you see at checkout is what you pay. GST is added at 18%.</p></div>
+          <div className="flex flex-col gap-2"><h2 className="m-0 text-[32px] font-normal tracking-[-0.4px]">Clear pricing</h2><p className="m-0 text-base leading-normal text-muted">What you see at checkout is what you pay. Prices include 18% GST.</p></div>
           <Fact big="10–35% off" small="10% from 3 days, 20% from 7, 35% from 28" />
-          <Fact big="₹400" small="to return at another pickup point" />
+          <Fact big="Dorm Hub" small="pickup and return, Sahastradhara Road, Dehradun" />
           <Fact big="Refundable" small="deposit, returned after inspection" />
         </div>
       </section>
+
+      <section className="mx-auto flex max-w-[1280px] flex-col gap-7 px-4 pt-24 sm:px-6">
+        <Heading title="Where to ride from Dehradun" sub="Road distances from the city, from a half-day hop to a weekend in the hills." href="/places-to-visit-near-dehradun" cta="All places to ride" />
+        <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-3 p-0">
+          {NEARBY.map(([name, line, href]) => (
+            <li key={name}><Link href={href} className="flex flex-col gap-0.5 rounded-card bg-surface px-5 py-4"><span className="text-xl">{name}</span><span className="text-[15px] text-muted">{line}</span></Link></li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-4 pt-24 sm:px-6">
+        <PickupCard />
+        <FaqList faqs={faqs} title="Renting a bike in Dehradun: quick answers" />
+        <RelatedLinks links={[SEO_LINKS.bikes, SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.places, SEO_LINKS.pickup, SEO_LINKS.faq, SEO_LINKS.hindi]} />
+      </div>
     </div>
   );
 }

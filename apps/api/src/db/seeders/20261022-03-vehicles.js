@@ -1,12 +1,12 @@
 'use strict';
-/** 30 vehicles: 15 Activa 125, 5 each of Hunter 350, Scram 440 and Himalayan 450, spread across the four locations. */
+/** 30 vehicles: 15 Activa 125, 5 each of Hunter 350, Scram 440 and Himalayan 450, all based at the Dorm Hub pickup point. */
 const FLEET = [
   { slug: 'activa-125', count: 15, series: 'SC' },
   { slug: 'hunter-350', count: 5, series: 'RE' },
   { slug: 'scram-440', count: 5, series: 'RE' },
   { slug: 'himalayan-450', count: 5, series: 'RE' },
 ];
-const LOCATION_ORDER = ['Dehradun · ISBT', 'Dehradun · Railway Station', 'Mussoorie · Library Chowk', 'Rishikesh · Tapovan'];
+const HOME = 'Dehradun · Dorm Hub';
 
 module.exports = {
   async up(queryInterface) {
@@ -23,7 +23,7 @@ module.exports = {
         rows.push({
           vehicle_model_id: modelId[f.slug],
           registration_no: `UK07 ${f.series} ${4100 + n * 7}`,
-          home_location_id: locationId[LOCATION_ORDER[n % 4]],
+          home_location_id: locationId[HOME],
           status: 'ACTIVE',
           odometer_km: 800 + ((n * 617) % 9000),
           purchased_on: '2026-09-01',

@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { FULL_REFUND_HOURS, LATE_REFUND_PCT } from '@valleyride/shared';
 import { LegalPage, List, Section } from '@/components/legal/legal-page';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Cancellation and refund policy',
   description: 'How cancellations, refunds and security-deposit returns work for Valley Ride rentals.',
-};
+  path: '/refund-policy',
+});
 
 /** Mirrors cancellationRefund() and returnCharges() in @valleyride/shared, which the API applies. */
 export default function RefundPolicyPage() {

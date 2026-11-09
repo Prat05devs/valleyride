@@ -1,25 +1,30 @@
-import { api } from '@/lib/api-client';
 import { FleetGrid } from '@/components/fleet/fleet-grid';
+import { RelatedLinks, SEO_LINKS } from '@/components/seo/blocks';
 import { SiteHeader } from '@/components/layout/site-header';
 import { countWord, formatPaise } from '@/lib/format';
-import type { LocationDTO, VehicleModelDTO } from '@valleyride/shared';
+import { abs, bikeJsonLd, breadcrumbJsonLd, getModelsSafe, JsonLd, pageMetadata } from '@/lib/seo';
 
 export const revalidate = 300;   // ISR: rebuild every 5 minutes; prices change rarely
 
-export const metadata = {
-  title: 'Rent scooters & Royal Enfield bikes in Dehradun | Valley Ride',
-  description: 'Activa 125, Hunter 350, Scram 440 and Himalayan 450 for Mussoorie and Rishikesh rides.',
-};
+export const metadata = pageMetadata({
+  title: 'Bike Rent Prices in Dehradun: Activa 125 and Royal Enfield | Valley Ride',
+  absoluteTitle: true,
+  description: 'Daily rent, km included, extra-km rate and deposit for every Valley Ride bike in Dehradun: Honda Activa 125, Royal Enfield Hunter 350, Scram 440 and Himalayan 450. Prices include GST.',
+  path: '/fleet',
+  keywords: ['bike rent price Dehradun', 'scooty rent price Dehradun', 'Royal Enfield rent price Dehradun', 'bike rental fleet Dehradun'],
+});
 
 export default async function FleetPage() {
-  const [models, locations] = await Promise.all([api.get<VehicleModelDTO[]>('/vehicle-models'), api.get<LocationDTO[]>('/locations')]);
+  const models = await getModelsSafe();
   const units = models.reduce((s, m) => s + (m.units ?? 0), 0);
+  const list = { '@context': 'https://schema.org', '@type': 'ItemList', name: 'Bikes and scooters for rent in Dehradun', itemListElement: models.map((m, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(`/fleet/${m.slug}`), item: bikeJsonLd(m) })) };
   return (
     <div className="pb-20">
+      <JsonLd data={[breadcrumbJsonLd([{ name: 'Fleet', path: '/fleet' }]), ...(models.length ? [list] : [])]} />
       <SiteHeader active="fleet" />
       <main className="mx-auto flex max-w-[1280px] flex-col gap-7 px-4 pt-10 sm:px-6">
-        <FleetGrid models={models} title={<h1 className="m-0 text-5xl font-normal tracking-[-0.8px]">Our fleet</h1>}
-          sub={`${units} bikes across ${countWord(models.length)} models, at ${countWord(locations.length)} pickup points.`} />
+        <FleetGrid models={models} title={<h1 className="m-0 text-5xl font-normal tracking-[-0.8px]">Bikes and scooters for rent in Dehradun</h1>}
+          sub={models.length ? `${units} bikes across ${countWord(models.length)} models, at Dorm Hub, Sahastradhara Road.` : 'Live prices are loading. Please check back in a minute.'} />
         <section className="flex flex-col gap-4 rounded-[36px] bg-surface p-7">
           <h2 className="m-0 text-[28px] font-normal">Compare</h2>
           <div className="overflow-x-auto">
@@ -38,6 +43,7 @@ export default async function FleetPage() {
           </div>
           <p className="m-0 text-sm text-muted">Prices include 18% GST. Longer rentals: 10% off from 3 days, 20% from 7, 35% from 28.</p>
         </section>
+        <RelatedLinks links={[SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.places, SEO_LINKS.pickup, SEO_LINKS.faq]} />
       </main>
     </div>
   );

@@ -8,6 +8,8 @@ import { api, ApiError, mediaUrl } from '@/lib/api-client';
 import { bikePhoto, shortName } from '@/lib/bikes';
 import { formatPaise } from '@/lib/format';
 import { ROUTE_META } from '@/lib/routes';
+import { FaqList, RelatedLinks, SEO_LINKS } from '@/components/seo/blocks';
+import { breadcrumbJsonLd, faqJsonLd, JsonLd, pageMetadata, routeJsonLd, routeName, type Faq } from '@/lib/seo';
 
 export const revalidate = 3600;
 
@@ -19,11 +21,17 @@ async function getRoute(slug: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const r = await getRoute((await params).slug);
   const first = r.bodyMd.split('\n')[0]!;
-  return {
-    title: `${r.title} by bike`,
-    description: `${r.distanceKm} km. ${first.length > 150 ? `${first.slice(0, 147)}…` : first}`,
-    openGraph: r.cover ? { images: [mediaUrl(r.cover.url)] } : undefined,
-  };
+  const name = routeName(r.title);
+  const lead = `${name} by bike: ${r.distanceKm} km${r.rideTime ? `, ${r.rideTime}` : ''}. `;
+  const rest = 155 - lead.length;
+  return pageMetadata({
+    title: `${name} by Bike: ${r.distanceKm} km Route, Stops and Tips | Valley Ride`,
+    absoluteTitle: true,
+    description: lead + (first.length > rest ? `${first.slice(0, rest - 1).replace(/\s+\S*$/, '')}…` : first),
+    path: `/routes/${r.slug}`,
+    image: r.cover ? mediaUrl(r.cover.url) : undefined,
+    keywords: [`${name} by bike`, `${name} distance`, `${name} bike ride`, `bike rent for ${name.replace(/^Dehradun to /, '')}`],
+  });
 }
 
 /** Guide text comes from route_guides.body_md (CMS). Paragraphs, and "- Stop — note" lines as a fallback timeline. */
@@ -80,10 +88,18 @@ export default async function RouteGuidePage({ params }: { params: Promise<{ slu
   const way = r.stops.filter((s) => s.section === 'way');
   const explore = r.stops.filter((s) => s.section === 'explore');
   const eat = r.stops.filter((s) => s.section === 'eat');
+  const name = routeName(r.title);
+  const quick: Faq[] = [
+    { q: `How far is ${name} by bike?`, a: `${name} is about ${r.distanceKm} km by road${r.rideTime ? ` and takes ${r.rideTime}` : ''}.${r.difficulty ? ` The ride is rated ${DIFFICULTY_LABEL[r.difficulty].toLowerCase()}.` : ''}` },
+    ...(r.bestTime ? [{ q: `When is the best time to ride ${name}?`, a: r.bestTime }] : []),
+    ...(r.bikeAdvice ? [{ q: `Which bike should I rent for ${name}?`, a: r.bikeAdvice }] : []),
+    { q: 'Where do I pick up the bike?', a: 'Valley Ride bikes are picked up and returned at Dorm Hub, 4th Floor, Sahastradhara Road, near Doon IT Park, Dehradun. Open every day, 8 AM to 8 PM.' },
+  ];
   const chips = [`${r.distanceKm} km`, r.rideTime ?? (meta?.time && `About ${meta.time}`), r.difficulty && DIFFICULTY_LABEL[r.difficulty]].filter(Boolean) as string[];
 
   return (
     <div className="pb-20">
+      <JsonLd data={[routeJsonLd(r, `${name} by bike`), breadcrumbJsonLd([{ name: 'Routes', path: '/routes' }, { name, path: `/routes/${r.slug}` }]), faqJsonLd(quick)]} />
       <section className="relative min-h-[560px] overflow-hidden rounded-b-[48px] bg-hero text-surface">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={r.cover ? mediaUrl(r.cover.url) : '/images/photo-cover.jpg'} alt="" className="absolute inset-0 h-full w-full object-cover object-[center_60%]" />
@@ -91,7 +107,7 @@ export default async function RouteGuidePage({ params }: { params: Promise<{ slu
         <SiteHeader variant="dark" active="routes" />
         <div className="relative mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-[150px] sm:px-6">
           <Link href="/routes" className="text-[15px] text-white/85 underline">All routes</Link>
-          <h1 className="m-0 text-[clamp(40px,5.5vw,68px)] font-normal tracking-[-1.2px]">{r.title}</h1>
+          <h1 className="m-0 text-[clamp(40px,5.5vw,68px)] font-normal tracking-[-1.2px]">{r.title}<span className="mt-1 block text-[clamp(22px,2.4vw,30px)] tracking-normal text-white/85">by bike, with stops and tips</span></h1>
           <div className="flex flex-wrap gap-2">{chips.map((c) => <span key={c} className="inline-flex h-9 items-center rounded-full border border-white/30 bg-white/[0.18] px-4 text-[15px] first-letter:uppercase">{c}</span>)}</div>
         </div>
       </section>
@@ -186,6 +202,8 @@ export default async function RouteGuidePage({ params }: { params: Promise<{ slu
             </ul>
           </div>
           {r.stops.some((s) => s.hours) && <p className="m-0 px-2 text-sm text-muted">Opening hours change with the season. Check locally before you set off.</p>}
+          <FaqList faqs={quick} title="Quick answers" />
+          <RelatedLinks links={[SEO_LINKS.places, SEO_LINKS.bikes, SEO_LINKS.enfield, SEO_LINKS.scooty, SEO_LINKS.pickup]} />
           <Credits route={r} />
         </article>
         <aside className="flex min-w-0 flex-[1_1_360px] flex-col gap-4 lg:sticky lg:top-6">

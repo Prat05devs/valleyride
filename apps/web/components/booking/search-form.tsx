@@ -27,12 +27,15 @@ export function SearchForm({ locations, initial, variant = 'hero' }: { locations
           {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
       </label>
-      <label className={cell}>Return location
-        <select className={control} value={v.returnTo} onChange={(e) => setV({ ...v, returnTo: e.target.value })}>
-          <option value="">Same as pickup</option>
-          {locations.filter((l) => l.id !== v.pickup).map((l) => <option key={l.id} value={l.id}>{l.name} (+₹400)</option>)}
-        </select>
-      </label>
+      {/* With a single pickup point the bike always comes back to it, so there is nothing to choose. */}
+      {locations.length > 1 && (
+        <label className={cell}>Return location
+          <select className={control} value={v.returnTo} onChange={(e) => setV({ ...v, returnTo: e.target.value })}>
+            <option value="">Same as pickup</option>
+            {locations.filter((l) => l.id !== v.pickup).map((l) => <option key={l.id} value={l.id}>{l.name} (+₹400)</option>)}
+          </select>
+        </label>
+      )}
       <label className={cell}>Pickup date &amp; time
         <input type="datetime-local" className={control} value={v.from} step={1800} onChange={(e) => setV({ ...v, from: e.target.value })} required />
       </label>

@@ -7,7 +7,7 @@ export const TEL_URL = `tel:${SUPPORT_PHONE}`;
 export const DESK_HOURS = '8:00 AM – 8:00 PM, every day';
 
 /** Bump when any policy page's substance changes. */
-export const POLICIES_UPDATED = '1 November 2026';
+export const POLICIES_UPDATED = '9 November 2026';
 
 export const POLICY_LINKS = [
   { href: '/terms', label: 'Rental terms' },

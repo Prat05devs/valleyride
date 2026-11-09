@@ -23,7 +23,12 @@ export async function loginAs(phone: string) {
 
 export async function ids() {
   const models = await sequelize.query<{ id: string; slug: string }>('SELECT id, slug FROM vehicle_models', { type: QueryTypes.SELECT });
-  const locations = await sequelize.query<{ id: string; name: string }>('SELECT id, name FROM locations ORDER BY name', { type: QueryTypes.SELECT });
+  // Production has a single pickup point; one-way tests need a second, so add a test-only one.
+  await sequelize.query(`INSERT INTO locations (name, city, address, open_hours, is_active)
+    SELECT 'Test · Second point', 'Dehradun', 'Test address', '{"mon-sun":"08:00-20:00"}', true
+    WHERE NOT EXISTS (SELECT 1 FROM locations WHERE name = 'Test · Second point')`);
+  const locations = await sequelize.query<{ id: string; name: string }>(
+    "SELECT id, name FROM locations WHERE is_active ORDER BY name = 'Dehradun · Dorm Hub' DESC, name", { type: QueryTypes.SELECT });
   return { model: Object.fromEntries(models.map((m) => [m.slug, m.id])), locations: locations.map((l) => l.id) };
 }
 
