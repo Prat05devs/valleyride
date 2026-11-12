@@ -16,10 +16,11 @@ export function FleetGrid({ models, title, sub }: { models: VehicleModelDTO[]; t
     <>
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>{title}<p className="mt-2 text-lg text-muted">{sub}</p></div>
-        <div role="group" aria-label="Filter by type" className="flex flex-wrap gap-1.5 rounded-full bg-surface p-[5px]">
+        {/* Phones: a 2 × 2 grid so every option is visible at once; wider screens: one pill row. */}
+        <div role="group" aria-label="Filter by type" className="grid w-full grid-cols-2 gap-1.5 rounded-[27px] bg-surface p-[5px] sm:flex sm:w-auto sm:flex-wrap sm:rounded-full">
           {CHIPS.filter((c) => c.id === 'all' || models.some((m) => m.category === c.id)).map((c) => (
             <button key={c.id} type="button" aria-pressed={cat === c.id} onClick={() => setCat(c.id)}
-              className={cn('h-11 rounded-full px-5 text-[15px]', cat === c.id ? 'bg-ink text-surface' : 'bg-transparent text-ink')}>{c.label}</button>
+              className={cn('h-11 rounded-full px-4 text-[15px] sm:px-5', cat === c.id ? 'bg-ink text-surface' : 'bg-transparent text-ink')}>{c.label}</button>
           ))}
         </div>
       </div>

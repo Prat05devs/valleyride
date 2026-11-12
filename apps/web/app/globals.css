@@ -32,3 +32,9 @@ body { background: var(--canvas); color: var(--ink); }
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
+
+/* Phone and tablet menu sheet. */
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: none; }
+}

@@ -23,7 +23,7 @@ export default async function FleetPage() {
       <JsonLd data={[breadcrumbJsonLd([{ name: 'Fleet', path: '/fleet' }]), ...(models.length ? [list] : [])]} />
       <SiteHeader active="fleet" />
       <main className="mx-auto flex max-w-[1280px] flex-col gap-7 px-4 pt-10 sm:px-6">
-        <FleetGrid models={models} title={<h1 className="m-0 text-5xl font-normal tracking-[-0.8px]">Bikes and scooters for rent in Dehradun</h1>}
+        <FleetGrid models={models} title={<h1 key="title" className="m-0 text-[clamp(36px,8vw,48px)] font-normal leading-[1.08] tracking-[-0.8px]">Bikes and scooters for rent in Dehradun</h1>}
           sub={models.length ? `${units} bikes across ${countWord(models.length)} models, at Dorm Hub, Sahastradhara Road.` : 'Live prices are loading. Please check back in a minute.'} />
         <section className="flex flex-col gap-4 rounded-[36px] bg-surface p-7">
           <h2 className="m-0 text-[28px] font-normal">Compare</h2>

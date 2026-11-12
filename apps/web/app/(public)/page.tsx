@@ -65,9 +65,9 @@ export default async function HomePage() {
       <HeroSlideshow slides={HERO_SLIDES}>
         <SiteHeader variant="dark" />
         <div className="relative z-[3] mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-8 px-4 pb-14 sm:justify-end sm:px-6 sm:pt-10">
-          {/* Phones: this block fills the rest of the first screen (header above is 146 px): headline at the top,
+          {/* Phones: this block fills the rest of the first screen (header above is 68 px): headline at the top,
               the photo's caption and a jump to the search form at the bottom, the bikes visible in between. */}
-          <div className="flex min-h-[calc(100svh-146px)] flex-col justify-between gap-6 pb-14 pt-4 sm:min-h-0 sm:pb-0 sm:pt-0 lg:flex-row lg:items-end">
+          <div className="flex min-h-[calc(100svh-68px)] flex-col justify-between gap-6 pb-14 pt-4 sm:min-h-0 sm:pb-0 sm:pt-0 lg:flex-row lg:items-end">
             <div className="flex max-w-[720px] flex-col gap-3 sm:gap-4">
               <span className="text-[15px] text-white/85 sm:text-base">Dehradun · Mussoorie · Rishikesh</span>
               <h1 className="m-0 text-[clamp(36px,6vw,72px)] font-normal leading-[1.04] tracking-[-1.2px] sm:tracking-[-1.5px]">Rent a bike in Dehradun. Ride into the Himalayas.</h1>
