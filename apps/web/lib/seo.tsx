@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { RouteGuideDTO, VehicleModelDTO } from '@valleyride/shared';
 import { api } from './api-client';
 import { bikePhoto, brandOf } from './bikes';
-import { DESK_PHONE, SUPPORT_EMAIL, SUPPORT_PHONE } from './legal';
+import { DESK_PHONE, INSTAGRAM_URL, SUPPORT_EMAIL, SUPPORT_PHONE } from './legal';
 
 /**
  * One source for the facts search engines and AI assistants read: the business name, address and phone (NAP),
@@ -32,7 +32,7 @@ export const BUSINESS = {
   whatsapp: SUPPORT_PHONE,
   email: SUPPORT_EMAIL,
   /** Profile URLs (Instagram, Google Business Profile, YouTube…), comma-separated, for schema.org sameAs. */
-  sameAs: (process.env.NEXT_PUBLIC_SAME_AS ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+  sameAs: [...new Set([INSTAGRAM_URL, ...(process.env.NEXT_PUBLIC_SAME_AS ?? '').split(',').map((s) => s.trim()).filter(Boolean)])],
 } as const;
 
 export const ADDRESS_LINE = `${BUSINESS.pickup.street}, ${BUSINESS.pickup.locality}, ${BUSINESS.pickup.region} ${BUSINESS.pickup.postalCode}`;

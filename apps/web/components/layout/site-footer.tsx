@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { SEO_LINKS } from '@/components/seo/blocks';
-import { PHONE_DISPLAY, POLICY_LINKS, SUPPORT_EMAIL, TEL_URL, WHATSAPP_URL } from '@/lib/legal';
+import { PHONE_DISPLAY, POLICY_LINKS, SUPPORT_EMAIL, TEL_URL, WHATSAPP_URL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/legal';
 import { ADDRESS_LINE, BUSINESS } from '@/lib/seo';
 
 /**
@@ -41,6 +41,7 @@ export function SiteFooter() {
         <span className="font-medium">Contact</span>
         <a href={TEL_URL} className="text-muted hover:text-ink">Call {PHONE_DISPLAY}</a>
         <a href={WHATSAPP_URL} className="text-muted hover:text-ink">WhatsApp {PHONE_DISPLAY}</a>
+        <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer me" className="text-muted hover:text-ink">Instagram {INSTAGRAM_HANDLE}</a>
         {SUPPORT_EMAIL && <a href={`mailto:${SUPPORT_EMAIL}`} className="text-muted hover:text-ink">{SUPPORT_EMAIL}</a>}
         <Link href="/contact" className="text-muted hover:text-ink">Contact and support</Link>
       </div>

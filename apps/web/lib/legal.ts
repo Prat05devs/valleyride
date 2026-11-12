@@ -15,6 +15,10 @@ export const INVEST_PHONE = '+917055333321';
 export const INVEST_PHONE_DISPLAY = display(INVEST_PHONE);
 export const INVEST_TEL_URL = `tel:${INVEST_PHONE}`;
 const INVEST_WHATSAPP_URL = `https://wa.me/${INVEST_PHONE.replace(/\D/g, '')}`;
+/** Official social profiles (also schema.org sameAs). */
+export const INSTAGRAM_URL = 'https://www.instagram.com/valley.ride/';
+export const INSTAGRAM_HANDLE = '@valley.ride';
+
 export const DESK_HOURS = '8:00 AM – 8:00 PM, every day';
 
 /** Bump when any policy page's substance changes. */

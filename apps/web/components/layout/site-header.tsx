@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon, type IconName } from '@/components/brand/icon';
-import { DESK_HOURS, PHONE_DISPLAY, TEL_URL, WHATSAPP_URL } from '@/lib/legal';
+import { DESK_HOURS, INSTAGRAM_HANDLE, INSTAGRAM_URL, PHONE_DISPLAY, TEL_URL, WHATSAPP_URL } from '@/lib/legal';
 import { cn } from '@/lib/utils';
 import { useMe } from '@/lib/use-me';
 
@@ -179,6 +179,7 @@ function MobileMenu({ active, me, onClose }: { active: Active; me: { firstName: 
           <a href={TEL_URL} className="flex h-12 items-center justify-center gap-2 rounded-full bg-field text-[15px]"><Icon name="phone" size={18} />Call us</a>
         </div>
         <p className="m-0 text-center text-sm text-muted">Bookings and help: {PHONE_DISPLAY} · {DESK_HOURS}</p>
+        <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer me" className="self-center text-sm underline">Follow us on Instagram {INSTAGRAM_HANDLE}</a>
       </div>
     </div>
   );

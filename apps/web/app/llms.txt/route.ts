@@ -12,7 +12,7 @@ export const revalidate = 3600;
 export async function GET() {
   const [models, routes] = await Promise.all([getModelsSafe(), getRoutesSafe()]);
   const p = BUSINESS.pickup;
-  const contact = [BUSINESS.phone && `- Desk phone: ${BUSINESS.phone}`, BUSINESS.whatsapp && `- WhatsApp: ${BUSINESS.whatsapp}`, BUSINESS.email && `- Email: ${BUSINESS.email}`].filter(Boolean);
+  const contact = [...BUSINESS.sameAs.map((u) => `- Profile: ${u}`), BUSINESS.phone && `- Desk phone: ${BUSINESS.phone}`, BUSINESS.whatsapp && `- WhatsApp: ${BUSINESS.whatsapp}`, BUSINESS.email && `- Email: ${BUSINESS.email}`].filter(Boolean);
   const fleet = models.length
     ? models.map((m) => `- [${m.name}](${abs(`/fleet/${m.slug}`)}): ${formatPaise(m.pricePerDayPaise)} a day including GST, ${m.kmPerDay} km a day included, ${formatPaise(m.extraKmPaise)} per extra km, ${formatPaise(m.depositPaise)} refundable deposit.`)
     : ['- Honda Activa 125 (gearless scooter), Royal Enfield Hunter 350, Scram 440 and Himalayan 450, Hero XPulse 210, Suzuki V-Strom SX 250, Triumph Scrambler 400 X and KTM 390 Adventure X. Live prices: ' + abs('/fleet')];

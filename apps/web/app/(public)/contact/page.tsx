@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { formatOpenHours, type LocationDTO } from '@valleyride/shared';
 import { LegalPage, List, Section } from '@/components/legal/legal-page';
 import { api } from '@/lib/api-client';
-import { DESK_HOURS, PHONE_DISPLAY, SUPPORT_EMAIL, TEL_URL, WHATSAPP_URL } from '@/lib/legal';
+import { DESK_HOURS, INSTAGRAM_HANDLE, INSTAGRAM_URL, PHONE_DISPLAY, SUPPORT_EMAIL, TEL_URL, WHATSAPP_URL } from '@/lib/legal';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Contact and support',
@@ -25,6 +25,7 @@ export default async function ContactPage() {
         <p className="!text-2xl text-ink"><a href={TEL_URL} className="!no-underline">{PHONE_DISPLAY}</a></p>
         <div className="flex flex-wrap gap-3">
           <a href={WHATSAPP_URL} className="inline-flex h-12 items-center rounded-full bg-ink px-6 text-surface !no-underline">Message on WhatsApp</a>
+          <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer me" className="inline-flex h-12 items-center rounded-full border border-line px-6 !no-underline">Instagram {INSTAGRAM_HANDLE}</a>
           <a href={TEL_URL} className="inline-flex h-12 items-center rounded-full border border-line px-6 !text-ink !no-underline">Call the desk</a>
         </div>
         <p>Desk hours: {DESK_HOURS}. During a rental, call us any time for a breakdown, accident or theft.</p>
