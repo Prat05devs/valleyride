@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Urbanist } from 'next/font/google';
 import { Providers } from '@/components/layout/providers';
-import { BUSINESS, businessJsonLd, JsonLd, SITE_URL, websiteJsonLd } from '@/lib/seo';
+import { BUSINESS, businessJsonLd, JsonLd, OG_IMAGE, SITE_URL, websiteJsonLd } from '@/lib/seo';
 import './globals.css';
 
 const urbanist = Urbanist({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-urbanist', display: 'swap' });
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   creator: 'Valley Ride',
   publisher: 'Valley Ride',
   icons: { icon: '/images/logo.jpg', apple: '/images/logo.jpg' },
-  openGraph: { type: 'website', siteName: 'Valley Ride', locale: 'en_IN', images: [{ url: '/images/photo-cover.jpg', width: 1500, height: 844, alt: 'A Honda Activa and three Royal Enfield motorcycles on a Himalayan road in Uttarakhand' }] },
-  twitter: { card: 'summary_large_image' },
+  openGraph: { type: 'website', siteName: 'Valley Ride', locale: 'en_IN', images: [OG_IMAGE] },
+  twitter: { card: 'summary_large_image', images: [OG_IMAGE.url] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
   verification: {
     ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } : {}),

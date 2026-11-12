@@ -118,3 +118,21 @@ Valley Ride / Valley Ride Dehradun / valleyride.in / Valley Ride bike rental / V
 5. **Reddit, Quora, YouTube and Instagram reels** for the Mussoorie ride. AI assistants cite these sources heavily.
 6. Search Console and Bing Webmaster Tools: submit `https://valleyride.in/sitemap.xml` once the API is back up
    (the sitemap reads bikes and routes from the API).
+
+## November 2026 additions: new fleet and Valley Ride Capital
+
+**Adventure and premium bikes** (page: `/adventure-bike-rental-dehradun`, model pages `/fleet/<slug>`)
+- KTM on rent in Dehradun · KTM 390 Adventure rent Dehradun · KTM bike rental Uttarakhand
+- Triumph on rent Dehradun · Triumph Scrambler 400 X rent · Triumph bike rental Dehradun
+- Suzuki V-Strom SX 250 on rent · XPulse on rent Dehradun · Hero XPulse 210 rental
+- adventure bike rental Dehradun · off-road bike rent Dehradun · bike rent for Chopta / Chakrata / Harsil
+- Himalayan bike trip rental Uttarakhand
+
+**Valley Ride Capital** (page: `/invest`)
+- Valley Ride Capital · invest in bike rental business · bike rental investment Dehradun
+- two-wheeler fleet investment India · monthly interest investment Uttarakhand · invest in Dehradun business
+- Keep the copy factual: two fixed plans, 20% a year simple interest paid monthly, 18-month lock-in, not a bank
+  deposit, not guaranteed. Never use "guaranteed returns" or "risk-free".
+
+**Link previews:** every page shares `/images/og-valley-ride.jpg` (1200 × 630, Scram 440 and Scrambler 400 X above
+the clouds) unless it sets its own image; model pages use the bike's photo.

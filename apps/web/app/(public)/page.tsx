@@ -18,7 +18,7 @@ export const revalidate = 300;
 export const metadata = pageMetadata({
   title: 'Bike & Scooty on Rent in Dehradun | Valley Ride',
   absoluteTitle: true,
-  description: 'Rent a scooty, Royal Enfield, KTM or Triumph in Dehradun: Activa 125, Hunter 350, Himalayan 450, KTM 390 Adventure X, Scrambler 400 X, XPulse 210 and more for Mussoorie, Rishikesh and Uttarakhand rides. Pickup at Dorm Hub, Sahastradhara Road. GST included.',
+  description: 'Rent a scooty, Royal Enfield, KTM or Triumph in Dehradun for Mussoorie, Rishikesh and Himalayan rides. Live availability, GST included, pickup at Dorm Hub.',
   path: '/',
   keywords: ['bike on rent in Dehradun', 'scooty on rent in Dehradun', 'bike rental Dehradun', 'Royal Enfield on rent Dehradun', 'Activa on rent Dehradun', 'bike rent for Mussoorie', 'two wheeler rental Dehradun', 'Valley Ride'],
 });
@@ -31,7 +31,7 @@ const HERO_SLIDES: HeroSlide[] = [
   { base: '/images/hero/hero-city', kicker: 'City rides', title: 'Doon after dark', bikes: 'Honda Activa 125 · Royal Enfield Hunter 350', href: '/scooty-rental-dehradun',
     alt: 'A Honda Activa 125 scooty and a Royal Enfield Hunter 350 on rent, parked on Mall Road, Mussoorie, on a rainy evening', position: '64% center' },
   { base: '/images/hero/hero-weekend', kicker: 'Weekend hill rides', title: 'Above the clouds', bikes: 'Royal Enfield Scram 440 · Triumph Scrambler 400 X', href: '/fleet/scrambler-400-x',
-    alt: 'A Royal Enfield Scram 440 and a Triumph Scrambler 400 X at a hill-road bend above a sea of clouds near Mussoorie at sunrise', position: '62% center' },
+    alt: 'A Royal Enfield Scram 440 and a Triumph Scrambler 400 X at a hill-road bend above a sea of clouds near Mussoorie at sunrise', position: '72% center' },
   { base: '/images/hero/hero-touring', kicker: 'Long tours', title: 'Road to the snow', bikes: 'Royal Enfield Himalayan 450 · Suzuki V-Strom SX 250', href: '/fleet/himalayan-450',
     alt: 'A Royal Enfield Himalayan 450 and a Suzuki V-Strom SX 250 with luggage on a Himalayan highway above the Bhagirathi valley, snow peaks behind', position: '46% center' },
   { base: '/images/hero/hero-offroad', kicker: 'Off-road', title: 'Dirt and water', bikes: 'KTM 390 Adventure X · Hero XPulse 210', href: '/fleet/390-adventure-x',
@@ -154,7 +154,7 @@ export default async function HomePage() {
       <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-4 pt-24 sm:px-6">
         <PickupCard />
         <FaqList faqs={faqs} title="Renting a bike in Dehradun: quick answers" />
-        <RelatedLinks links={[SEO_LINKS.bikes, SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.places, SEO_LINKS.pickup, SEO_LINKS.faq, SEO_LINKS.hindi]} />
+        <RelatedLinks links={[SEO_LINKS.bikes, SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.adventure, SEO_LINKS.places, SEO_LINKS.pickup, SEO_LINKS.faq, SEO_LINKS.invest, SEO_LINKS.hindi]} />
       </div>
     </div>
   );

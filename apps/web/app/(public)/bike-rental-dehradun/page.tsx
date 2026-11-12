@@ -9,9 +9,9 @@ export const revalidate = 300;
 const PATH = '/bike-rental-dehradun';
 
 export const metadata = pageMetadata({
-  title: 'Bike on Rent in Dehradun · Royal Enfield & Scooty | Valley Ride',
+  title: 'Bike on Rent in Dehradun · Royal Enfield, KTM & Scooty | Valley Ride',
   absoluteTitle: true,
-  description: 'Rent a bike in Dehradun by the day, week or month: Activa 125, Royal Enfield Hunter, Scram and Himalayan, KTM 390 Adventure X, Triumph Scrambler 400 X, XPulse 210 and V-Strom SX 250. Pickup at Dorm Hub, Sahastradhara Road. Prices include GST; deposit refunded on return.',
+  description: 'Rent a bike in Dehradun by the day, week or month: Royal Enfield, KTM, Triumph, Suzuki, Hero or an Activa scooty. Pickup at Dorm Hub, Sahastradhara Road. GST included.',
   path: PATH,
   keywords: ['bike on rent in Dehradun', 'bike rental Dehradun', 'bike rent Dehradun', 'two wheeler on rent Dehradun', 'rent a bike Dehradun', 'self drive bike Dehradun', 'bike rent near me Dehradun', 'bike rental Dehradun to Mussoorie'],
   languages: { 'en-IN': PATH, 'hi-IN': '/hi/bike-rental-dehradun' },
@@ -59,7 +59,7 @@ export default async function BikeRentalDehradunPage() {
               <li><strong className="font-medium">One clear price.</strong> The daily rent includes GST, with the km allowance and extra-km rate shown before you pay.</li>
               <li><strong className="font-medium">Digital pickup.</strong> Upload your licence before you arrive; at Dorm Hub we take pre-ride photos together and you sign on your phone.</li>
               <li><strong className="font-medium">Deposit back to your UPI or card</strong> after a quick inspection at return.</li>
-              <li><strong className="font-medium">Bikes for the hills.</strong> A scooter for the city, Royal Enfields for Mussoorie, Chakrata and longer Himalayan rides.</li>
+              <li><strong className="font-medium">Bikes for the hills.</strong> A scooter for the city; Royal Enfield, KTM, Triumph, Suzuki and Hero bikes for Mussoorie, Chakrata and longer Himalayan rides.</li>
             </ul>
           </Card>
           <Card title="How to rent a bike in Dehradun">
@@ -86,7 +86,7 @@ export default async function BikeRentalDehradunPage() {
         </Card>
 
         <FaqList faqs={faqs} title="Bike rental in Dehradun: common questions" />
-        <RelatedLinks links={[SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.places, SEO_LINKS.mussoorie, SEO_LINKS.pickup, SEO_LINKS.faq, SEO_LINKS.hindi]} />
+        <RelatedLinks links={[SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.adventure, SEO_LINKS.places, SEO_LINKS.mussoorie, SEO_LINKS.pickup, SEO_LINKS.faq, SEO_LINKS.hindi]} />
       </main>
     </div>
   );

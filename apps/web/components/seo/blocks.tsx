@@ -31,15 +31,22 @@ export function Card({ title, id, children, as: H = 'h2' }: { title?: string; id
 
 export const P = ({ children }: { children: React.ReactNode }) => <p className="m-0 text-[17px] leading-[1.6] text-body">{children}</p>;
 
+const fmtPhone = (e164: string) => e164.replace(/^\+91(\d{5})(\d{5})$/, '+91 $1 $2');
+
+/** Names for the cards when the catalogue cannot be loaded. */
+const FALLBACK_NAME: Record<string, string> = {
+  'activa-125': 'Honda Activa 125', 'hunter-350': 'Royal Enfield Hunter 350', 'xpulse-210': 'Hero XPulse 210', 'v-strom-sx-250': 'Suzuki V-Strom SX 250',
+  'scram-440': 'Royal Enfield Scram 440', 'scrambler-400-x': 'Triumph Scrambler 400 X', '390-adventure-x': 'KTM 390 Adventure X', 'himalayan-450': 'Royal Enfield Himalayan 450',
+};
+
 /** Bikes with live prices when the catalogue is available, else the same cards without numbers. */
 export function BikeCards({ models, only, alt }: { models: VehicleModelDTO[]; only?: string[]; alt: (name: string) => string }) {
-  const slugs = only ?? ['activa-125', 'hunter-350', 'scram-440', 'himalayan-450'];
+  const slugs = only ?? (models.length ? models.map((m) => m.slug) : Object.keys(FALLBACK_NAME));
   const shown = slugs.map((s) => ({ slug: s, m: models.find((x) => x.slug === s) }));
-  const fallbackName: Record<string, string> = { 'activa-125': 'Honda Activa 125', 'hunter-350': 'Royal Enfield Hunter 350', 'scram-440': 'Royal Enfield Scram 440', 'himalayan-450': 'Royal Enfield Himalayan 450' };
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-4">
       {shown.map(({ slug, m }) => {
-        const name = m?.name ?? fallbackName[slug]!;
+        const name = m?.name ?? FALLBACK_NAME[slug]!;
         return (
           <Link key={slug} href={`/fleet/${slug}`} className="flex flex-col gap-2.5 rounded-sheet bg-surface px-5 pb-5 pt-4 transition-transform hover:-translate-y-0.5">
             <span className="inline-flex h-[30px] items-center self-start rounded-full bg-field px-3 text-sm">{BIKE_COPY[slug]?.tag}</span>
@@ -65,9 +72,9 @@ export function PickupCard({ map = false }: { map?: boolean }) {
       <p className="m-0 text-[17px] text-white/85">{p.hours.label}. One point for pickup and return.</p>
       {(BUSINESS.phone || BUSINESS.whatsapp) && (
         <p className="m-0 text-[17px] text-white/85">
-          {BUSINESS.phone && <>Desk: <a href={`tel:${BUSINESS.phone}`} className="underline">{BUSINESS.phone}</a></>}
+          {BUSINESS.phone && <>Desk: <a href={`tel:${BUSINESS.phone}`} className="underline">{fmtPhone(BUSINESS.phone)}</a></>}
           {BUSINESS.phone && BUSINESS.whatsapp && ' · '}
-          {BUSINESS.whatsapp && <>WhatsApp: <a href={`https://wa.me/${BUSINESS.whatsapp.replace(/\D/g, '')}`} className="underline">{BUSINESS.whatsapp}</a></>}
+          {BUSINESS.whatsapp && <>WhatsApp: <a href={`https://wa.me/${BUSINESS.whatsapp.replace(/\D/g, '')}`} className="underline">{fmtPhone(BUSINESS.whatsapp)}</a></>}
         </p>
       )}
       <div className="flex flex-wrap gap-2.5">
@@ -124,6 +131,8 @@ export const SEO_LINKS = {
   bikes: { href: '/bike-rental-dehradun', label: 'Bike rental in Dehradun' },
   scooty: { href: '/scooty-rental-dehradun', label: 'Scooty on rent in Dehradun' },
   enfield: { href: '/royal-enfield-rental-dehradun', label: 'Royal Enfield on rent in Dehradun' },
+  adventure: { href: '/adventure-bike-rental-dehradun', label: 'KTM, Triumph and adventure bikes on rent' },
+  invest: { href: '/invest', label: 'Valley Ride Capital: invest in the fleet' },
   places: { href: '/places-to-visit-near-dehradun', label: 'Places to ride from Dehradun' },
   mussoorie: { href: '/routes/dehradun-mussoorie', label: 'Dehradun to Mussoorie by bike' },
   rishikesh: { href: '/routes/dehradun-rishikesh', label: 'Dehradun to Rishikesh by bike' },

@@ -15,11 +15,11 @@ export async function GET() {
   const contact = [BUSINESS.phone && `- Desk phone: ${BUSINESS.phone}`, BUSINESS.whatsapp && `- WhatsApp: ${BUSINESS.whatsapp}`, BUSINESS.email && `- Email: ${BUSINESS.email}`].filter(Boolean);
   const fleet = models.length
     ? models.map((m) => `- [${m.name}](${abs(`/fleet/${m.slug}`)}): ${formatPaise(m.pricePerDayPaise)} a day including GST, ${m.kmPerDay} km a day included, ${formatPaise(m.extraKmPaise)} per extra km, ${formatPaise(m.depositPaise)} refundable deposit.`)
-    : ['- Honda Activa 125 (gearless scooter), Royal Enfield Hunter 350, Royal Enfield Scram 440 and Royal Enfield Himalayan 450. Live prices: ' + abs('/fleet')];
+    : ['- Honda Activa 125 (gearless scooter), Royal Enfield Hunter 350, Scram 440 and Himalayan 450, Hero XPulse 210, Suzuki V-Strom SX 250, Triumph Scrambler 400 X and KTM 390 Adventure X. Live prices: ' + abs('/fleet')];
   const lines = [
     '# Valley Ride',
     '',
-    `> Valley Ride rents scooters and Royal Enfield motorcycles in Dehradun, Uttarakhand, India, by the day, week or month, for city riding and for rides to Mussoorie, Rishikesh, Dhanaulti, Chakrata and the Garhwal Himalaya. Book at ${abs('/')} or in the Valley Ride app.`,
+    `> Valley Ride rents scooters and motorcycles (Honda, Royal Enfield, KTM, Triumph, Suzuki and Hero) in Dehradun, Uttarakhand, India, by the day, week or month, for city riding and for rides to Mussoorie, Rishikesh, Dhanaulti, Chakrata and the Garhwal Himalaya. Book at ${abs('/')} or in the Valley Ride app.`,
     '',
     '## Pickup and return',
     `- One pickup and return point: ${ADDRESS_LINE}.`,
@@ -34,7 +34,7 @@ export async function GET() {
     '',
     '## Booking rules',
     '- Pay online by UPI or card (Razorpay). The bike is held for 15 minutes while you pay.',
-    '- Bring an original two-wheeler driving licence (MCWG for the Royal Enfields; MCWOG or MCWG for the Activa) and an ID proof.',
+    '- Bring an original two-wheeler driving licence (MCWG for the motorcycles; MCWOG or MCWG for the Activa scooter) and an ID proof.',
     '- Cancellation more than 24 hours before pickup: full rent refunded; within 24 hours: 50%. The deposit is always refunded.',
     '- The deposit is refunded to the same UPI or card after inspection at return; only damage is deducted.',
     '- Helmets are compulsory for rider and pillion.',
@@ -43,6 +43,8 @@ export async function GET() {
     `- [Bike on rent in Dehradun](${abs('/bike-rental-dehradun')})`,
     `- [Scooty on rent in Dehradun](${abs('/scooty-rental-dehradun')})`,
     `- [Royal Enfield on rent in Dehradun](${abs('/royal-enfield-rental-dehradun')})`,
+    `- [KTM, Triumph and adventure bikes on rent in Dehradun](${abs('/adventure-bike-rental-dehradun')})`,
+    `- [Valley Ride Capital: invest in the fleet (₹1 lakh or ₹2.5 lakh, 20% a year paid monthly, 18-month lock-in; not guaranteed)](${abs('/invest')})`,
     `- [Fleet and prices](${abs('/fleet')})`,
     `- [Places to visit near Dehradun by bike](${abs('/places-to-visit-near-dehradun')})`,
     `- [Pickup point: Dorm Hub, Sahastradhara Road](${abs('/pickup-location')})`,

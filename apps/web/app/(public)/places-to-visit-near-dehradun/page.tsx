@@ -73,7 +73,10 @@ export default function PlacesNearDehradunPage() {
             For Dehradun city, Sahastradhara, Robbers Cave and Rishikesh, the <Link href="/scooty-rental-dehradun" className="underline">Honda Activa 125</Link> is
             all you need. For Mussoorie and Dhanaulti, especially with a pillion, take a <Link href="/fleet/hunter-350" className="underline">Hunter 350</Link> or{' '}
             <Link href="/fleet/scram-440" className="underline">Scram 440</Link>. For Chakrata, Tehri, Nag Tibba and Chopta, the{' '}
-            <Link href="/fleet/himalayan-450" className="underline">Himalayan 450</Link> is built for it.
+            <Link href="/fleet/himalayan-450" className="underline">Himalayan 450</Link>,{' '}
+            <Link href="/fleet/390-adventure-x" className="underline">KTM 390 Adventure X</Link> and{' '}
+            <Link href="/fleet/v-strom-sx-250" className="underline">V-Strom SX 250</Link> are built for it; for dirt trails, the{' '}
+            <Link href="/fleet/xpulse-210" className="underline">XPulse 210</Link>.
           </P>
         </Card>
 

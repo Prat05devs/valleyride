@@ -252,15 +252,77 @@ export function enfieldFaqs(models: VehicleModelDTO[]): Faq[] {
     },
     {
       q: 'Which bike should I rent for Chakrata, Tehri or Chopta?',
-      a: 'For long hill rides and multi-day trips, rent the Royal Enfield Himalayan 450 or Scram 440. Their long-travel suspension, big front wheels and ground clearance suit broken roads, river beds and gravel, and the Himalayan 450 is built for long-distance Himalayan touring.',
+      a: 'For long hill rides and multi-day trips, rent the Royal Enfield Himalayan 450 or Scram 440. Their long-travel suspension, big front wheels and ground clearance suit broken roads, river beds and gravel, and the Himalayan 450 is built for long-distance Himalayan touring. Valley Ride also rents the KTM 390 Adventure X and the Suzuki V-Strom SX 250 for the same trips.',
     },
     {
       q: 'Can I ride a rented Royal Enfield off-road near Dehradun?',
-      a: 'The river beds and dirt tracks beyond Maldevta, about 20 km east of Dehradun, are popular with trail riders on the Scram 440 and Himalayan 450. Stay out when the Song river is up, ride in daylight, and on loose surfaces stand on the pegs and keep the speed low.',
+      a: 'The river beds and dirt tracks beyond Maldevta, about 20 km east of Dehradun, are popular with trail riders on the Scram 440 and Himalayan 450 (and on the Hero XPulse 210 and KTM 390 Adventure X, which Valley Ride also rents). Stay out when the Song river is up, ride in daylight, and on loose surfaces stand on the pegs and keep the speed low.',
     },
     {
       q: 'Which licence do I need to rent a Royal Enfield?',
       a: 'A driving licence for geared motorcycles (MCWG). Upload it with an ID proof before pickup and bring the originals to Dorm Hub, Sahastradhara Road.',
+    },
+  ];
+}
+
+/** The adventure and premium bikes: KTM, Triumph, Suzuki, Hero and the Himalayan. */
+export const ADVENTURE_SLUGS = ['390-adventure-x', 'scrambler-400-x', 'v-strom-sx-250', 'xpulse-210', 'himalayan-450'];
+
+export function adventureFaqs(models: VehicleModelDTO[]): Faq[] {
+  const bikes = models.filter((m) => ADVENTURE_SLUGS.includes(m.slug));
+  const prices = priceList(bikes);
+  return [
+    {
+      q: 'Can I rent a KTM in Dehradun?',
+      a: `Yes. Valley Ride rents the KTM 390 Adventure X (399 cc, 46 PS) at Dorm Hub, Sahastradhara Road${by(models, '390-adventure-x') ? ` for ${formatPaise(by(models, '390-adventure-x')!.pricePerDayPaise)} a day including GST` : ''}. It is the most powerful bike in the fleet and suits experienced riders heading to Chakrata, Harsil, Chopta and the high passes.`,
+    },
+    {
+      q: 'Can I rent a Triumph in Dehradun?',
+      a: `Yes, the Triumph Scrambler 400 X${by(models, 'scrambler-400-x') ? `, ${formatPaise(by(models, 'scrambler-400-x')!.pricePerDayPaise)} a day including GST` : ''}. It has a 349 cc liquid-cooled engine, upside-down forks and a 19-inch front wheel: a premium bike for Mussoorie, Dhanaulti and weekend hill rides with some broken road.`,
+    },
+    {
+      q: 'How much does an adventure bike cost on rent in Dehradun?',
+      a: prices
+        ? `Per day including ${GST_PCT}% GST: ${prices}. ${DISCOUNT_LINE} A refundable deposit is paid with the booking.`
+        : `Prices including ${GST_PCT}% GST are on each bike's page. ${DISCOUNT_LINE}`,
+    },
+    {
+      q: 'Which adventure bike should I rent for a Himalayan trip from Dehradun?',
+      a: 'For Chopta, Harsil, Auli or multi-day Garhwal loops: the KTM 390 Adventure X if you are an experienced rider who wants power, the Royal Enfield Himalayan 450 for relaxed long-distance touring, and the Suzuki V-Strom SX 250 for a light, comfortable and frugal tourer. For dirt trails and river crossings near Maldevta, the Hero XPulse 210 is the easiest.',
+    },
+    {
+      q: 'Which licence do I need for a KTM, Triumph or adventure bike?',
+      a: 'A driving licence for geared motorcycles (MCWG). Upload it with an ID proof before pickup and bring the originals to Dorm Hub.',
+    },
+  ];
+}
+
+/** Valley Ride Capital. Plain, honest answers: fixed plans, simple interest, not a bank deposit. */
+export function investFaqs(): Faq[] {
+  return [
+    {
+      q: 'What is Valley Ride Capital?',
+      a: 'Valley Ride Capital is how Valley Ride, a bike and scooty rental company in Dehradun, raises money to grow its two-wheeler fleet. Investors fund the fleet and are paid interest every month from the rental business.',
+    },
+    {
+      q: 'How much can I invest?',
+      a: 'Two fixed plans: ₹1 lakh or ₹2.5 lakh. No other amounts are offered.',
+    },
+    {
+      q: 'What return does Valley Ride Capital pay?',
+      a: 'Simple interest of 20% a year, paid every month: ₹1,666.67 a month on the ₹1 lakh plan and ₹4,166.67 a month on the ₹2.5 lakh plan, before any TDS or taxes.',
+    },
+    {
+      q: 'When do I get my money back?',
+      a: 'The principal is returned in full at the end of the fixed 18-month lock-in, with the last interest payment. It cannot be withdrawn early.',
+    },
+    {
+      q: 'How do I invest?',
+      a: 'Message the Valley Ride Capital team on WhatsApp or call +91 70553 33321. The team shares the agreement and the bank details for the transfer; interest starts after the agreement is signed and the money is received.',
+    },
+    {
+      q: 'Is the return guaranteed?',
+      a: 'No. Payments depend on the rental business\'s ability to pay. This is not a bank fixed deposit and is not insured or guaranteed by a bank or regulator. Interest is taxable. Read the agreement and take independent advice before investing.',
     },
   ];
 }

@@ -70,7 +70,7 @@ export default async function RoyalEnfieldRentalPage() {
 
         <PickupCard />
         <FaqList faqs={faqs} title="Royal Enfield rental in Dehradun: common questions" />
-        <RelatedLinks links={[SEO_LINKS.bikes, SEO_LINKS.scooty, SEO_LINKS.places, SEO_LINKS.mussoorie, SEO_LINKS.pickup, SEO_LINKS.faq]} />
+        <RelatedLinks links={[SEO_LINKS.bikes, SEO_LINKS.adventure, SEO_LINKS.scooty, SEO_LINKS.places, SEO_LINKS.mussoorie, SEO_LINKS.pickup, SEO_LINKS.faq]} />
       </main>
     </div>
   );

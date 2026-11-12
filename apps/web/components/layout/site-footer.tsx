@@ -25,7 +25,7 @@ export function SiteFooter() {
       </div>
       <div className="flex flex-col gap-2">
         <span className="font-medium">Rent in Dehradun</span>
-        {[SEO_LINKS.bikes, SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.fleet, SEO_LINKS.pickup].map((l) => <Link key={l.href} href={l.href} className="text-muted hover:text-ink">{l.label}</Link>)}
+        {[SEO_LINKS.bikes, SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.adventure, SEO_LINKS.fleet, SEO_LINKS.pickup].map((l) => <Link key={l.href} href={l.href} className="text-muted hover:text-ink">{l.label}</Link>)}
         <Link href="/invest" className="text-muted hover:text-ink">Valley Ride Capital</Link>
       </div>
       <div className="flex flex-col gap-2">

@@ -21,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/hi/bike-rental-dehradun', 0.8, 'weekly', bikeLangs),
     page('/scooty-rental-dehradun', 0.9, 'weekly'),
     page('/royal-enfield-rental-dehradun', 0.9, 'weekly'),
+    page('/adventure-bike-rental-dehradun', 0.9, 'weekly'),
     page('/fleet', 0.9, 'daily'),
     page('/places-to-visit-near-dehradun', 0.85, 'monthly'),
     page('/routes', 0.8, 'weekly'),
@@ -32,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/shipping-policy', 0.3, 'yearly'),
     page('/contact', 0.3, 'yearly'),
     page('/delete-account', 0.3, 'yearly'),
-    page('/invest', 0.3, 'monthly'),
+    page('/invest', 0.7, 'monthly'),
     ...models.map((m) => page(`/fleet/${m.slug}`, 0.85, 'daily')),
     ...routes.map((r) => page(`/routes/${r.slug}`, 0.8, 'monthly')),
   ];

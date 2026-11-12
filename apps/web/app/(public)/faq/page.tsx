@@ -31,7 +31,7 @@ export default async function FaqPage() {
         </p>
         <FaqList faqs={faqs} title="Renting a bike with Valley Ride" />
         <PickupCard />
-        <RelatedLinks links={[SEO_LINKS.bikes, SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.places, SEO_LINKS.pickup, SEO_LINKS.hindi]} />
+        <RelatedLinks links={[SEO_LINKS.bikes, SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.adventure, SEO_LINKS.places, SEO_LINKS.pickup, SEO_LINKS.hindi]} />
       </main>
     </div>
   );

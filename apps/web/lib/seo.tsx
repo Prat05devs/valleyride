@@ -37,7 +37,7 @@ export const BUSINESS = {
 
 export const ADDRESS_LINE = `${BUSINESS.pickup.street}, ${BUSINESS.pickup.locality}, ${BUSINESS.pickup.region} ${BUSINESS.pickup.postalCode}`;
 
-const OG_IMAGE = { url: '/images/photo-cover.jpg', width: 1500, height: 844, alt: 'A Honda Activa and three Royal Enfield motorcycles on a Himalayan road in Uttarakhand' };
+export const OG_IMAGE = { url: '/images/og-valley-ride.jpg', width: 1200, height: 630, alt: 'A Royal Enfield Scram 440 and a Triumph Scrambler 400 X from Valley Ride above a sea of clouds near Mussoorie, Uttarakhand' };
 
 /**
  * Page metadata with the canonical URL, Open Graph and Twitter cards filled in the same way everywhere.

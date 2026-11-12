@@ -7,9 +7,9 @@ import { abs, bikeJsonLd, breadcrumbJsonLd, getModelsSafe, JsonLd, pageMetadata 
 export const revalidate = 300;   // ISR: rebuild every 5 minutes; prices change rarely
 
 export const metadata = pageMetadata({
-  title: 'Bike Rent Prices in Dehradun: Activa 125 and Royal Enfield | Valley Ride',
+  title: 'Bike & Scooty Rent Prices in Dehradun · 8 Models | Valley Ride',
   absoluteTitle: true,
-  description: 'Daily rent, km included, extra-km rate and deposit for every Valley Ride bike in Dehradun: Honda Activa 125, Royal Enfield Hunter 350, Scram 440 and Himalayan 450, KTM 390 Adventure X, Triumph Scrambler 400 X, Hero XPulse 210 and Suzuki V-Strom SX 250. Prices include GST.',
+  description: 'Daily rent, km and deposit for every bike at Valley Ride Dehradun: Activa 125, Royal Enfield, KTM 390 Adventure X, Triumph Scrambler 400 X and more. GST included.',
   path: '/fleet',
   keywords: ['bike rent price Dehradun', 'scooty rent price Dehradun', 'Royal Enfield rent price Dehradun', 'bike rental fleet Dehradun'],
 });
@@ -43,7 +43,7 @@ export default async function FleetPage() {
           </div>
           <p className="m-0 text-sm text-muted">Prices include 18% GST. Longer rentals: 10% off from 3 days, 20% from 7, 35% from 28.</p>
         </section>
-        <RelatedLinks links={[SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.places, SEO_LINKS.pickup, SEO_LINKS.faq]} />
+        <RelatedLinks links={[SEO_LINKS.scooty, SEO_LINKS.enfield, SEO_LINKS.adventure, SEO_LINKS.places, SEO_LINKS.pickup, SEO_LINKS.faq]} />
       </main>
     </div>
   );
