@@ -1,9 +1,20 @@
 /** Contact details and dates shared by the policy pages (privacy, terms, refunds, delivery, contact, account deletion). */
-export const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || '+917055333321';
+const display = (e164: string) => e164.replace(/^\+91(\d{5})(\d{5})$/, '+91 $1 $2');
+
+/** Bookings, WhatsApp, payments, roadside help and every other customer question: calls and WhatsApp. */
+export const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || '+919762697523';
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || null;
-export const PHONE_DISPLAY = SUPPORT_PHONE.replace(/^\+91(\d{5})(\d{5})$/, '+91 $1 $2');
+export const PHONE_DISPLAY = display(SUPPORT_PHONE);
 export const WHATSAPP_URL = `https://wa.me/${SUPPORT_PHONE.replace(/\D/g, '')}`;
 export const TEL_URL = `tel:${SUPPORT_PHONE}`;
+/** The pickup desk; the support number unless a separate desk line is set. */
+export const DESK_PHONE = process.env.NEXT_PUBLIC_DESK_PHONE || SUPPORT_PHONE;
+
+/** Valley Ride Capital only: investment enquiries and bank details (calls and WhatsApp). Not for rentals. */
+export const INVEST_PHONE = '+917055333321';
+export const INVEST_PHONE_DISPLAY = display(INVEST_PHONE);
+export const INVEST_TEL_URL = `tel:${INVEST_PHONE}`;
+const INVEST_WHATSAPP_URL = `https://wa.me/${INVEST_PHONE.replace(/\D/g, '')}`;
 export const DESK_HOURS = '8:00 AM – 8:00 PM, every day';
 
 /** Bump when any policy page's substance changes. */
@@ -32,5 +43,5 @@ export function investWhatsAppUrl(planRupees?: number) {
     'Name:',
     'City:',
   ].join('\n');
-  return `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
+  return `${INVEST_WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
 }

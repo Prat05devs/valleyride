@@ -1,6 +1,6 @@
 'use client';
 
-import type { LocationDTO, VehicleModelDTO } from '@valleyride/shared';
+import { isPlaceholderRegistration, type LocationDTO, type VehicleModelDTO } from '@valleyride/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -43,7 +43,7 @@ export default function FleetAdminPage() {
 
   return (
     <>
-      <PageTitle title="Fleet" sub={`${out} on a ride · ${available} available · ${maint} in maintenance`}>
+      <PageTitle title="Fleet" sub={`${out} on a ride · ${available} available · ${maint} in maintenance${all.some((v) => isPlaceholderRegistration(v.registrationNo)) ? ` · ${all.filter((v) => isPlaceholderRegistration(v.registrationNo)).length} need number plates` : ''}`}>
         {me?.role === 'admin' && <Button onClick={() => setAdding(!adding)}><Icon name="plus" size={18} />Add vehicle</Button>}
       </PageTitle>
       {isError && <p role="alert">Could not load the fleet. <button type="button" className="underline" onClick={() => void refetch()}>Try again</button></p>}
@@ -68,7 +68,8 @@ export default function FleetAdminPage() {
                 const missing = (['RC', 'INSURANCE', 'PERMIT', 'PUC'] as const).filter((t) => !v.documents.some((d) => d.type === t));
                 return (
                   <tr key={v.id} className="border-t border-line">
-                    <td className="px-4 py-3"><Link href={`/admin/fleet/${v.id}`} className="font-medium tracking-[0.5px] underline decoration-[#D5D8DC]">{v.registrationNo}</Link></td>
+                    <td className="px-4 py-3"><Link href={`/admin/fleet/${v.id}`} className="font-medium tracking-[0.5px] underline decoration-[#D5D8DC]">{v.registrationNo}</Link>
+                      {isPlaceholderRegistration(v.registrationNo) && <span className="block text-xs text-orange-ink">Add number plate</span>}</td>
                     <td className="px-4 py-3">{shortName(v.model.name)}</td>
                     <td className="px-4 py-3 text-muted">{v.current?.name ?? v.home.name}<span className="block text-xs">Home: {v.home.name}</span></td>
                     <td className="px-4 py-3"><span className={cn('inline-flex h-7 items-center whitespace-nowrap rounded-full px-2.5 text-[13px]', v.status === 'MAINT' ? 'bg-orange-tint text-orange-ink' : v.onRide ? 'bg-ink text-surface' : 'bg-field')}>

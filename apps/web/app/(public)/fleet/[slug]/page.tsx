@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     absoluteTitle: true,
     description: `Rent the ${year}${m.name} in Dehradun for ${formatPaise(m.pricePerDayPaise)} a day including GST, with ${m.kmPerDay} km a day included and a ${formatPaise(m.depositPaise)} refundable deposit. Pickup at Dorm Hub, Sahastradhara Road.`,
     path: `/fleet/${m.slug}`,
-    image: bikePhoto(m.slug),
+    image: bikePhoto(m),
     keywords: [`${m.name} on rent Dehradun`, `${shortName(m.name)} rent Dehradun`, `${kind.toLowerCase()} on rent in Dehradun`, `${shortName(m.name)} for Mussoorie`],
   });
 }
@@ -56,7 +56,7 @@ export default async function VehicleModelPage({ params }: { params: Promise<{ s
           <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-4">
             <div className="flex h-[min(520px,70vw)] items-center justify-center rounded-[40px] bg-surface">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={bikePhoto(m.slug)} alt={`${m.name} on rent in Dehradun`} fetchPriority="high" className="h-[88%] w-[86%] object-contain" />
+              <img src={bikePhoto(m)} alt={`${m.name} on rent in Dehradun`} fetchPriority="high" className="h-[88%] w-[86%] object-contain" />
             </div>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(180px,100%),1fr))] gap-3">
               {facts.map(([big, small]) => <div key={small} className="rounded-card bg-surface p-5"><div className="text-2xl font-medium">{big}</div><div className="text-[15px] text-muted">{small}</div></div>)}

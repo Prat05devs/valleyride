@@ -1,6 +1,6 @@
 'use client';
 
-import type { BookingDTO, LocationDTO } from '@valleyride/shared';
+import { isPlaceholderRegistration, type BookingDTO, type LocationDTO } from '@valleyride/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { use, useState } from 'react';
@@ -33,6 +33,7 @@ export default function VehiclePage({ params }: { params: Promise<{ id: string }
   const [m, setM] = useState({ type: 'SERVICE', odometerKm: '', costRupees: '', performedOn: today, notes: '' });
   const [docEdit, setDocEdit] = useState<{ type: string; number: string; expiresOn: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reg, setReg] = useState<string | null>(null);
   if (!v) return <Panel>Loading…</Panel>;
   const upcoming = v.bookings.filter((b) => ['PENDING_PAYMENT', 'CONFIRMED', 'ONGOING'].includes(b.status) && new Date(b.endAt) > new Date()).reverse();
 
@@ -48,10 +49,22 @@ export default function VehiclePage({ params }: { params: Promise<{ id: string }
       <section className="flex flex-wrap items-center gap-5 rounded-sheet bg-surface p-5">
         <span className="flex h-[150px] flex-[1_1_220px] items-center justify-center rounded-3xl bg-field">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={bikePhoto(v.model.slug)} alt={v.model.name} className="h-[130px] w-[88%] object-contain" />
+          <img src={bikePhoto(v.model)} alt={v.model.name} className="h-[130px] w-[88%] object-contain" />
         </span>
         <div className="flex min-w-0 flex-[2_1_300px] flex-col gap-1.5">
-          <h1 className="m-0 text-[34px] font-medium tracking-[1px]">{v.registrationNo}</h1>
+          {reg === null ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="m-0 text-[34px] font-medium tracking-[1px]">{v.registrationNo}</h1>
+              {me?.role === 'admin' && <Button variant="field" size="sm" onClick={() => setReg(isPlaceholderRegistration(v.registrationNo) ? '' : v.registrationNo)}>Edit number plate</Button>}
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="label text-[13px]">Number plate<Input autoFocus className="h-11 w-48 bg-field" placeholder="UK07 RE 4205" value={reg} onChange={(e) => setReg(e.target.value.toUpperCase())} /></label>
+              <Button size="sm" disabled={reg.trim().length < 6} onClick={() => run(async () => { await api.patch(`/admin/vehicles/${v.id}`, { registrationNo: reg }); setReg(null); })}>Save</Button>
+              <Button size="sm" variant="field" onClick={() => setReg(null)}>Cancel</Button>
+            </div>
+          )}
+          {isPlaceholderRegistration(v.registrationNo) && reg === null && <span className="text-sm text-orange-ink">Placeholder number: enter the real number plate before this bike goes out.</span>}
           <span className="text-base text-muted">Current hub: {v.current?.name ?? v.home.name}</span>
           <span className="text-base text-muted">{v.model.name} · home {v.home.name}{v.purchasedOn ? ` · bought ${formatDay(v.purchasedOn)}` : ''}</span>
           <div className="mt-1.5 flex flex-wrap gap-2">

@@ -11,7 +11,7 @@ const PATH = '/bike-rental-dehradun';
 export const metadata = pageMetadata({
   title: 'Bike on Rent in Dehradun · Royal Enfield & Scooty | Valley Ride',
   absoluteTitle: true,
-  description: 'Rent a bike in Dehradun by the day, week or month: Honda Activa 125, Royal Enfield Hunter 350, Scram 440 and Himalayan 450. Pickup at Dorm Hub, Sahastradhara Road. Prices include GST; deposit refunded on return.',
+  description: 'Rent a bike in Dehradun by the day, week or month: Activa 125, Royal Enfield Hunter, Scram and Himalayan, KTM 390 Adventure X, Triumph Scrambler 400 X, XPulse 210 and V-Strom SX 250. Pickup at Dorm Hub, Sahastradhara Road. Prices include GST; deposit refunded on return.',
   path: PATH,
   keywords: ['bike on rent in Dehradun', 'bike rental Dehradun', 'bike rent Dehradun', 'two wheeler on rent Dehradun', 'rent a bike Dehradun', 'self drive bike Dehradun', 'bike rent near me Dehradun', 'bike rental Dehradun to Mussoorie'],
   languages: { 'en-IN': PATH, 'hi-IN': '/hi/bike-rental-dehradun' },
@@ -36,7 +36,7 @@ export default async function BikeRentalDehradunPage() {
         <Breadcrumbs dark items={[{ name: 'Bike rental in Dehradun' }]} />
         <h1 className="m-0 max-w-[820px] text-[clamp(40px,5.5vw,68px)] font-normal tracking-[-1.2px]">Bike on rent in Dehradun</h1>
         <p className="m-0 max-w-[680px] text-[19px] leading-normal text-white/85">
-          Rent a Honda Activa 125 or a Royal Enfield Hunter 350, Scram 440 or Himalayan 450 by the day, week or month. Pick it up at Dorm Hub on
+          Rent a Honda Activa 125, a Royal Enfield Hunter 350, Scram 440 or Himalayan 450, a KTM 390 Adventure X, Triumph Scrambler 400 X, Hero XPulse 210 or Suzuki V-Strom SX 250 by the day, week or month. Pick it up at Dorm Hub on
           Sahastradhara Road, ride to Mussoorie, Rishikesh or Dhanaulti, and get your deposit back on return.
         </p>
         <div className="mt-2 flex flex-wrap gap-2.5">

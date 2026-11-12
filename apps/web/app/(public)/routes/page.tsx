@@ -23,7 +23,7 @@ export default async function RoutesPage() {
   return (
     <div className="pb-20">
       <JsonLd data={breadcrumbJsonLd([{ name: 'Routes', path: '/routes' }])} />
-      <PhotoHero active="routes" photo="welcome">
+      <PhotoHero active="routes" photo="offroad" position="30% center">
         <h1 className="m-0 max-w-[720px] text-[clamp(40px,5vw,64px)] font-normal tracking-[-1.2px]">Ride the hills from Dehradun</h1>
         <p className="m-0 max-w-[560px] text-[19px] leading-normal text-white/85">{routes.length ? `${countWord(routes.length).replace(/^./, (c) => c.toUpperCase())} routes` : 'Routes'} our riders love, from Dehradun to Mussoorie, Rishikesh and the springs at Sahastradhara, with distances, ride times and the right bike for each.</p>
       </PhotoHero>

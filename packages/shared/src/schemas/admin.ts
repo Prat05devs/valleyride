@@ -1,17 +1,45 @@
 import { z } from 'zod';
 import { routeDetailsSchema } from './guide';
-import { INVESTMENT_STRUCTURES, MAINTENANCE_TYPES, VEHICLE_DOCUMENT_TYPES, VEHICLE_STATUSES } from '../constants';
+import { INVESTMENT_STRUCTURES, MAINTENANCE_TYPES, VEHICLE_CATEGORIES, VEHICLE_DOCUMENT_TYPES, VEHICLE_STATUSES } from '../constants';
 
 const dateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
 
+const registrationNo = z.string().trim().toUpperCase().regex(/^[A-Z]{2}\s?\d{1,2}\s?[A-Z]{0,3}\s?\d{1,4}$/, 'Use a registration like UK07 RE 4205');
+/** Units added before their number plates were known are seeded as "XX00 <MODEL> <n>"; the console flags them. */
+export const isPlaceholderRegistration = (r: string) => /^XX\s?00\b/.test(r);
+
 export const createVehicleSchema = z.object({
   vehicleModelId: z.string().uuid(),
-  registrationNo: z.string().trim().toUpperCase().regex(/^[A-Z]{2}\s?\d{1,2}\s?[A-Z]{0,3}\s?\d{1,4}$/, 'Use a registration like UK07 RE 4205'),
+  registrationNo,
   homeLocationId: z.string().uuid(),
   odometerKm: z.number().int().min(0).default(0),
   purchasedOn: dateOnly.optional(),
 });
 export type CreateVehicleInput = z.infer<typeof createVehicleSchema>;
+
+/** Correct a unit's number plate or purchase date (for example, replacing a placeholder registration). */
+export const updateVehicleSchema = z.object({
+  registrationNo: registrationNo.optional(),
+  purchasedOn: dateOnly.nullable().optional(),
+}).refine((v) => Object.keys(v).length > 0, 'Nothing to update');
+export type UpdateVehicleInput = z.infer<typeof updateVehicleSchema>;
+
+/** A new bike model. The slug (used in page addresses) is made from the name when not given; it cannot change later. */
+export const createVehicleModelSchema = z.object({
+  name: z.string().trim().min(3).max(120),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Lowercase letters, digits and dashes').min(3).max(60).optional(),
+  category: z.enum(VEHICLE_CATEGORIES),
+  engineCc: z.number().int().min(50).max(2500),
+  pricePerDayPaise: z.number().int().positive(),
+  depositPaise: z.number().int().min(0),
+  kmPerDay: z.number().int().positive(),
+  extraKmPaise: z.number().int().min(0),
+});
+export type CreateVehicleModelInput = z.infer<typeof createVehicleModelSchema>;
+
+/** Model photos uploaded from the console: PNG (ideally a transparent cut-out), JPEG or WebP. */
+export const MODEL_PHOTO_TYPES = ['image/png', 'image/jpeg', 'image/webp'] as const;
+export const MAX_MODEL_PHOTO_BYTES = 3 * 1024 * 1024;
 
 export const vehicleStatusSchema = z.object({ status: z.enum(VEHICLE_STATUSES), reason: z.string().trim().max(200).optional() });
 

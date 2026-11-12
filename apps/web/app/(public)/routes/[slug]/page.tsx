@@ -220,7 +220,7 @@ export default async function RouteGuidePage({ params }: { params: Promise<{ slu
             {bikes.map((m) => (
               <Link key={m.id} href={`/fleet/${m.slug}`} className="flex items-center gap-3.5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <span className="flex h-[76px] w-[110px] flex-none items-center justify-center rounded-[20px] bg-field"><img src={bikePhoto(m.slug)} alt={m.name} className="h-16 w-24 object-contain" /></span>
+                <span className="flex h-[76px] w-[110px] flex-none items-center justify-center rounded-[20px] bg-field"><img src={bikePhoto(m)} alt={m.name} className="h-16 w-24 object-contain" /></span>
                 <span className="flex-1">
                   <span className="block text-lg">{shortName(m.name)}</span>
                   <span className="text-[15px] text-muted">{formatPaise(m.pricePerDayPaise)}/day · {m.specs ? m.specs.highlights[0]?.value : `${m.engineCc} cc`} · {m.kmPerDay} km/day</span>

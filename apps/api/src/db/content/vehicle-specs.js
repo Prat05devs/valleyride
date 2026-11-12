@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Model-page content for the four launch models (2026 model year), keyed by vehicle_models.slug.
+ * Model-page content for every model in the fleet (2026 model year), keyed by vehicle_models.slug.
  * Engine, chassis and dimension figures are the manufacturers' published specifications (sources listed per model).
  * Mileage marked "real-world" is a typical range from owner reports, not a manufacturer figure.
  * `fromUs` is left empty: helmets, mounts, variant and colour are the owner's facts to add in the admin console.
@@ -279,5 +279,277 @@ module.exports = {
     ],
     fromUs: [],
     sources: [{ label: 'Royal Enfield: Himalayan 450 specifications', url: 'https://www.royalenfield.com/in/en/motorcycles/himalayan/' }],
+  },
+
+  'xpulse-210': {
+    modelYear: 2026,
+    overview:
+      "Hero's new dual-sport: a liquid-cooled 210 cc, 4-valve engine with 24.6 PS, a slip-and-assist clutch and a 6-speed gearbox, on a 21-inch front and 18-inch rear spoked wheel. With 210 mm of fork travel and 220 mm of ground clearance it is the lightest and easiest of our off-road capable bikes, and the one to pick for the dirt roads past Maldevta, Kanatal and Chakrata.",
+    highlights: [
+      { label: 'Power', value: '24.6 PS' },
+      { label: 'Torque', value: '20.7 Nm' },
+      { label: 'Mileage', value: '35–40 km/l' },
+      { label: 'Ground clearance', value: '220 mm' },
+    ],
+    groups: [
+      { title: 'Engine', rows: [
+        { label: 'Type', value: 'Single cylinder, 4-stroke, liquid-cooled, DOHC, 4 valves, fuel injection' },
+        { label: 'Displacement', value: '210 cc' },
+        { label: 'Max power', value: '24.6 PS at 9,250 rpm' },
+        { label: 'Max torque', value: '20.7 Nm at 7,250 rpm' },
+        { label: 'Gearbox', value: '6-speed' },
+        { label: 'Clutch', value: 'Wet multi-plate, assist and slipper' },
+      ] },
+      { title: 'Brakes, wheels and suspension', rows: [
+        { label: 'Front brake', value: '276 mm petal disc' },
+        { label: 'Rear brake', value: '220 mm petal disc' },
+        { label: 'ABS', value: 'Single-channel (Base) or dual-channel (Top), 3 ABS modes' },
+        { label: 'Wheels', value: 'Spoked, 21-inch front, 18-inch rear' },
+        { label: 'Tyres', value: '90/90-21 front, 120/80-18 rear' },
+        { label: 'Front suspension', value: '41 mm telescopic fork, 210 mm travel' },
+        { label: 'Rear suspension', value: 'Linkage mono-shock, 10-step preload, 205 mm travel' },
+      ] },
+      { title: 'Size and weight', rows: [
+        { label: 'Seat height', value: '830 mm' },
+        { label: 'Ground clearance', value: '220 mm' },
+        { label: 'Kerb weight', value: '168 kg (Base), 170 kg (Top)' },
+        { label: 'Fuel tank', value: '13 litres' },
+        { label: 'Wheelbase', value: '1,446 mm' },
+      ] },
+      { title: 'Features', rows: [
+        { label: 'Display', value: '4.2-inch LCD (Base) or colour TFT (Top)' },
+        { label: 'Phone', value: 'Bluetooth call and SMS alerts, turn-by-turn navigation' },
+        { label: 'Lights', value: 'LED projector headlamp with DRL, LED tail light and indicators' },
+      ] },
+    ],
+    mileage: {
+      claimed: null,
+      realWorld: '35–40 km/l',
+      tankL: 13,
+      range: 'About 450 km a tank',
+      note: 'Hero does not publish a mileage figure. Expect less on steep climbs and in low gears off-road.',
+    },
+    terrain: [
+      { label: 'City and traffic', score: 4, note: 'Light and narrow with a gentle clutch; the tall seat is the only thing to get used to.' },
+      { label: 'Hill climbs and hairpins', score: 4, note: 'Revs freely and pulls cleanly up to Mussoorie solo; keep it in the lower gears on the tightest bends.' },
+      { label: 'Highway', score: 3, note: 'Happy at 80–90 km/h; the knobbly-pattern tyres and small engine make it less relaxed beyond that.' },
+      { label: 'Broken roads and gravel', score: 5, note: 'The 21-inch front wheel and long-travel suspension are made for dirt, stream crossings and broken hill roads.' },
+      { label: 'Two up', score: 3, note: 'Fine for short trips; a heavier pair will feel the modest power on long climbs.' },
+    ],
+    goodToKnow: [
+      'The 830 mm seat is tall. Shorter riders may only reach the ground on the balls of their feet.',
+      'Off-road ABS mode turns off rear ABS for gravel; switch back to road mode for tarmac and rain.',
+      'Tubed tyres on spoked wheels: report any puncture and do not ride on a flat tyre.',
+      'The 13-litre tank gives about 450 km, the longest range in our fleet.',
+    ],
+    fromUs: [],
+    sources: [
+      { label: 'Hero MotoCorp: XPulse 210 specifications', url: 'https://www.heromotocorp.com/en-in/motorcycles/xpulse-210.html' },
+      { label: 'Autocar India: XPulse 210 specifications', url: 'https://www.autocarindia.com/bikes/hero-motocorp/xpulse-210/specifications' },
+    ],
+  },
+
+  'scrambler-400-x': {
+    modelYear: 2026,
+    overview:
+      "Triumph's modern scrambler: a liquid-cooled 349 cc, 4-valve single with ride-by-wire throttle, 37 PS and a slip-and-assist clutch, a 43 mm upside-down fork and 150 mm of travel at each end. It has a 19-inch front wheel, a 320 mm front disc with a 4-piston radial caliper, and the most premium feel of our mid-size bikes. Classic looks for the café run to Mussoorie and enough ability for the rough stretches beyond.",
+    highlights: [
+      { label: 'Power', value: '37 PS' },
+      { label: 'Torque', value: '32 Nm' },
+      { label: 'Mileage', value: '25–30 km/l' },
+      { label: 'Seat height', value: '835 mm' },
+    ],
+    groups: [
+      { title: 'Engine', rows: [
+        { label: 'Type', value: 'Single cylinder, liquid-cooled, DOHC, 4 valves, ride-by-wire' },
+        { label: 'Displacement', value: '349 cc' },
+        { label: 'Max power', value: '37 PS at 8,500 rpm' },
+        { label: 'Max torque', value: '32 Nm at 7,000 rpm' },
+        { label: 'Gearbox', value: '6-speed' },
+        { label: 'Clutch', value: 'Wet multi-plate, assist and slipper' },
+      ] },
+      { title: 'Brakes, wheels and suspension', rows: [
+        { label: 'Front brake', value: '320 mm disc, 4-piston radial caliper' },
+        { label: 'Rear brake', value: '230 mm disc, floating caliper' },
+        { label: 'ABS', value: 'Dual-channel' },
+        { label: 'Wheels', value: 'Cast alloy, 19-inch front, 17-inch rear' },
+        { label: 'Tyres', value: '100/90-19 front, 140/80-17 rear, tubeless' },
+        { label: 'Front suspension', value: '43 mm upside-down big-piston fork, 150 mm travel' },
+        { label: 'Rear suspension', value: 'Mono-shock with external reservoir, preload adjustable, 150 mm travel' },
+      ] },
+      { title: 'Size and weight', rows: [
+        { label: 'Seat height', value: '835 mm' },
+        { label: 'Kerb weight', value: '185 kg' },
+        { label: 'Fuel tank', value: '13 litres' },
+        { label: 'Wheelbase', value: '1,418 mm' },
+      ] },
+      { title: 'Features', rows: [
+        { label: 'Display', value: 'Analogue speedometer with digital screen' },
+        { label: 'Lights', value: 'Full LED' },
+        { label: 'Throttle', value: 'Ride-by-wire' },
+      ] },
+    ],
+    mileage: {
+      claimed: null,
+      realWorld: '25–30 km/l',
+      tankL: 13,
+      range: 'About 350 km a tank',
+      note: 'A typical range from owner reports. Expect the lower end with a pillion or on long climbs.',
+    },
+    terrain: [
+      { label: 'City and traffic', score: 4, note: 'Wide bars and a light clutch make it easy in traffic; it runs warm in slow summer queues.' },
+      { label: 'Hill climbs and hairpins', score: 5, note: 'Strong mid-range and sharp brakes for the Mussoorie and Dhanaulti bends.' },
+      { label: 'Highway', score: 4, note: 'Cruises comfortably at 90–100 km/h to Rishikesh or Haridwar.' },
+      { label: 'Broken roads and gravel', score: 4, note: 'Long-travel suspension and the 19-inch front handle gravel and broken roads well.' },
+      { label: 'Two up', score: 3, note: 'The flat seat works for two on day rides; the pillion space is short for long trips.' },
+    ],
+    goodToKnow: [
+      'The 835 mm seat is tall-ish but the bike is slim, so most riders reach the ground comfortably.',
+      'The front brake is strong: squeeze it progressively, especially on wet roads.',
+      'Fill up in Dehradun before a hill ride; fuel stations thin out past Mussoorie.',
+    ],
+    fromUs: [],
+    sources: [
+      { label: 'Triumph Motorcycles India: Scrambler 400 X specification', url: 'https://www.triumphmotorcycles.in/motorcycles/classic/scrambler-400-x/specification' },
+      { label: 'Autocar India: Scrambler 400 X specifications', url: 'https://www.autocarindia.com/bikes/triumph/scrambler-400-x/specifications' },
+    ],
+  },
+
+  'v-strom-sx-250': {
+    modelYear: 2026,
+    overview:
+      "Suzuki's small adventure tourer: a smooth, oil-cooled 249 cc single with 26.5 PS, an upright riding position, a 19-inch front wheel and 205 mm of ground clearance. The Bluetooth console shows calls and turn-by-turn directions, and there is a USB port for your phone. A comfortable, frugal and easy-going bike for long days to Mussoorie, Dhanaulti, Chopta or Auli.",
+    highlights: [
+      { label: 'Power', value: '26.5 PS' },
+      { label: 'Torque', value: '22.2 Nm' },
+      { label: 'Mileage', value: '30–35 km/l' },
+      { label: 'Ground clearance', value: '205 mm' },
+    ],
+    groups: [
+      { title: 'Engine', rows: [
+        { label: 'Type', value: 'Single cylinder, oil-cooled (SOCS), SOHC, 4 valves, fuel injection' },
+        { label: 'Displacement', value: '249 cc' },
+        { label: 'Max power', value: '26.5 PS at 9,300 rpm' },
+        { label: 'Max torque', value: '22.2 Nm at 7,300 rpm' },
+        { label: 'Gearbox', value: '6-speed' },
+        { label: 'Start', value: 'Suzuki Easy Start (one push)' },
+      ] },
+      { title: 'Brakes, wheels and suspension', rows: [
+        { label: 'Front brake', value: '300 mm disc' },
+        { label: 'Rear brake', value: '220 mm disc' },
+        { label: 'ABS', value: 'Dual-channel' },
+        { label: 'Wheels', value: 'Cast alloy, 19-inch front, 17-inch rear' },
+        { label: 'Tyres', value: '100/90-19 front, 140/70-17 rear, tubeless' },
+        { label: 'Front suspension', value: 'Telescopic fork, 120 mm travel' },
+        { label: 'Rear suspension', value: 'Mono-shock, 7-step preload adjustable' },
+      ] },
+      { title: 'Size and weight', rows: [
+        { label: 'Seat height', value: '835 mm' },
+        { label: 'Ground clearance', value: '205 mm' },
+        { label: 'Kerb weight', value: '167 kg' },
+        { label: 'Fuel tank', value: '12 litres' },
+        { label: 'Wheelbase', value: '1,440 mm' },
+      ] },
+      { title: 'Features', rows: [
+        { label: 'Display', value: 'Digital console with Bluetooth' },
+        { label: 'Phone app', value: 'Suzuki Ride Connect: navigation, call alerts, ETA' },
+        { label: 'Charging', value: 'USB port by the console' },
+        { label: 'Lights', value: 'LED headlamp and tail light' },
+        { label: 'Luggage', value: 'Rear carrier (6 kg)' },
+      ] },
+    ],
+    mileage: {
+      claimed: null,
+      realWorld: '30–35 km/l',
+      tankL: 12,
+      range: 'About 380 km a tank',
+      note: 'A typical range from owner reports, solo at steady speeds.',
+    },
+    terrain: [
+      { label: 'City and traffic', score: 4, note: 'Smooth, light clutch and an upright seat; the tall front makes it feel bigger than it is.' },
+      { label: 'Hill climbs and hairpins', score: 4, note: 'Pulls steadily up to Mussoorie; use second and third on the steep hairpins.' },
+      { label: 'Highway', score: 4, note: 'Comfortable at 80–90 km/h with good wind protection from the beak and screen.' },
+      { label: 'Broken roads and gravel', score: 4, note: 'Ground clearance and the 19-inch front cope well with broken roads and gravel.' },
+      { label: 'Two up', score: 4, note: 'A roomy seat, grab rails and carrier make it good for couples on multi-day trips.' },
+    ],
+    goodToKnow: [
+      'Pair the Suzuki Ride Connect app before you leave to get directions on the console.',
+      'Oil-cooled engine: there is no coolant to check, but let it idle a minute on cold mornings.',
+      'The carrier takes up to 6 kg; ask us about luggage straps.',
+    ],
+    fromUs: [],
+    sources: [
+      { label: 'Suzuki Motorcycle India: V-Strom SX', url: 'https://www.suzukimotorcycle.co.in/product-details/v-strom-sx' },
+      { label: 'Autocar India: V-Strom SX specifications', url: 'https://www.autocarindia.com/bikes/suzuki/v-strom-sx/specifications' },
+    ],
+  },
+
+  '390-adventure-x': {
+    modelYear: 2026,
+    overview:
+      "KTM's mid-size adventure bike: a liquid-cooled 399 cc single with 46 PS, the most powerful bike in our fleet, with ride-by-wire, Quickshifter+ and a slipper clutch. WP APEX suspension gives 200 mm of travel at the front and 205 mm at the rear, with about 228 mm of ground clearance, 19/17-inch alloy wheels and a 14.5-litre tank. For experienced riders heading to Chakrata, Harsil, Chopta and the high passes.",
+    highlights: [
+      { label: 'Power', value: '46 PS' },
+      { label: 'Torque', value: '39 Nm' },
+      { label: 'Mileage', value: '25–30 km/l' },
+      { label: 'Ground clearance', value: '228 mm' },
+    ],
+    groups: [
+      { title: 'Engine', rows: [
+        { label: 'Type', value: 'Single cylinder, liquid-cooled, DOHC, 4 valves, ride-by-wire' },
+        { label: 'Displacement', value: '398.63 cc' },
+        { label: 'Max power', value: '46 PS at 8,500 rpm' },
+        { label: 'Max torque', value: '39 Nm at 6,500 rpm' },
+        { label: 'Gearbox', value: '6-speed with Quickshifter+ (up and down)' },
+        { label: 'Clutch', value: 'Assist and slipper' },
+      ] },
+      { title: 'Brakes, wheels and suspension', rows: [
+        { label: 'Front brake', value: '320 mm disc, radial caliper' },
+        { label: 'Rear brake', value: '240 mm disc, floating caliper' },
+        { label: 'ABS', value: 'Dual-channel with Off-road ABS (rear can be switched off)' },
+        { label: 'Wheels', value: 'Cast alloy, 19-inch front, 17-inch rear, tubeless' },
+        { label: 'Tyres', value: '100/90-19 front, 130/80-17 rear' },
+        { label: 'Front suspension', value: 'WP APEX 43 mm upside-down fork, 200 mm travel' },
+        { label: 'Rear suspension', value: 'WP APEX mono-shock, 10-step preload, 205 mm travel' },
+      ] },
+      { title: 'Size and weight', rows: [
+        { label: 'Seat height', value: '825 mm' },
+        { label: 'Ground clearance', value: 'About 228 mm' },
+        { label: 'Kerb weight', value: 'About 182 kg' },
+        { label: 'Fuel tank', value: '14.5 litres' },
+        { label: 'Wheelbase', value: '1,470 mm' },
+      ] },
+      { title: 'Features', rows: [
+        { label: 'Display', value: '5-inch TFT' },
+        { label: 'Ride modes', value: 'Street and Off-road' },
+        { label: 'Charging', value: 'USB socket' },
+        { label: 'Lights', value: 'LED projector headlamp' },
+      ] },
+    ],
+    mileage: {
+      claimed: null,
+      realWorld: '25–30 km/l',
+      tankL: 14.5,
+      range: 'About 400 km a tank',
+      note: 'A typical range from owner reports. Hard riding and long climbs bring it down.',
+    },
+    terrain: [
+      { label: 'City and traffic', score: 3, note: 'Manageable, but it heats up and feels tall and eager in slow Dehradun traffic.' },
+      { label: 'Hill climbs and hairpins', score: 5, note: 'Plenty of power for steep climbs with a pillion and luggage.' },
+      { label: 'Highway', score: 5, note: 'Cruises easily at 100 km/h with power in reserve for overtaking.' },
+      { label: 'Broken roads and gravel', score: 5, note: 'Long-travel WP suspension and Off-road ABS make broken mountain roads easy.' },
+      { label: 'Two up', score: 4, note: 'Strong enough for two with luggage; the pillion seat is firm on long days.' },
+    ],
+    goodToKnow: [
+      'For experienced riders: 46 PS is a big step up from a 350.',
+      'Quickshifter+ changes gear without the clutch above walking pace; use the clutch to pull away and stop.',
+      'Off-road ABS switches off rear ABS for gravel. Switch it back to Street on tarmac.',
+      'Traction control and cruise control are not fitted to the X version.',
+    ],
+    fromUs: [],
+    sources: [
+      { label: 'KTM India: 390 Adventure X', url: 'https://www.ktm.com/en-in/models/adventure/ktm-390-adventure-x' },
+      { label: 'Autocar India: 390 Adventure X specifications', url: 'https://www.autocarindia.com/bikes/ktm/390-adventure-x/specifications' },
+    ],
   },
 };

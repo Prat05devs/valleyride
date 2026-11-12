@@ -69,7 +69,7 @@ export default function Trips() {
               <Tag label={STATUS_LABEL[b.status]} tone={b.status === 'PENDING_PAYMENT' ? 'orange' : 'ink'} />
               <T v="label" style={{ color: colors.orangeInk }}>{b.status === 'ONGOING' ? `Return ${fmtDateTime(b.endAt)}` : pickupIn(b.startAt)}</T>
             </View>
-            {m && <Image source={bikePhoto(m.slug)} style={{ width: '100%', height: 150 }} contentFit="contain" accessibilityLabel={m.name} />}
+            {m && <Image source={bikePhoto(m)} style={{ width: '100%', height: 150 }} contentFit="contain" accessibilityLabel={m.name} />}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <T v="cardTitle">{m ? shortName(m.name) : 'Your bike'}</T>
               <T v="label" style={{ letterSpacing: 1 }}>{b.code}</T>
@@ -88,7 +88,7 @@ export default function Trips() {
         const m = byId(b.vehicleModelId);
         return (
           <Card key={b.id} onPress={() => open(b)} style={{ flexDirection: 'row', gap: 14, alignItems: 'center', padding: 14 }}>
-            <View style={styles.thumb}>{m && <Image source={bikePhoto(m.slug)} style={{ width: 74, height: 68 }} contentFit="contain" />}</View>
+            <View style={styles.thumb}>{m && <Image source={bikePhoto(m)} style={{ width: 74, height: 68 }} contentFit="contain" />}</View>
             <View style={{ flex: 1, gap: 3 }}>
               <T style={{ fontSize: 17 }}>{m ? shortName(m.name) : b.code}</T>
               <T v="label">{fmtDate(b.startAt)} → {fmtDate(b.endAt)} · {b.code}</T>

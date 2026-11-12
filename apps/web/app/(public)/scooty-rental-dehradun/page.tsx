@@ -32,7 +32,7 @@ export default async function ScootyRentalPage() {
   return (
     <div className="pb-6">
       <JsonLd data={[breadcrumbJsonLd([{ name: 'Bike rental in Dehradun', path: '/bike-rental-dehradun' }, { name: 'Scooty on rent', path: PATH }]), faqJsonLd(faqs)]} />
-      <PhotoHero position="center 55%" minH={500}>
+      <PhotoHero photo="city" position="40% center" minH={500}>
         <Breadcrumbs dark items={[{ name: 'Bike rental in Dehradun', path: '/bike-rental-dehradun' }, { name: 'Scooty on rent' }]} />
         <h1 className="m-0 max-w-[820px] text-[clamp(40px,5.5vw,68px)] font-normal tracking-[-1.2px]">Scooty on rent in Dehradun</h1>
         <p className="m-0 max-w-[680px] text-[19px] leading-normal text-white/85">

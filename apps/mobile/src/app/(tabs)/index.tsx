@@ -70,7 +70,7 @@ export default function Home() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: 20 }}>
           {picks.map((m) => (
             <Card key={m.id} style={{ width: 300, gap: 12 }} onPress={() => router.push({ pathname: '/bike/[slug]', params: { slug: m.slug } })}>
-              <Image source={bikePhoto(m.slug)} style={{ width: '100%', height: 160 }} contentFit="contain" accessibilityLabel={m.name} />
+              <Image source={bikePhoto(m)} style={{ width: '100%', height: 160 }} contentFit="contain" accessibilityLabel={m.name} />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View><T v="cardTitle">{shortName(m.name)}</T><T v="label" style={{ marginTop: 2 }}>{brandOf(m.name)} · {BIKE_COPY[m.slug]?.tag}</T></View>
                 <View style={{ alignItems: 'flex-end' }}><T v="price">{inr(m.pricePerDayPaise)}</T><T v="label">/day</T></View>
@@ -106,7 +106,7 @@ export default function Home() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }}>
           {models.map((m) => (
             <Card key={m.id} style={{ width: 168, padding: 14, gap: 6 }} onPress={() => router.push({ pathname: '/bike/[slug]', params: { slug: m.slug } })}>
-              <Image source={bikePhoto(m.slug)} style={{ width: '100%', height: 104 }} contentFit="contain" accessibilityLabel={m.name} />
+              <Image source={bikePhoto(m)} style={{ width: '100%', height: 104 }} contentFit="contain" accessibilityLabel={m.name} />
               <T>{shortName(m.name)}</T>
               <Text style={{ fontFamily: fonts.medium, fontSize: 15 }}>{inr(m.pricePerDayPaise)}<Text style={{ fontFamily: fonts.regular, fontSize: 14, color: colors.muted }}>/day</Text></Text>
             </Card>

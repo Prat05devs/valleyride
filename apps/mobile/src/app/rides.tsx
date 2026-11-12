@@ -69,7 +69,7 @@ export default function Rides() {
                     <Tag label={BIKE_COPY[m.slug]?.tag ?? m.category} />
                     <T v="label" style={{ color: colors.orangeInk }}>{n === 0 ? 'Fully booked' : n <= 2 ? `Only ${n} left` : `${n} free`}</T>
                   </View>
-                  <Image source={bikePhoto(m.slug)} style={{ width: '100%', height: 160 }} contentFit="contain" accessibilityLabel={m.name} />
+                  <Image source={bikePhoto(m)} style={{ width: '100%', height: 160 }} contentFit="contain" accessibilityLabel={m.name} />
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: 10 }}>
                     <View style={{ flexShrink: 1 }}>
                       <T v="label">{brandOf(m.name)}</T>

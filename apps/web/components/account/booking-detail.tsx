@@ -18,9 +18,10 @@ import { pickupIn, STATUS_LABEL, useCatalog } from '@/lib/use-catalog';
 import { useMe } from '@/lib/use-me';
 import { cn } from '@/lib/utils';
 import { istInputToIso, isoToIstInput } from '@/lib/when';
+import { DESK_PHONE } from '@/lib/legal';
 
 interface HandoverView { registrationNo: string | null; pickup: HandoverDTO | null; return: HandoverDTO | null }
-const DESK = process.env.NEXT_PUBLIC_DESK_PHONE;
+const DESK = DESK_PHONE;
 
 export function BookingDetail({ id }: { id: string }) {
   const qc = useQueryClient();
@@ -71,7 +72,7 @@ export function BookingDetail({ id }: { id: string }) {
           <section className="flex flex-wrap items-center gap-5 rounded-sheet bg-surface p-6">
             <span className="flex h-40 flex-[1_1_220px] items-center justify-center rounded-3xl bg-field">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {m && <img src={bikePhoto(m.slug)} alt={m.name} className="h-[140px] w-[88%] object-contain" />}
+              {m && <img src={bikePhoto(m)} alt={m.name} className="h-[140px] w-[88%] object-contain" />}
             </span>
             <div className="flex min-w-0 flex-[2_1_280px] flex-col gap-2">
               <span className="text-[26px]">{m?.name}{handover.data?.registrationNo ? ` · ${handover.data.registrationNo}` : ''}</span>

@@ -48,7 +48,7 @@ export default function BookingsPage() {
           <Link key={b.id} href={b.status === 'PENDING_PAYMENT' ? `/checkout/${b.id}` : `/account/bookings/${b.id}`} className="flex flex-wrap items-center gap-5 rounded-sheet bg-surface p-5">
             <span className="flex h-[150px] flex-[1_1_200px] items-center justify-center rounded-3xl bg-field">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {m && <img src={bikePhoto(m.slug)} alt={m.name} className="h-[130px] w-[88%] object-contain" />}
+              {m && <img src={bikePhoto(m)} alt={m.name} className="h-[130px] w-[88%] object-contain" />}
             </span>
             <span className="flex min-w-0 flex-[2_1_260px] flex-col gap-1.5">
               <span className="flex items-center gap-2"><Badge variant={b.status === 'PENDING_PAYMENT' ? 'orange' : 'ink'} className="h-7 text-[13px]">{STATUS_LABEL[b.status]}</Badge><span className="text-sm text-orange-ink">{b.status === 'ONGOING' ? `Return ${formatDateTime(b.endAt)}` : pickupIn(b.startAt)}</span></span>
@@ -70,7 +70,7 @@ export default function BookingsPage() {
             return (
               <Link key={b.id} href={`/account/bookings/${b.id}`} className={cn('flex flex-wrap items-center gap-4 py-4', i < past.length - 1 && 'border-b border-line')}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {m && <img src={bikePhoto(m.slug)} alt={m.name} className="h-16 w-20 object-contain" />}
+                {m && <img src={bikePhoto(m)} alt={m.name} className="h-16 w-20 object-contain" />}
                 <span className="flex-[1_1_240px]"><span className="block text-lg">{m ? shortName(m.name) : ''} · {b.code}</span><span className="text-sm text-muted">{formatDate(b.startAt)} → {formatDate(b.endAt)} · {location(b.pickupLocationId)?.name}</span></span>
                 <Badge className="h-8">{b.status === 'DEPOSIT_SETTLED' ? `Deposit refunded · ${formatPaise(b.depositPaise)}` : b.status === 'COMPLETED' ? 'Deposit being checked' : STATUS_LABEL[b.status]}</Badge>
               </Link>

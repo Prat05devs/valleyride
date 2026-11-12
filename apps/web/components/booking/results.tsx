@@ -71,7 +71,7 @@ export function Results({ results, search, summary, tierHint }: {
           <div key={r.model.id} className="flex flex-wrap items-center gap-5 rounded-sheet bg-surface p-5">
             <div className="flex h-[170px] min-w-0 flex-[1_1_220px] items-center justify-center rounded-3xl bg-field">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={bikePhoto(r.model.slug)} alt={r.model.name} className="h-[150px] w-[88%] object-contain" />
+              <img src={bikePhoto(r.model)} alt={r.model.name} className="h-[150px] w-[88%] object-contain" />
             </div>
             <div className="flex min-w-0 flex-[2_1_240px] flex-col gap-1.5">
               <span className="inline-flex h-7 items-center self-start rounded-full bg-field px-3 text-[13px]">{CATEGORY_LABEL[r.model.category]} · {BIKE_COPY[r.model.slug]?.tag}</span>

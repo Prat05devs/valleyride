@@ -5,6 +5,7 @@ import { couponService } from '../pricing/coupon.service';
 import { pricingService } from '../pricing/pricing.service';
 import { routeGuideService } from '../content/routes-guide.service';
 import { vehicleSpecsService } from '../content/specs.service';
+import { modelPhotoService } from '../fleet/model-photos';
 
 const actor = (req: Request) => ({ id: req.user!.id, ip: req.ip ?? null });
 const id = (req: Request) => String(req.params.id);
@@ -58,6 +59,10 @@ export const createPricingRule = async (req: Request, res: Response) => { res.st
 export const updatePricingRule = async (req: Request, res: Response) => { res.json({ data: await pricingService.saveRule(actor(req), { ...req.body, id: id(req) }) }); };
 export async function deletePricingRule(req: Request, res: Response) { await pricingService.deleteRule(actor(req), id(req)); res.status(204).end(); }
 export const updateVehicleModel = async (req: Request, res: Response) => { res.json({ data: await pricingService.updateModel(actor(req), id(req), req.body) }); };
+export const updateVehicle = async (req: Request, res: Response) => { const v = await adminService.updateVehicle(actor(req), id(req), req.body); res.json({ data: { id: v.id, registrationNo: v.registrationNo, purchasedOn: v.purchasedOn } }); };
+export const createVehicleModel = async (req: Request, res: Response) => { res.status(201).json({ data: await adminService.createVehicleModel(actor(req), req.body) }); };
+export const setModelPhoto = async (req: Request, res: Response) => { res.json({ data: await modelPhotoService.set(actor(req), id(req), req.body) }); };
+export const clearModelPhoto = async (req: Request, res: Response) => { res.json({ data: await modelPhotoService.clear(actor(req), id(req)) }); };
 export const updateVehicleSpecs = async (req: Request, res: Response) => { res.json({ data: await vehicleSpecsService.save(actor(req), id(req), req.body) }); };
 
 export const routeGuides = async (_req: Request, res: Response) => { res.json({ data: await routeGuideService.list() }); };

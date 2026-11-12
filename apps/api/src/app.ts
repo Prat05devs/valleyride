@@ -11,6 +11,7 @@ import { paymentWebhookRouter } from './modules/payment/payment.webhook';
 import { env } from './config/env';
 import { docsRouter } from './docs/openapi';
 import { readiness } from './health';
+import { mediaRouter } from './modules/fleet/model-photos';
 
 export const app = express();
 app.set('trust proxy', 1);
@@ -26,6 +27,7 @@ app.use('/static', express.static(path.join(__dirname, '../public'), {
   maxAge: '7d', index: false, fallthrough: true,
   setHeaders: (res) => res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'),
 }));
+app.use(mediaRouter);                                        // uploaded model photos: /media/models/<file>
 app.get('/health', (_req, res) => res.json({ ok: true }));
 app.get('/ready', readiness);
 if (env.NODE_ENV !== 'production') app.use(docsRouter);      // OpenAPI from the Zod schemas: /api/docs (not public in production)

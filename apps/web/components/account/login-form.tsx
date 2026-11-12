@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { api, ApiError } from '@/lib/api-client';
 import type { SessionUser } from '@/lib/auth';
 import { cn } from '@/lib/utils';
+import { SUPPORT_PHONE } from '@/lib/legal';
 
-const WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP;
+const WHATSAPP = SUPPORT_PHONE;
 
 /** Phone number and password. Cookies are set by the API (httpOnly). New riders create their account here too. */
 export function LoginForm() {

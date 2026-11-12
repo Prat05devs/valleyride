@@ -40,7 +40,7 @@ export default function PlacesNearDehradunPage() {
   return (
     <div className="pb-6">
       <JsonLd data={[breadcrumbJsonLd([{ name: 'Places to ride from Dehradun', path: PATH }]), placesJsonLd(), faqJsonLd(FAQS)]} />
-      <PhotoHero photo="welcome" position="center 40%" minH={500}>
+      <PhotoHero photo="touring" position="35% center" minH={500}>
         <Breadcrumbs dark items={[{ name: 'Places to ride from Dehradun' }]} />
         <h1 className="m-0 max-w-[900px] text-[clamp(40px,5.5vw,68px)] font-normal tracking-[-1.2px]">Places to visit near Dehradun by bike</h1>
         <p className="m-0 max-w-[700px] text-[19px] leading-normal text-white/85">

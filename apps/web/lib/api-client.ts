@@ -19,13 +19,14 @@ export interface RequestOptions {
 
 async function request<T>(method: string, path: string, body: unknown, opts: RequestOptions = {}, retried = false): Promise<T> {
   const headers = new Headers(opts.headers);
-  if (body !== undefined) headers.set('Content-Type', 'application/json');
+  const raw = typeof Blob !== 'undefined' && body instanceof Blob; // file uploads go as the raw bytes
+  if (body !== undefined) headers.set('Content-Type', raw ? (body as Blob).type || 'application/octet-stream' : 'application/json');
   if (opts.idempotencyKey) headers.set('Idempotency-Key', opts.idempotencyKey);
 
   const res = await fetch(`${API_URL}/api/v1${path}`, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : raw ? (body as Blob) : JSON.stringify(body),
     credentials: 'include',
     cache: opts.cache,
     next: opts.next,
@@ -51,6 +52,8 @@ export const api = {
   patch: <T>(path: string, body?: unknown, opts?: RequestOptions) => request<T>('PATCH', path, body ?? {}, opts),
   put: <T>(path: string, body?: unknown, opts?: RequestOptions) => request<T>('PUT', path, body ?? {}, opts),
   delete: <T = void>(path: string, opts?: RequestOptions) => request<T>('DELETE', path, undefined, opts),
+  /** PUT a file as the raw request body (model photos). */
+  upload: <T>(path: string, file: Blob, opts?: RequestOptions) => request<T>('PUT', path, file, opts),
 };
 
 /** Editorial images: "/static/…" paths are served by the API; absolute URLs pass through. */

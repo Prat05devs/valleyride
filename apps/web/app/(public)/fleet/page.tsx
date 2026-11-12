@@ -9,7 +9,7 @@ export const revalidate = 300;   // ISR: rebuild every 5 minutes; prices change 
 export const metadata = pageMetadata({
   title: 'Bike Rent Prices in Dehradun: Activa 125 and Royal Enfield | Valley Ride',
   absoluteTitle: true,
-  description: 'Daily rent, km included, extra-km rate and deposit for every Valley Ride bike in Dehradun: Honda Activa 125, Royal Enfield Hunter 350, Scram 440 and Himalayan 450. Prices include GST.',
+  description: 'Daily rent, km included, extra-km rate and deposit for every Valley Ride bike in Dehradun: Honda Activa 125, Royal Enfield Hunter 350, Scram 440 and Himalayan 450, KTM 390 Adventure X, Triumph Scrambler 400 X, Hero XPulse 210 and Suzuki V-Strom SX 250. Prices include GST.',
   path: '/fleet',
   keywords: ['bike rent price Dehradun', 'scooty rent price Dehradun', 'Royal Enfield rent price Dehradun', 'bike rental fleet Dehradun'],
 });

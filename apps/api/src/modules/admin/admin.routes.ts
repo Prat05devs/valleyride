@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import {
-  calendarQuerySchema, createCouponSchema, createVehicleSchema, maintenanceSchema, monthQuerySchema, pricingRuleSchema,
-  routeGuideInputSchema, uuid, vehicleDocumentSchema, vehicleModelPriceSchema, vehicleSpecsSchema, vehicleStatusSchema,
+  calendarQuerySchema, createCouponSchema, createVehicleModelSchema, createVehicleSchema, maintenanceSchema, monthQuerySchema, pricingRuleSchema,
+  routeGuideInputSchema, updateVehicleSchema, uuid, vehicleDocumentSchema, vehicleModelPriceSchema, vehicleSpecsSchema, vehicleStatusSchema,
 } from '@valleyride/shared';
 import { authenticate, authorize } from '../../middleware/auth';
 import { requireIdempotencyKey } from '../../middleware/idempotency';
 import { validate } from '../../middleware/validate';
+import { rawPhotoBody } from '../fleet/model-photos';
 import * as ctrl from './admin.controller';
 
 /** Staff and admin console. Every route is behind authorize('staff') or authorize('admin'). */
@@ -20,6 +21,7 @@ adminRouter.get('/admin/dashboard', ...staff, ctrl.dashboard);
 adminRouter.get('/admin/vehicles', ...staff, ctrl.vehicles);
 adminRouter.get('/admin/vehicles/:id', ...staff, validate({ params: idParams }), ctrl.vehicle);
 adminRouter.post('/admin/vehicles', ...admin, validate({ body: createVehicleSchema }), ctrl.createVehicle);
+adminRouter.patch('/admin/vehicles/:id', ...admin, validate({ params: idParams, body: updateVehicleSchema }), ctrl.updateVehicle);
 adminRouter.patch('/admin/vehicles/:id/location', ...admin, validate({ params: idParams, body: z.object({ locationId: uuid, reason: z.string().trim().min(3).max(300) }) }), ctrl.relocateVehicle);
 adminRouter.patch('/admin/vehicles/:id/status', ...staff, validate({ params: idParams, body: vehicleStatusSchema }), ctrl.setVehicleStatus);
 adminRouter.post('/admin/vehicles/:id/maintenance', ...staff, validate({ params: idParams, body: maintenanceSchema }), ctrl.logMaintenance);
@@ -42,6 +44,9 @@ adminRouter.get('/admin/pricing-rules', ...admin, ctrl.pricingRules);
 adminRouter.post('/admin/pricing-rules', ...admin, validate({ body: pricingRuleSchema }), ctrl.createPricingRule);
 adminRouter.patch('/admin/pricing-rules/:id', ...admin, validate({ params: idParams, body: pricingRuleSchema }), ctrl.updatePricingRule);
 adminRouter.delete('/admin/pricing-rules/:id', ...admin, validate({ params: idParams }), ctrl.deletePricingRule);
+adminRouter.post('/admin/vehicle-models', ...admin, validate({ body: createVehicleModelSchema }), ctrl.createVehicleModel);
+adminRouter.put('/admin/vehicle-models/:id/photo', ...admin, validate({ params: idParams }), rawPhotoBody, ctrl.setModelPhoto);
+adminRouter.delete('/admin/vehicle-models/:id/photo', ...admin, validate({ params: idParams }), ctrl.clearModelPhoto);
 adminRouter.patch('/admin/vehicle-models/:id', ...admin, validate({ params: idParams, body: vehicleModelPriceSchema }), ctrl.updateVehicleModel);
 adminRouter.put('/admin/vehicle-models/:id/specs', ...staff, validate({ params: idParams, body: vehicleSpecsSchema }), ctrl.updateVehicleSpecs);
 

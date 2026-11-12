@@ -67,7 +67,7 @@ export default function Bike() {
             <BackButton bg={colors.field} />
             {free !== null && <Tag tone="orange" label={free ? `${free} free on your dates` : 'Fully booked on your dates'} />}
           </Row>
-          <Image source={bikePhoto(m.slug)} style={{ width: '100%', height: 230, marginTop: 10 }} contentFit="contain" accessibilityLabel={m.name} />
+          <Image source={bikePhoto(m)} style={{ width: '100%', height: 230, marginTop: 10 }} contentFit="contain" accessibilityLabel={m.name} />
         </View>
         <View style={{ padding: 20, gap: 16 }}>
           <View>

@@ -205,7 +205,7 @@ function Ongoing({ booking, model, ret, handover, refresh }: P) {
           <Tile icon="phone" label="Call desk" disabled={!DESK_PHONE} onPress={() => DESK_PHONE && call(DESK_PHONE)} />
         </View>
         <Card style={{ flexDirection: 'row', gap: 14, alignItems: 'center', padding: 14 }}>
-          <View style={styles.thumb}>{model && <Image source={bikePhoto(model.slug)} style={{ width: 86, height: 60 }} contentFit="contain" />}</View>
+          <View style={styles.thumb}>{model && <Image source={bikePhoto(model)} style={{ width: 86, height: 60 }} contentFit="contain" />}</View>
           <View style={{ flex: 1 }}>
             <T style={{ fontSize: 17 }}>{model ? shortName(model.name) : 'Your bike'}</T>
             <T v="label" style={{ marginTop: 2 }}>{[handover?.registrationNo, p?.signedAt && `picked up ${fmtDate(p.signedAt)} ${fmtTime(p.signedAt)}`].filter(Boolean).join(' · ')}</T>

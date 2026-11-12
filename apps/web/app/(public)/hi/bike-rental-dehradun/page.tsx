@@ -70,7 +70,7 @@ export default async function HindiBikeRentalPage() {
               return (
                 <Link key={b.slug} href={`/fleet/${b.slug}`} className="flex flex-col gap-2.5 rounded-sheet bg-surface px-5 pb-5 pt-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={bikePhoto(b.slug)} alt={`${b.name} देहरादून में किराये पर`} loading="lazy" className="h-[160px] w-full object-contain" />
+                  <img src={bikePhoto(b)} alt={`${b.name} देहरादून में किराये पर`} loading="lazy" className="h-[160px] w-full object-contain" />
                   <span className="text-xl">{b.name}</span>
                   {m && <span className="text-[15px] text-muted">{formatPaise(m.pricePerDayPaise)} प्रति दिन · {m.kmPerDay} किमी प्रति दिन शामिल · {formatPaise(m.depositPaise)} डिपॉज़िट</span>}
                   <span className="text-[15px] leading-normal text-body">{b.use}</span>

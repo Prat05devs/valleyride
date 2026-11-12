@@ -10,8 +10,9 @@ import { BIKE_COPY, brandOf, shortName } from '@/lib/bikes';
 import { formatMinus, formatPaise } from '@/lib/format';
 import { holdBike } from '@/lib/hold';
 import { defaultWindow, istInputToIso, offerReturn, windowError } from '@/lib/when';
+import { SUPPORT_PHONE } from '@/lib/legal';
 
-const WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP;
+const WHATSAPP = SUPPORT_PHONE;
 
 /** Bike page aside: dates and pickup point, live availability and the exact quote, then a 15-minute hold. */
 export function BookPanel({ model, locations }: { model: VehicleModelDTO; locations: LocationDTO[] }) {

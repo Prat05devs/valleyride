@@ -9,7 +9,7 @@ const urbanist = Urbanist({ subsets: ['latin'], weight: ['400', '500'], variable
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: 'Bike & Scooty on Rent in Dehradun | Valley Ride', template: '%s | Valley Ride' },
-  description: 'Bike and scooty rental in Dehradun: Honda Activa 125 and Royal Enfield Hunter 350, Scram 440 and Himalayan 450 for rides to Mussoorie, Rishikesh and across Uttarakhand. Pickup at Dorm Hub, Sahastradhara Road.',
+  description: 'Bike and scooty rental in Dehradun: Honda Activa 125, Royal Enfield Hunter 350, Scram 440 and Himalayan 450, KTM 390 Adventure X, Triumph Scrambler 400 X, Hero XPulse 210 and Suzuki V-Strom SX 250 for rides to Mussoorie, Rishikesh and across Uttarakhand. Pickup at Dorm Hub, Sahastradhara Road.',
   applicationName: 'Valley Ride',
   category: 'travel',
   creator: 'Valley Ride',

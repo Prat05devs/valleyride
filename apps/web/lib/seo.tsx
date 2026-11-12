@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import type { RouteGuideDTO, VehicleModelDTO } from '@valleyride/shared';
 import { api } from './api-client';
-import { SUPPORT_EMAIL, SUPPORT_PHONE } from './legal';
+import { bikePhoto, brandOf } from './bikes';
+import { DESK_PHONE, SUPPORT_EMAIL, SUPPORT_PHONE } from './legal';
 
 /**
  * One source for the facts search engines and AI assistants read: the business name, address and phone (NAP),
@@ -9,7 +10,7 @@ import { SUPPORT_EMAIL, SUPPORT_PHONE } from './legal';
  * (apps/api/src/db/seeders/20261022-01-locations.js) and the Google Business Profile, word for word.
  */
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === 'production' ? 'https://valleyride.in' : 'http://localhost:3000')).replace(/\/+$/, '');
-export const abs = (path = '/') => `${SITE_URL}${path === '/' ? '' : path}`;
+export const abs = (path = '/') => (/^https?:\/\//.test(path) ? path : `${SITE_URL}${path === '/' ? '' : path}`);
 
 export const BUSINESS = {
   name: 'Valley Ride',
@@ -27,7 +28,7 @@ export const BUSINESS = {
     mapUrl: 'https://maps.app.goo.gl/U7GF6py8rFRpwhqQ8',
     hours: { opens: '08:00', closes: '20:00', label: 'Open every day, 8 AM to 8 PM' },
   },
-  phone: process.env.NEXT_PUBLIC_DESK_PHONE || SUPPORT_PHONE,
+  phone: DESK_PHONE,
   whatsapp: SUPPORT_PHONE,
   email: SUPPORT_EMAIL,
   /** Profile URLs (Instagram, Google Business Profile, YouTube…), comma-separated, for schema.org sameAs. */
@@ -70,7 +71,7 @@ export function businessJsonLd() {
     url: abs('/'),
     logo: abs('/images/logo.jpg'),
     image: abs(OG_IMAGE.url),
-    description: 'Bike and scooty rental in Dehradun, Uttarakhand: Honda Activa 125 and Royal Enfield Hunter 350, Scram 440 and Himalayan 450 on rent for rides to Mussoorie, Rishikesh, Dhanaulti, Chakrata and the Garhwal Himalaya. Pickup and return at Dorm Hub, Sahastradhara Road.',
+    description: 'Bike and scooty rental in Dehradun, Uttarakhand: Honda Activa 125, Royal Enfield Hunter 350, Scram 440 and Himalayan 450, KTM 390 Adventure X, Triumph Scrambler 400 X, Hero XPulse 210 and Suzuki V-Strom SX 250 on rent for rides to Mussoorie, Rishikesh, Dhanaulti, Chakrata and the Garhwal Himalaya. Pickup and return at Dorm Hub, Sahastradhara Road.',
     slogan: 'Find your ride into the Himalayas',
     address: { '@type': 'PostalAddress', streetAddress: p.street, addressLocality: p.locality, addressRegion: p.region, postalCode: p.postalCode, addressCountry: p.country },
     geo: { '@type': 'GeoCoordinates', latitude: p.lat, longitude: p.lng },
@@ -131,10 +132,10 @@ export function bikeJsonLd(m: VehicleModelDTO) {
     '@type': 'Product',
     '@id': `${abs(`/fleet/${m.slug}`)}#product`,
     name: `${m.name} on rent in Dehradun`,
-    brand: { '@type': 'Brand', name: m.name.startsWith('Royal Enfield') ? 'Royal Enfield' : 'Honda' },
+    brand: { '@type': 'Brand', name: brandOf(m.name) || m.name.split(' ')[0] },
     model: m.name,
     category: m.category === 'SCOOTER' ? 'Scooter rental' : 'Motorcycle rental',
-    image: abs(`/images/cut-${m.slug}.png`),
+    image: abs(bikePhoto(m)),
     url: abs(`/fleet/${m.slug}`),
     description: `${m.name} (${m.engineCc} cc) on rent in Dehradun with ${m.kmPerDay} km a day included and a refundable deposit. Pickup at Dorm Hub, Sahastradhara Road.`,
     offers: {

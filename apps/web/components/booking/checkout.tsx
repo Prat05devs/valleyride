@@ -153,7 +153,7 @@ export function Checkout({ bookingId }: { bookingId: string }) {
           <div className="flex items-center gap-3.5">
             <span className="flex h-[84px] w-[120px] flex-none items-center justify-center rounded-[22px] bg-field">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {model && <img src={bikePhoto(model.slug)} alt={model.name} className="h-[72px] w-[104px] object-contain" />}
+              {model && <img src={bikePhoto(model)} alt={model.name} className="h-[72px] w-[104px] object-contain" />}
             </span>
             <span><span className="block text-[19px]">{model?.name}</span><span className="text-sm text-muted">{formatDateTime(b.startAt)} → {formatDateTime(b.endAt)} · {pickup?.name}{ret && ret.id !== pickup?.id ? ` → ${ret.name}` : ''}</span></span>
           </div>

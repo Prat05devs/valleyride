@@ -1,5 +1,5 @@
 import { Op, QueryTypes, UniqueConstraintError } from 'sequelize';
-import type { CreateVehicleInput, MaintenanceInput, VehicleStatus } from '@valleyride/shared';
+import type { CreateVehicleInput, CreateVehicleModelInput, MaintenanceInput, UpdateVehicleInput, VehicleStatus } from '@valleyride/shared';
 import { ACTIVE_STATUSES } from '@valleyride/shared';
 import {
   AuditLog, Booking, CustomerDocument, Handover, Location, MaintenanceRecord, Payment, sequelize, User, Vehicle, VehicleDocument, VehicleModel,
@@ -75,6 +75,43 @@ export const adminService = {
       return v;
     } catch (e) {
       if (e instanceof UniqueConstraintError) throw new AppError(409, 'DUPLICATE', 'A vehicle with this registration already exists.');
+      throw e;
+    }
+  },
+
+  /** Number plate or purchase date corrections; everything else about a unit has its own audited action. */
+  async updateVehicle(a: Actor, id: string, input: UpdateVehicleInput) {
+    const v = await Vehicle.findByPk(id);
+    if (!v) throw new AppError(404, 'NOT_FOUND', 'Vehicle not found');
+    const before = { registrationNo: v.registrationNo, purchasedOn: v.purchasedOn };
+    try {
+      await v.update({
+        ...(input.registrationNo !== undefined && { registrationNo: input.registrationNo.replace(/\s+/g, ' ') }),
+        ...(input.purchasedOn !== undefined && { purchasedOn: input.purchasedOn }),
+      });
+    } catch (e) {
+      if (e instanceof UniqueConstraintError) throw new AppError(409, 'DUPLICATE', 'A vehicle with this registration already exists.');
+      throw e;
+    }
+    await audit(a, { action: 'vehicle.update', entity: 'vehicle', entityId: id, diff: { before, after: { registrationNo: v.registrationNo, purchasedOn: v.purchasedOn } } });
+    await invalidate('fleet:');
+    return v;
+  },
+
+  /** A new bike model. It shows on the website and app straight away; add its units under Fleet so it can be booked. */
+  async createVehicleModel(a: Actor, input: CreateVehicleModelInput) {
+    const slug = input.slug ?? input.name.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+    if (slug.length < 3) throw new AppError(422, 'INVALID_SLUG', 'Give the model a longer name.');
+    try {
+      const m = await VehicleModel.create({
+        slug, name: input.name, category: input.category, engineCc: input.engineCc, priceDayPaise: input.pricePerDayPaise,
+        depositPaise: input.depositPaise, kmPerDay: input.kmPerDay, extraKmPaise: input.extraKmPaise,
+      });
+      await audit(a, { action: 'vehicle_model.create', entity: 'vehicle_model', entityId: m.id, diff: input });
+      await invalidate('fleet:');
+      return m.toDTO();
+    } catch (e) {
+      if (e instanceof UniqueConstraintError) throw new AppError(409, 'DUPLICATE', 'A model with this name already exists.');
       throw e;
     }
   },

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { investWhatsAppUrl, PHONE_DISPLAY } from '@/lib/legal';
+import { INVEST_PHONE_DISPLAY, INVEST_TEL_URL, investWhatsAppUrl } from '@/lib/legal';
 import { cn } from '@/lib/utils';
 
 /**
@@ -26,7 +26,6 @@ export function planFigures(principal: number) {
 export function Calculator() {
   const [principal, setPrincipal] = useState<number>(PLANS[0]);
   const f = planFigures(principal);
-  const schedule = Array.from({ length: LOCK_IN_MONTHS }, (_, i) => i + 1);
 
   return (
     <>
@@ -48,7 +47,7 @@ export function Calculator() {
           </dl>
           <p className="m-0 text-sm text-muted">Only these two amounts are offered. The lock-in is fixed: the principal cannot be withdrawn before {LOCK_IN_MONTHS} months.</p>
           <a href={investWhatsAppUrl(principal)} target="_blank" rel="noreferrer" className="flex min-h-14 items-center justify-center rounded-full bg-ink px-6 text-center text-[17px] text-surface">Invest {lakh(principal)}: message us on WhatsApp</a>
-          <p className="m-0 text-sm text-muted">Our team replies with the agreement and the bank details for the transfer. Call or WhatsApp {PHONE_DISPLAY}.</p>
+          <p className="m-0 text-sm text-muted">Our team replies with the agreement and the bank details for the transfer. Call or WhatsApp <a href={INVEST_TEL_URL} className="text-ink underline">{INVEST_PHONE_DISPLAY}</a> (investments only).</p>
         </section>
 
         <section aria-label="Your returns" className="flex min-w-0 flex-[2_1_560px] flex-col gap-4">
@@ -70,27 +69,69 @@ export function Calculator() {
         </section>
       </div>
 
-      <section className="flex flex-col gap-3.5 rounded-[36px] bg-surface p-7">
-        <div className="flex flex-wrap items-baseline justify-between gap-2.5"><h2 className="m-0 text-[26px] font-normal">Payment schedule</h2><span className="text-sm text-muted">{lakh(principal)} plan · {LOCK_IN_MONTHS} monthly payments</span></div>
-        <div className="max-h-[460px] overflow-auto rounded-[20px] border border-line">
-          <table className="w-full min-w-[560px] border-collapse text-[15px]">
-            <thead><tr className="bg-field text-right text-[13px] text-muted">{['Month', 'Interest', 'Principal returned', 'Payment to you'].map((h, i) => <th key={h} className={cn('px-3.5 py-3 font-normal', i === 0 && 'text-left')}>{h}</th>)}</tr></thead>
-            <tbody>
-              {schedule.map((m) => {
-                const back = m === LOCK_IN_MONTHS ? principal : 0;
-                return (
-                  <tr key={m} className={cn('border-t border-line text-right', back && 'bg-field')}>
-                    <td className="px-3.5 py-[11px] text-left text-muted">{m}</td>
-                    <td className="px-3.5 py-[11px]">{inr(f.monthlyInterest, true)}</td>
-                    <td className="px-3.5 py-[11px]">{back ? inr(back) : '—'}</td>
-                    <td className="px-3.5 py-[11px] font-medium">{inr(f.monthlyInterest + back, true)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <Schedule principal={principal} />
     </>
+  );
+}
+
+/**
+ * The 18 payments at a glance: every month pays the same interest and the last one adds the principal, so a summary
+ * with a month strip says it all without a scrolling table; the full month-by-month list expands inline.
+ * The last month's interest takes the rounding (₹1,666.67 × 17 + ₹1,666.61 = ₹30,000), so the payments add up
+ * exactly to the totals shown above.
+ */
+function Schedule({ principal }: { principal: number }) {
+  const f = planFigures(principal);
+  const last = Math.round((f.totalInterest - f.monthlyInterest * (LOCK_IN_MONTHS - 1)) * 100) / 100;
+  const months = Array.from({ length: LOCK_IN_MONTHS }, (_, i) => i + 1);
+  const pay = (m: number) => (m === LOCK_IN_MONTHS ? last + principal : f.monthlyInterest);
+  return (
+    <section aria-labelledby="schedule-title" className="flex flex-col gap-5 rounded-[36px] bg-surface p-6 sm:p-7">
+      <div className="flex flex-wrap items-baseline justify-between gap-2.5">
+        <h2 id="schedule-title" className="m-0 text-[26px] font-normal">Payment schedule</h2>
+        <span className="text-sm text-muted">{lakh(principal)} plan · {LOCK_IN_MONTHS} monthly payments</span>
+      </div>
+
+      {/* One block per month: grey = interest only, dark = interest plus your principal back. */}
+      <ol aria-label="Months" className="m-0 grid list-none grid-cols-9 gap-1.5 p-0 sm:grid-cols-[repeat(18,minmax(0,1fr))]">
+        {months.map((m) => (
+          <li key={m} className="flex flex-col items-center gap-1">
+            <span className={cn('block h-10 w-full rounded-[10px] sm:h-14', m === LOCK_IN_MONTHS ? 'bg-ink' : 'bg-orange-tint')} />
+            <span className={cn('text-xs', m === LOCK_IN_MONTHS ? 'font-medium text-ink' : 'text-muted')}>{m}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[22px] bg-field px-5 py-4">
+          <div className="flex items-center gap-3"><span aria-hidden className="h-3 w-3 shrink-0 rounded-full bg-orange-tint ring-1 ring-orange/40" />
+            <div><div className="font-medium">Months 1–{LOCK_IN_MONTHS - 1}</div><div className="text-sm text-muted">Interest only, every month</div></div></div>
+          <div className="text-right"><div className="text-xl font-medium">{inr(f.monthlyInterest, true)}<span className="text-sm font-normal text-muted"> / month</span></div></div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[22px] bg-ink px-5 py-4 text-surface">
+          <div className="flex items-center gap-3"><span aria-hidden className="h-3 w-3 shrink-0 rounded-full bg-surface" />
+            <div><div className="font-medium">Month {LOCK_IN_MONTHS}</div><div className="text-sm text-white/75">Last interest {inr(last, true)} + your {lakh(principal)} back</div></div></div>
+          <div className="text-xl font-medium">{inr(last + principal, true)}</div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-x-4 px-5 pt-1">
+          <span className="text-muted">Total you receive over {LOCK_IN_MONTHS} months</span>
+          <span className="text-xl font-medium">{inr(f.totalReceived)}</span>
+        </div>
+      </div>
+
+      <details className="group rounded-[22px] border border-line">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-5 text-[15px] [&::-webkit-details-marker]:hidden">
+          <span>See every month</span><span aria-hidden className="text-muted transition-transform group-open:rotate-180">⌄</span>
+        </summary>
+        <ul className="m-0 grid list-none grid-cols-1 gap-x-8 border-t border-line p-0 px-5 py-2 sm:grid-cols-2">
+          {months.map((m) => (
+            <li key={m} className={cn('flex items-center justify-between gap-3 border-b border-line py-2.5 text-[15px] last:border-b-0 sm:[&:nth-last-child(2)]:border-b-0', m === LOCK_IN_MONTHS && 'font-medium')}>
+              <span className="text-muted">Month {m}</span>
+              <span>{m === LOCK_IN_MONTHS ? `${inr(last, true)} + ${inr(principal)} = ${inr(pay(m), true)}` : inr(pay(m), true)}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </section>
   );
 }
