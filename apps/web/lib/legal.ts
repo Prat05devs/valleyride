@@ -1,14 +1,18 @@
 /** Contact details and dates shared by the policy pages (privacy, terms, refunds, delivery, contact, account deletion). */
 const display = (e164: string) => e164.replace(/^\+91(\d{5})(\d{5})$/, '+91 $1 $2');
 
-/** Bookings, WhatsApp, payments, roadside help and every other customer question: calls and WhatsApp. */
-export const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || '+919762697523';
+/**
+ * Bookings, WhatsApp, payments, roadside help and every other customer question: calls and WhatsApp.
+ * Fixed here on purpose (owner, November 2026): an old NEXT_PUBLIC_SUPPORT_WHATSAPP in the hosting settings kept
+ * showing the investment line, so the environment no longer overrides it. Change the number here.
+ */
+export const SUPPORT_PHONE = '+919762697523';
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || null;
 export const PHONE_DISPLAY = display(SUPPORT_PHONE);
 export const WHATSAPP_URL = `https://wa.me/${SUPPORT_PHONE.replace(/\D/g, '')}`;
 export const TEL_URL = `tel:${SUPPORT_PHONE}`;
-/** The pickup desk; the support number unless a separate desk line is set. */
-export const DESK_PHONE = process.env.NEXT_PUBLIC_DESK_PHONE || SUPPORT_PHONE;
+/** The pickup desk: the same line. */
+export const DESK_PHONE = SUPPORT_PHONE;
 
 /** Valley Ride Capital only: investment enquiries and bank details (calls and WhatsApp). Not for rentals. */
 export const INVEST_PHONE = '+917055333321';

@@ -105,9 +105,8 @@ Set these **before building** (Razorpay keys are configured on the backend only)
 ```dotenv
 NEXT_PUBLIC_API_URL=https://api.valleyride.in
 NEXT_PUBLIC_SITE_URL=https://valleyride.in
-NEXT_PUBLIC_SUPPORT_WHATSAPP=<real E.164 support number>
+# Support and desk numbers are fixed in apps/web/lib/legal.ts (+91 97626 97523; investments +91 70553 33321).
 NEXT_PUBLIC_SUPPORT_EMAIL=<real support email>
-NEXT_PUBLIC_DESK_PHONE=<pickup desk phone, E.164>
 ```
 
 Use the port provided by Hostinger at runtime; the standalone server respects `PORT`. Do not copy the backend `.env`
