@@ -11,7 +11,7 @@
       "supportsTablet": false,
       "appleTeamId": "9Q56J23Z23",
       "bundleIdentifier": "in.valleyride.app",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "tez",
