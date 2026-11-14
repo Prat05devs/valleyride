@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test:security": "node --test --test-timeout=5000 tests/security/*.test.cjs",
-    "test:interactions": "node --test tests/date-selection.test.cjs"
+    "test:interactions": "node --test tests/date-selection.test.cjs",
+    "eas-build-post-install": "pnpm --dir ../.. --filter @valleyride/shared build"
   },
   "dependencies": {
     "@expo-google-fonts/urbanist": "^0.4.2",
