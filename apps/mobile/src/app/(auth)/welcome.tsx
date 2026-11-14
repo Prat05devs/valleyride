@@ -38,7 +38,7 @@ export default function Welcome() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.heroBg }}>
-      <Image source={PHOTOS_HERO.welcome} style={styles.photo} contentFit="cover" contentPosition={{ left: "50%", top: "40%" }} />
+      <Image source={PHOTOS_HERO.welcome} style={styles.photo} contentFit="cover" contentPosition={{ left: "60%", top: "50%" }} />
       <View style={[styles.photo, { backgroundColor: 'rgba(0,0,0,0.35)' }]} />
       {/* iOS insets the ScrollView itself; Android (edge-to-edge, so no window resize) pads above the keyboard. */}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'android' ? 'padding' : undefined}>
@@ -48,7 +48,7 @@ export default function Welcome() {
       <View style={[styles.brand, { paddingTop: insets.top + 40 }]}>
         <Image source={PHOTOS_HERO.logo} style={styles.logo} accessibilityLabel="Valley Ride two wheeler rental" />
         <T v="hero" style={{ color: colors.surface, textAlign: 'center' }}>Ride the valley</T>
-        <T style={{ color: 'rgba(255,255,255,0.88)', textAlign: 'center', lineHeight: 23 }}>Scooters and Royal Enfields for Dehradun, Mussoorie and Rishikesh.</T>
+        <T style={{ color: 'rgba(255,255,255,0.88)', textAlign: 'center', lineHeight: 23 }}>Scooters, Royal Enfields, KTM, Triumph and more for Dehradun, Mussoorie and Rishikesh.</T>
       </View>
         <View style={[styles.sheet, { marginTop: 'auto', paddingBottom: insets.bottom + 20 }]}>
           <View style={{ gap: 4 }}>

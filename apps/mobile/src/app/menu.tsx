@@ -39,7 +39,7 @@ export default function Menu() {
         ))}
         <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${WEB_URL}/invest`)} style={styles.capital}>
           <T style={{ fontSize: 18 }}>Valley Ride Capital</T>
-          <T v="label">Help fund the fleet. See the illustrative calculator.</T>
+          <T v="label">Invest ₹1 lakh or ₹2.5 lakh at 20% a year, paid monthly, for 18 months.</T>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}><T>Open on the website</T><Icon name="forward" size={18} /></View>
         </Pressable>
       </ScrollView>

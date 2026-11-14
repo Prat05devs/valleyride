@@ -102,7 +102,7 @@ export default function Home() {
       )}
 
       <View style={{ paddingTop: 26, gap: 16 }}>
-        <SectionHeader title="Our fleet" sub="30 bikes across four models" />
+        <SectionHeader title="Our fleet" sub={`${models.reduce((n, m) => n + (m.units ?? 0), 0)} bikes across ${models.length} models`} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }}>
           {models.map((m) => (
             <Card key={m.id} style={{ width: 168, padding: 14, gap: 6 }} onPress={() => router.push({ pathname: '/bike/[slug]', params: { slug: m.slug } })}>

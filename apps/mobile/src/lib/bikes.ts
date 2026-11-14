@@ -44,6 +44,6 @@ export const shortName = (name: string) => { const b = brandOf(name); return b ?
 
 export const PHOTOS_HERO = {
   cover: require('../../assets/photo-cover.jpg'),
-  welcome: require('../../assets/photo-welcome.jpg'),
+  welcome: require('../../assets/photo-city.jpg'), // Activa 125 + Hunter 350 on Mall Road, Mussoorie (same as the website's login)
   logo: require('../../assets/logo.jpg'),
 };
